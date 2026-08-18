@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduGestión — Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
+  --verde: #1A7A5E; --verde-light: #E8F5F0;
+  --naranja: #C05621; --naranja-light: #FFF3EB;
+  --morado: #553C9A; --morado-light: #F0EBFF;
+  --gris: #F4F6F9; --borde: #DDE3EC;
+  --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
+  --blanco: #FFFFFF; --rojo: #C53030;
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); color: var(--texto); min-height: 100vh; }
+
+.topbar { background: var(--azul); height: 58px; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.topbar-left { display: flex; align-items: center; gap: 0.7rem; }
+.topbar-icon { width: 32px; height: 32px; background: rgba(255,255,255,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.topbar-icon svg { width: 18px; height: 18px; color: white; }
+.topbar-brand { font-size: 1.05rem; font-weight: 700; color: white; }
+.topbar-inst { font-size: 0.78rem; color: rgba(255,255,255,0.65); margin-left: 0.6rem; padding-left: 0.6rem; border-left: 1px solid rgba(255,255,255,0.25); }
+.topbar-right { display: flex; align-items: center; gap: 0.8rem; }
+.topbar-user { display: flex; align-items: center; gap: 0.5rem; }
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; }
+.topbar-name { color: white; font-size: 0.85rem; font-weight: 600; }
+.topbar-rol { color: rgba(255,255,255,0.6); font-size: 0.7rem; }
+.btn-salir { background: rgba(255,255,255,0.12); color: white; border: none; padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-salir:hover { background: rgba(255,255,255,0.22); }
+
+.main { max-width: 1100px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
+.saludo { font-family: 'Instrument Serif', serif; font-size: 1.9rem; margin-bottom: 0.3rem; }
+.subsaludo { font-size: 0.85rem; color: var(--texto-light); margin-bottom: 2rem; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2.2rem; }
+.stat-card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.2rem; display: flex; align-items: center; gap: 0.8rem; }
+.stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.stat-icon svg { width: 20px; height: 20px; }
+.stat-num { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+.stat-label { font-size: 0.72rem; color: var(--texto-light); margin-top: 0.2rem; }
+
+.section-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--texto-light); margin-bottom: 1rem; }
+
+.modules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; }
+.module-card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 14px; padding: 1.5rem; text-decoration: none; color: inherit; display: block; cursor: pointer; transition: box-shadow 0.15s, transform 0.15s; }
+.module-card:hover { box-shadow: 0 8px 24px rgba(26,79,138,0.1); transform: translateY(-2px); }
+.module-card.disabled { opacity: 0.55; cursor: default; }
+.module-card.disabled:hover { box-shadow: none; transform: none; }
+.module-icon-wrap { width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.9rem; }
+.module-icon-wrap svg { width: 22px; height: 22px; }
+.module-name { font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+.module-desc { font-size: 0.8rem; color: var(--texto-light); line-height: 1.4; margin-bottom: 0.7rem; }
+.module-badge { font-size: 0.66rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.03em; }
+
+.m-azul .module-icon-wrap { background: var(--azul-light); color: var(--azul); }
+.m-verde .module-icon-wrap { background: var(--verde-light); color: var(--verde); }
+.m-naranja .module-icon-wrap { background: var(--naranja-light); color: var(--naranja); }
+.m-morado .module-icon-wrap { background: var(--morado-light); color: var(--morado); }
+.badge-azul { background: var(--azul-light); color: var(--azul); }
+.badge-verde { background: var(--verde-light); color: var(--verde); }
+.badge-gris { background: var(--gris); color: var(--texto-light); }
+
+.loading-wrap { display: flex; align-items: center; justify-content: center; min-height: 60vh; color: var(--texto-light); font-size: 0.9rem; }
+
+@media (max-width: 860px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .modules-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="loading" class="loading-wrap">Cargando panel...</div>
+
+<div id="app" style="display:none">
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/>
+          <path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>
+        </svg>
+      </div>
+      <span class="topbar-brand">EduGestión</span>
+      <span class="topbar-inst" id="nombreInstitucion">—</span>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-user">
+        <div class="avatar" id="avatarIniciales">--</div>
+        <div>
+          <div class="topbar-name" id="nombreUsuario">—</div>
+          <div class="topbar-rol" id="rolUsuario">—</div>
+        </div>
+      </div>
+      <button class="btn-salir" id="btnSalir">Salir</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <p class="saludo" id="saludoTexto">Hola</p>
+    <p class="subsaludo" id="subsaludoTexto">Aquí tienes el resumen de tu institución.</p>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--azul-light);color:var(--azul)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div><div class="stat-num" id="statEstudiantes">0</div><div class="stat-label">Estudiantes</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--verde-light);color:var(--verde)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>
+        </div>
+        <div><div class="stat-num" id="statDocentes">0</div><div class="stat-label">Docentes</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--naranja-light);color:var(--naranja)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </div>
+        <div><div class="stat-num" id="statGrupos">0</div><div class="stat-label">Grados/Grupos</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--morado-light);color:var(--morado)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <div><div class="stat-num" id="statAsignaturas">0</div><div class="stat-label">Asignaturas</div></div>
+      </div>
+    </div>
+
+    <p class="section-label">Módulos</p>
+    <div class="modules-grid">
+
+      <a class="module-card m-azul" href="estudiantes.html">
+        <div class="module-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <p class="module-name">Estudiantes</p>
+        <p class="module-desc">Registra estudiantes y asígnalos a un grado y grupo.</p>
+        <span class="module-badge badge-azul">Gestión</span>
+      </a>
+
+      <a class="module-card m-morado" href="asignaturas.html">
+        <div class="module-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        <p class="module-name">Asignaturas</p>
+        <p class="module-desc">Crea las materias o áreas de formación por grado.</p>
+        <span class="module-badge badge-azul">Gestión</span>
+      </a>
+
+      <a class="module-card m-verde" href="notas.html">
+        <div class="module-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+        <p class="module-name">Notas</p>
+        <p class="module-desc">Registra calificaciones por periodo, según la escala de tu institución.</p>
+        <span class="module-badge badge-verde">Valoración</span>
+      </a>
+
+      <a class="module-card m-naranja" href="boletines.html">
+        <div class="module-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></div>
+        <p class="module-name">Boletines</p>
+        <p class="module-desc">Genera el informe consolidado de notas por estudiante y periodo.</p>
+        <span class="module-badge badge-verde">Valoración</span>
+      </a>
+
+      <div class="module-card m-azul disabled">
+        <div class="module-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <p class="module-name">Seguimiento del estudiante</p>
+        <p class="module-desc">Observador, asistencia y alertas de riesgo académico.</p>
+        <span class="module-badge badge-gris">Próximamente</span>
+      </div>
+
+      <div class="module-card m-azul disabled">
+        <div class="module-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        <p class="module-name">Programación curricular</p>
+        <p class="module-desc">Sube la programación y evaluaciones por asignatura y periodo.</p>
+        <span class="module-badge badge-gris">Próximamente</span>
+      </div>
+
+      <div id="cardCrearUsuario" style="display:none">
+        <a class="module-card m-morado" href="crear-usuario.html">
+          <div class="module-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
+          <p class="module-name">Crear usuario</p>
+          <p class="module-desc">Crea docentes o estudiantes directamente, sin registro público.</p>
+          <span class="module-badge badge-azul">Admin</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, collection, getDocs, query, where } from './firebase.js';
+
+  const loadingEl = document.getElementById('loading');
+  const appEl = document.getElementById('app');
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = 'index.html';
+      return;
+    }
+
+    try {
+      const usuarioSnap = await getDoc(doc(db, 'usuarios', user.uid));
+      if (!usuarioSnap.exists()) {
+        window.location.href = 'index.html';
+        return;
+      }
+      const usuario = usuarioSnap.data();
+
+      const instSnap = await getDoc(doc(db, 'instituciones', usuario.institucionId));
+      const institucion = instSnap.exists() ? instSnap.data() : { nombre: '—' };
+
+      document.getElementById('nombreInstitucion').textContent = institucion.nombre;
+      document.getElementById('nombreUsuario').textContent = usuario.nombre;
+      document.getElementById('rolUsuario').textContent =
+        usuario.rol === 'admin' ? 'Administrador' : usuario.rol === 'docente' ? 'Docente' : usuario.rol.charAt(0).toUpperCase() + usuario.rol.slice(1);
+      document.getElementById('avatarIniciales').textContent = (usuario.nombre || '?').substring(0, 2).toUpperCase();
+      document.getElementById('saludoTexto').textContent = `Hola, ${usuario.nombre.split(' ')[0]}`;
+      document.getElementById('subsaludoTexto').textContent = `Panel de ${institucion.nombre}`;
+
+      if (usuario.rol === 'admin') {
+        document.getElementById('cardCrearUsuario').style.display = 'block';
+      }
+
+      // Cargar estadísticas (best-effort, no bloquea el panel si falla)
+      try {
+        const qEst = query(collection(db, 'estudiantes'), where('institucionId', '==', usuario.institucionId));
+        const qDoc = query(collection(db, 'usuarios'), where('institucionId', '==', usuario.institucionId), where('rol', '==', 'docente'));
+        const qGru = query(collection(db, 'grupos'), where('institucionId', '==', usuario.institucionId));
+        const qAsi = query(collection(db, 'asignaturas'), where('institucionId', '==', usuario.institucionId));
+        const [estSnap, docSnap, gruSnap, asiSnap] = await Promise.all([
+          getDocs(qEst), getDocs(qDoc), getDocs(qGru), getDocs(qAsi)
+        ]);
+        document.getElementById('statEstudiantes').textContent = estSnap.size;
+        document.getElementById('statDocentes').textContent = docSnap.size;
+        document.getElementById('statGrupos').textContent = gruSnap.size;
+        document.getElementById('statAsignaturas').textContent = asiSnap.size;
+      } catch (e) {
+        console.warn('No se pudieron cargar estadísticas todavía:', e);
+      }
+
+      loadingEl.style.display = 'none';
+      appEl.style.display = 'block';
+
+    } catch (err) {
+      console.error('Error cargando el panel:', err);
+      loadingEl.textContent = 'Hubo un error cargando tu panel. Intenta refrescar la página.';
+    }
+  });
+
+  document.getElementById('btnSalir').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'index.html';
+  });
+</script>
+</body>
+</html>
