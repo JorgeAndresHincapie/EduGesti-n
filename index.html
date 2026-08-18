@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduGestión — Ingreso</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
+  --verde: #1A7A5E; --verde-light: #E8F5F0;
+  --naranja: #C05621;
+  --gris: #F4F6F9; --borde: #DDE3EC;
+  --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
+  --blanco: #FFFFFF; --rojo: #C53030; --rojo-light: #FFF5F5;
+}
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: linear-gradient(135deg, var(--azul-light) 0%, var(--gris) 100%);
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem;
+  color: var(--texto);
+}
+.card {
+  background: var(--blanco);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(26,79,138,0.12);
+  width: 100%; max-width: 460px;
+  padding: 2.2rem;
+}
+.logo-wrap { text-align: center; margin-bottom: 1.5rem; }
+.logo-icon {
+  width: 52px; height: 52px; background: var(--azul); border-radius: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 0.8rem;
+}
+.logo-icon svg { width: 28px; height: 28px; color: white; }
+.logo-title { font-family: 'Instrument Serif', serif; font-size: 1.7rem; color: var(--texto); }
+.logo-sub { font-size: 0.8rem; color: var(--texto-light); margin-top: 0.2rem; }
+
+.tabs { display: flex; gap: 0.4rem; background: var(--gris); border-radius: 10px; padding: 0.3rem; margin-bottom: 1.5rem; }
+.tab-btn {
+  flex: 1; padding: 0.55rem; border: none; background: none; border-radius: 8px;
+  font-family: inherit; font-size: 0.82rem; font-weight: 600; color: var(--texto-light);
+  cursor: pointer; transition: all 0.15s;
+}
+.tab-btn.activo { background: var(--blanco); color: var(--azul); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+.panel { display: none; }
+.panel.activo { display: block; }
+
+.field { margin-bottom: 1rem; }
+.field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--texto-mid); margin-bottom: 0.35rem; }
+.field input, .field select {
+  width: 100%; padding: 0.65rem 0.8rem; border: 1.5px solid var(--borde); border-radius: 9px;
+  font-family: inherit; font-size: 0.85rem; color: var(--texto);
+}
+.field input:focus, .field select:focus { outline: none; border-color: var(--azul); }
+.field-row { display: flex; gap: 0.7rem; }
+.field-row .field { flex: 1; }
+
+.btn {
+  width: 100%; padding: 0.75rem; border: none; border-radius: 10px;
+  font-family: inherit; font-weight: 700; font-size: 0.88rem; cursor: pointer;
+  margin-top: 0.4rem; transition: background 0.15s;
+}
+.btn-primario { background: var(--azul); color: white; }
+.btn-primario:hover { background: var(--azul-dark); }
+.btn-primario:disabled { opacity: 0.6; cursor: default; }
+
+.msg { display: none; font-size: 0.8rem; padding: 0.6rem 0.8rem; border-radius: 8px; margin-bottom: 0.8rem; }
+.msg.visible { display: block; }
+.msg-ok { background: var(--verde-light); color: var(--verde); }
+.msg-err { background: var(--rojo-light); color: var(--rojo); }
+
+.escala-box {
+  border: 1.5px solid var(--borde); border-radius: 10px; padding: 1rem;
+  margin: 0.5rem 0 1.2rem;
+}
+.escala-titulo { font-size: 0.8rem; font-weight: 700; color: var(--texto); margin-bottom: 0.3rem; }
+.escala-hint { font-size: 0.72rem; color: var(--texto-light); margin-bottom: 0.8rem; }
+.escala-nivel { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; }
+.escala-nivel input[type="text"] { flex: 1.4; padding: 0.4rem 0.5rem; font-size: 0.78rem; border: 1.3px solid var(--borde); border-radius: 6px; }
+.escala-nivel input[type="number"] { flex: 0.8; padding: 0.4rem 0.5rem; font-size: 0.78rem; border: 1.3px solid var(--borde); border-radius: 6px; }
+.escala-nivel span.guion { color: var(--texto-light); font-size: 0.78rem; }
+.escala-nivel .btn-quitar { background: none; border: none; color: var(--rojo); cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 0.2rem 0.4rem; }
+.btn-agregar-nivel {
+  background: var(--gris); border: 1.3px dashed var(--borde); border-radius: 7px;
+  padding: 0.4rem 0.7rem; font-size: 0.75rem; font-weight: 600; color: var(--texto-mid);
+  cursor: pointer; font-family: inherit;
+}
+.escala-tipo-select { margin-bottom: 0.8rem; }
+
+.link-sm { text-align: center; margin-top: 1rem; font-size: 0.78rem; color: var(--texto-light); }
+.link-sm a { color: var(--azul); text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo-wrap">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/>
+        <path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>
+      </svg>
+    </div>
+    <p class="logo-title">EduGestión</p>
+    <p class="logo-sub">Administración educativa — formal y no formal</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn activo" id="tabLogin" onclick="cambiarTab('login')">Iniciar sesión</button>
+    <button class="tab-btn" id="tabCrear" onclick="cambiarTab('crear')">Crear institución</button>
+  </div>
+
+  <!-- PANEL LOGIN -->
+  <div class="panel activo" id="panelLogin">
+    <div class="msg msg-ok" id="loginMsgOk"><span id="loginMsgOkTexto"></span></div>
+    <div class="msg msg-err" id="loginMsgErr"><span id="loginMsgErrTexto"></span></div>
+    <form id="formLogin">
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="loginEmail" required/>
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="loginPassword" required/>
+      </div>
+      <button type="submit" class="btn btn-primario" id="btnLogin">Ingresar</button>
+    </form>
+    <p class="link-sm"><a href="#" onclick="recuperarPassword();return false;">¿Olvidaste tu contraseña?</a></p>
+  </div>
+
+  <!-- PANEL CREAR INSTITUCIÓN -->
+  <div class="panel" id="panelCrear">
+    <div class="msg msg-ok" id="crearMsgOk"><span id="crearMsgOkTexto"></span></div>
+    <div class="msg msg-err" id="crearMsgErr"><span id="crearMsgErrTexto"></span></div>
+    <form id="formCrear">
+      <div class="field">
+        <label>Nombre de la institución</label>
+        <input type="text" id="ciNombreInst" required/>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>NIT o documento</label>
+          <input type="text" id="ciNit" required/>
+        </div>
+        <div class="field">
+          <label>Tipo de institución</label>
+          <select id="ciTipo">
+            <option value="formal">Educación formal (colegio)</option>
+            <option value="no_formal">Educación no formal (formación para el trabajo)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Tu nombre completo (administrador)</label>
+        <input type="text" id="ciNombreAdmin" required/>
+      </div>
+      <div class="field">
+        <label>Tu correo electrónico</label>
+        <input type="email" id="ciEmailAdmin" required/>
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="ciPasswordAdmin" minlength="6" required/>
+      </div>
+
+      <div class="escala-box">
+        <p class="escala-titulo">Escala de calificación</p>
+        <p class="escala-hint">Precargada con el estilo Decreto 1290 (Colombia). Ajusta los nombres y rangos según tu institución.</p>
+        <div class="escala-tipo-select">
+          <select id="ciEscalaTipo" onchange="toggleEscalaNiveles()">
+            <option value="cualitativa_cuantitativa">Cualitativa + Numérica (Decreto 1290)</option>
+            <option value="numerica_simple">Solo numérica</option>
+          </select>
+        </div>
+        <div id="ciNivelesWrap"></div>
+        <button type="button" class="btn-agregar-nivel" onclick="agregarNivel()">+ Agregar nivel</button>
+      </div>
+
+      <button type="submit" class="btn btn-primario" id="btnCrearInst">Crear institución y comenzar</button>
+    </form>
+  </div>
+
+  <p class="link-sm" id="footerHint" style="margin-top:1.4rem">¿Ya tienes una cuenta de una institución? Pídele al administrador que te cree el usuario.</p>
+</div>
+
+<script type="module">
+  import { auth, db, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, createUserWithEmailAndPassword, doc, setDoc, getDoc, serverTimestamp, collection, addDoc } from './firebase.js';
+
+  window.cambiarTab = function(tab) {
+    document.getElementById('tabLogin').classList.toggle('activo', tab === 'login');
+    document.getElementById('tabCrear').classList.toggle('activo', tab === 'crear');
+    document.getElementById('panelLogin').classList.toggle('activo', tab === 'login');
+    document.getElementById('panelCrear').classList.toggle('activo', tab === 'crear');
+  };
+
+  // ── Niveles de escala por defecto: Decreto 1290 ──
+  const NIVELES_DEFAULT_1290 = [
+    { nombre: 'Bajo', min: 1.0, max: 2.9 },
+    { nombre: 'Básico', min: 3.0, max: 3.9 },
+    { nombre: 'Alto', min: 4.0, max: 4.5 },
+    { nombre: 'Superior', min: 4.6, max: 5.0 },
+  ];
+  const NIVELES_DEFAULT_NUMERICA = [
+    { nombre: 'Aprobado', min: 3.0, max: 5.0 },
+    { nombre: 'Reprobado', min: 0.0, max: 2.9 },
+  ];
+
+  function renderNiveles(niveles) {
+    const wrap = document.getElementById('ciNivelesWrap');
+    wrap.innerHTML = '';
+    niveles.forEach((n, i) => {
+      const row = document.createElement('div');
+      row.className = 'escala-nivel';
+      row.innerHTML = `
+        <input type="text" value="${n.nombre}" data-campo="nombre" data-idx="${i}" placeholder="Nombre del nivel"/>
+        <input type="number" step="0.1" value="${n.min}" data-campo="min" data-idx="${i}" placeholder="Min"/>
+        <span class="guion">–</span>
+        <input type="number" step="0.1" value="${n.max}" data-campo="max" data-idx="${i}" placeholder="Max"/>
+        <button type="button" class="btn-quitar" onclick="quitarNivel(${i})">&times;</button>
+      `;
+      wrap.appendChild(row);
+    });
+  }
+
+  let nivelesActuales = JSON.parse(JSON.stringify(NIVELES_DEFAULT_1290));
+  renderNiveles(nivelesActuales);
+
+  window.toggleEscalaNiveles = function() {
+    const tipo = document.getElementById('ciEscalaTipo').value;
+    nivelesActuales = tipo === 'numerica_simple'
+      ? JSON.parse(JSON.stringify(NIVELES_DEFAULT_NUMERICA))
+      : JSON.parse(JSON.stringify(NIVELES_DEFAULT_1290));
+    renderNiveles(nivelesActuales);
+  };
+
+  window.agregarNivel = function() {
+    leerNivelesDesdeDOM();
+    nivelesActuales.push({ nombre: '', min: 0, max: 0 });
+    renderNiveles(nivelesActuales);
+  };
+  window.quitarNivel = function(idx) {
+    leerNivelesDesdeDOM();
+    nivelesActuales.splice(idx, 1);
+    renderNiveles(nivelesActuales);
+  };
+  function leerNivelesDesdeDOM() {
+    const inputs = document.querySelectorAll('#ciNivelesWrap input');
+    inputs.forEach(inp => {
+      const idx = parseInt(inp.dataset.idx, 10);
+      const campo = inp.dataset.campo;
+      if (!nivelesActuales[idx]) return;
+      nivelesActuales[idx][campo] = campo === 'nombre' ? inp.value : parseFloat(inp.value);
+    });
+  }
+
+  // ── LOGIN ──
+  document.getElementById('formLogin').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnLogin');
+    const msgOk = document.getElementById('loginMsgOk'), msgErr = document.getElementById('loginMsgErr');
+    msgOk.classList.remove('visible'); msgErr.classList.remove('visible');
+    btn.disabled = true; btn.textContent = 'Ingresando...';
+    try {
+      await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value.trim(), document.getElementById('loginPassword').value);
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      let m = 'No se pudo iniciar sesión. Verifica tus datos.';
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') m = 'Correo o contraseña incorrectos.';
+      else if (err.code === 'auth/user-not-found') m = 'No existe una cuenta con ese correo.';
+      msgErr.querySelector('#loginMsgErrTexto').textContent = m;
+      msgErr.classList.add('visible');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Ingresar';
+    }
+  });
+
+  window.recuperarPassword = async function() {
+    const email = document.getElementById('loginEmail').value.trim();
+    if (!email) { alert('Escribe tu correo en el campo de arriba primero.'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert('Te enviamos un correo para restablecer tu contraseña.');
+    } catch (err) {
+      alert('No se pudo enviar el correo. Verifica que esté bien escrito.');
+    }
+  };
+
+  // ── CREAR INSTITUCIÓN ──
+  document.getElementById('formCrear').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    leerNivelesDesdeDOM();
+    const btn = document.getElementById('btnCrearInst');
+    const msgOk = document.getElementById('crearMsgOk'), msgErr = document.getElementById('crearMsgErr');
+    msgOk.classList.remove('visible'); msgErr.classList.remove('visible');
+    btn.disabled = true; btn.textContent = 'Creando...';
+
+    const nombreInst = document.getElementById('ciNombreInst').value.trim();
+    const nit = document.getElementById('ciNit').value.trim();
+    const tipo = document.getElementById('ciTipo').value;
+    const nombreAdmin = document.getElementById('ciNombreAdmin').value.trim();
+    const emailAdmin = document.getElementById('ciEmailAdmin').value.trim();
+    const passwordAdmin = document.getElementById('ciPasswordAdmin').value;
+    const escalaTipo = document.getElementById('ciEscalaTipo').value;
+
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, emailAdmin, passwordAdmin);
+      const uid = cred.user.uid;
+
+      const instRef = await addDoc(collection(db, 'instituciones'), {
+        nombre: nombreInst,
+        nit,
+        tipo,
+        escalaCalificacion: { tipo: escalaTipo, niveles: nivelesActuales },
+        creadoPor: uid,
+        fechaCreacion: serverTimestamp(),
+      });
+
+      await setDoc(doc(db, 'usuarios', uid), {
+        nombre: nombreAdmin,
+        email: emailAdmin,
+        rol: 'admin',
+        institucionId: instRef.id,
+        fechaCreacion: serverTimestamp(),
+      });
+
+      msgOk.querySelector('#crearMsgOkTexto').textContent = '✓ Institución creada. Ingresando...';
+      msgOk.classList.add('visible');
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+    } catch (err) {
+      let m = 'No se pudo crear la institución. Intenta de nuevo.';
+      if (err.code === 'auth/email-already-in-use') m = 'Ese correo ya está registrado. Ve a "Iniciar sesión".';
+      else if (err.code === 'auth/weak-password') m = 'La contraseña es muy débil (mínimo 6 caracteres).';
+      msgErr.querySelector('#crearMsgErrTexto').textContent = m;
+      msgErr.classList.add('visible');
+      console.error(err);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Crear institución y comenzar';
+    }
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    if (user && window.location.pathname.endsWith('index.html')) {
+      // Ya hay sesión activa; se podría redirigir automáticamente si se desea.
+    }
+  });
+</script>
+</body>
+</html>
