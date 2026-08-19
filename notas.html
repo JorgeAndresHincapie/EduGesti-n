@@ -151,6 +151,7 @@ tr:last-child td { border-bottom: none; }
     </div>
     <div id="listaBancoLogros"></div>
     <button class="btn-plantillas-logro" id="btnPlantillasLogro">✨ Cargar plantillas genéricas de ejemplo</button>
+    <button class="btn-plantillas-logro" id="btnLimpiarDuplicados" style="border-color:var(--rojo);color:var(--rojo)">🗑 Quitar logros duplicados</button>
     <div class="form-banco">
       <textarea id="nuevoLogroTexto" placeholder="Escribe un logro nuevo para guardar en el banco..."></textarea>
       <button class="btn-agregar-banco" id="btnAgregarLogroBanco">Agregar</button>
@@ -224,9 +225,9 @@ tr:last-child td { border-bottom: none; }
     renderTabla();
   });
 
-  document.getElementById('selAsignatura').addEventListener('change', () => {
-    cargarNotasExistentes();
-    cargarBancoLogros();
+  document.getElementById('selAsignatura').addEventListener('change', async () => {
+    await cargarBancoLogros();
+    await cargarNotasExistentes();
   });
 
   async function cargarBancoLogros() {
@@ -277,6 +278,7 @@ tr:last-child td { border-bottom: none; }
       textarea.value = '';
       await cargarBancoLogros();
       renderListaBanco();
+      actualizarSelectsDeLogro();
     } catch (err) {
       alert('No se pudo guardar el logro.');
       console.error(err);
@@ -299,8 +301,37 @@ tr:last-child td { border-bottom: none; }
       await Promise.all(PLANTILLAS_LOGROS.map(texto => addDoc(collection(db, 'banco_logros'), { institucionId, asignaturaId, texto })));
       await cargarBancoLogros();
       renderListaBanco();
+      actualizarSelectsDeLogro();
     } catch (err) {
       alert('No se pudieron cargar las plantillas.');
+      console.error(err);
+    }
+  });
+
+  function actualizarSelectsDeLogro() {
+    document.querySelectorAll('.select-logro-banco').forEach(sel => {
+      sel.innerHTML = '<option value="">Elegir del banco...</option>' +
+        bancoLogrosCache.map(l => `<option value="${l.texto.replace(/"/g,'&quot;')}">${l.texto.substring(0,60)}${l.texto.length>60?'...':''}</option>`).join('');
+    });
+  }
+
+  document.getElementById('btnLimpiarDuplicados').addEventListener('click', async () => {
+    const vistos = new Set();
+    const paraBorrar = [];
+    bancoLogrosCache.forEach(l => {
+      if (vistos.has(l.texto)) paraBorrar.push(l.id);
+      else vistos.add(l.texto);
+    });
+    if (paraBorrar.length === 0) { alert('No hay logros duplicados en esta asignatura.'); return; }
+    if (!confirm(`Se van a borrar ${paraBorrar.length} logros repetidos, dejando solo una copia de cada uno. ¿Continuar?`)) return;
+    try {
+      await Promise.all(paraBorrar.map(id => deleteDoc(doc(db, 'banco_logros', id))));
+      await cargarBancoLogros();
+      renderListaBanco();
+      actualizarSelectsDeLogro();
+      alert(`✓ Se quitaron ${paraBorrar.length} duplicados.`);
+    } catch (err) {
+      alert('No se pudieron quitar los duplicados.');
       console.error(err);
     }
   });
