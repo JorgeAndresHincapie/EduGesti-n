@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduGestión — Carga Masiva</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
+  --verde: #1A7A5E; --verde-light: #E8F5F0;
+  --morado: #553C9A; --morado-light: #F0EBFF;
+  --rojo: #C53030; --rojo-light: #FFF5F5;
+  --amarillo: #B7791F; --amarillo-light: #FFF9E6;
+  --gris: #F4F6F9; --borde: #DDE3EC;
+  --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
+  --blanco: #FFFFFF;
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); color: var(--texto); min-height: 100vh; }
+
+.topbar { background: var(--azul); height: 58px; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.topbar-left { display: flex; align-items: center; gap: 0.9rem; }
+.topbar-back { color: white; text-decoration: none; font-size: 0.85rem; opacity: 0.85; }
+.topbar-back:hover { opacity: 1; }
+.topbar-brand { font-size: 1.0rem; font-weight: 700; color: white; }
+.btn-salir { background: rgba(255,255,255,0.12); color: white; border: none; padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+.main { max-width: 850px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
+.titulo { font-family: 'Instrument Serif', serif; font-size: 1.8rem; margin-bottom: 0.4rem; }
+.subtitulo { font-size: 0.85rem; color: var(--texto-light); margin-bottom: 1.6rem; }
+
+.tabs { display: flex; gap: 0.5rem; background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 0.4rem; margin-bottom: 1.5rem; }
+.tab-btn { flex: 1; padding: 0.65rem; border: none; background: none; border-radius: 9px; font-family: inherit; font-size: 0.85rem; font-weight: 700; color: var(--texto-light); cursor: pointer; }
+.tab-btn.activo { background: var(--azul); color: white; }
+
+.panel { display: none; }
+.panel.activo { display: block; }
+
+.card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 14px; padding: 1.8rem; }
+.paso { display: flex; gap: 0.9rem; margin-bottom: 1.5rem; align-items: start; }
+.paso-num { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--azul-light); color: var(--azul); font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; }
+.paso-txt { flex: 1; }
+.paso-titulo { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.3rem; }
+.paso-desc { font-size: 0.82rem; color: var(--texto-mid); line-height: 1.5; }
+
+.btn-plantilla { display: inline-flex; align-items: center; gap: 0.4rem; background: var(--verde-light); color: var(--verde); border: 1.5px solid var(--verde); padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; font-family: inherit; margin-top: 0.5rem; text-decoration: none; }
+.btn-plantilla:hover { background: var(--verde); color: white; }
+
+.dropzone { border: 2px dashed var(--borde); border-radius: 12px; padding: 2rem; text-align: center; margin-top: 0.5rem; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.dropzone:hover, .dropzone.dragover { border-color: var(--azul); background: var(--azul-light); }
+.dropzone p { font-size: 0.85rem; color: var(--texto-mid); }
+.dropzone .nombre-archivo { font-weight: 700; color: var(--azul); margin-top: 0.5rem; }
+input[type="file"] { display: none; }
+
+.tabla-preview-wrap { max-height: 320px; overflow-y: auto; border: 1.5px solid var(--borde); border-radius: 10px; margin-top: 1rem; display: none; }
+.tabla-preview-wrap.visible { display: block; }
+table { width: 100%; border-collapse: collapse; }
+th { position: sticky; top: 0; text-align: left; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; color: var(--texto-light); padding: 0.6rem 0.7rem; background: var(--gris); border-bottom: 1.5px solid var(--borde); }
+td { padding: 0.5rem 0.7rem; font-size: 0.8rem; border-bottom: 1px solid var(--borde); }
+.fila-error td { background: var(--rojo-light); }
+.badge-error { color: var(--rojo); font-size: 0.7rem; font-weight: 700; }
+.badge-ok { color: var(--verde); font-size: 0.7rem; font-weight: 700; }
+
+.resumen { display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; }
+.resumen-item { flex: 1; min-width: 130px; background: var(--gris); border-radius: 10px; padding: 0.8rem 1rem; }
+.resumen-num { font-size: 1.4rem; font-weight: 700; }
+.resumen-label { font-size: 0.72rem; color: var(--texto-light); }
+
+.btn-primario { width: 100%; background: var(--azul); color: white; border: none; padding: 0.8rem; border-radius: 10px; font-weight: 700; font-size: 0.9rem; cursor: pointer; font-family: inherit; margin-top: 1.3rem; }
+.btn-primario:hover { background: var(--azul-dark); }
+.btn-primario:disabled { opacity: 0.5; cursor: default; }
+
+.msg { display: none; font-size: 0.82rem; padding: 0.7rem 0.9rem; border-radius: 9px; margin-top: 1rem; }
+.msg.visible { display: block; }
+.msg-ok { background: var(--verde-light); color: var(--verde); }
+.msg-err { background: var(--rojo-light); color: var(--rojo); }
+.msg-warn { background: var(--amarillo-light); color: var(--amarillo); }
+
+.password-list { background: var(--gris); border-radius: 10px; padding: 1rem; margin-top: 1rem; font-size: 0.8rem; max-height: 260px; overflow-y: auto; }
+.password-list div { display: flex; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid var(--borde); }
+.password-list div:last-child { border-bottom: none; }
+.password-list b { font-family: monospace; color: var(--azul); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="dashboard.html" class="topbar-back">← Panel</a>
+    <span class="topbar-brand">Carga Masiva</span>
+  </div>
+  <button class="btn-salir" id="btnSalir">Salir</button>
+</header>
+
+<main class="main">
+  <p class="titulo">Carga Masiva desde Excel</p>
+  <p class="subtitulo">Sube un archivo Excel (.xlsx) o CSV para registrar varios registros a la vez, en vez de uno por uno.</p>
+
+  <div class="tabs">
+    <button class="tab-btn activo" data-tab="estudiantes">Estudiantes</button>
+    <button class="tab-btn" data-tab="docentes">Docentes</button>
+    <button class="tab-btn" data-tab="asignaturas">Asignaturas / Carga académica</button>
+  </div>
+
+  <!-- ESTUDIANTES -->
+  <div class="panel activo" id="panel-estudiantes">
+    <div class="card">
+      <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-txt">
+          <p class="paso-titulo">Descarga la plantilla</p>
+          <p class="paso-desc">Tiene las columnas exactas que necesitamos: nombres, apellidos, tipoDoc, documento, grado, acudiente, telefonoAcudiente.</p>
+          <button class="btn-plantilla" onclick="descargarPlantilla('estudiantes')">⬇ Descargar plantilla_estudiantes.xlsx</button>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-txt">
+          <p class="paso-titulo">Llénala y súbela aquí</p>
+          <p class="paso-desc">No cambies los nombres de las columnas. El campo "grado" debe escribirse igual en todos (ej. "5° A").</p>
+          <div class="dropzone" id="dropzone-estudiantes" onclick="document.getElementById('file-estudiantes').click()">
+            <p>Arrastra tu archivo aquí, o haz clic para seleccionarlo</p>
+            <p class="nombre-archivo" id="nombreArchivo-estudiantes"></p>
+          </div>
+          <input type="file" id="file-estudiantes" accept=".xlsx,.xls,.csv"/>
+        </div>
+      </div>
+
+      <div class="tabla-preview-wrap" id="preview-wrap-estudiantes">
+        <table><thead><tr id="preview-head-estudiantes"></tr></thead><tbody id="preview-body-estudiantes"></tbody></table>
+      </div>
+      <div class="resumen" id="resumen-estudiantes" style="display:none"></div>
+      <div class="msg" id="msg-estudiantes"><span></span></div>
+      <button class="btn-primario" id="btnCargar-estudiantes" disabled>Cargar estudiantes</button>
+    </div>
+  </div>
+
+  <!-- DOCENTES -->
+  <div class="panel" id="panel-docentes">
+    <div class="card">
+      <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-txt">
+          <p class="paso-titulo">Descarga la plantilla</p>
+          <p class="paso-desc">Columnas: nombres, apellidos, email. Se crea una cuenta real para cada docente, con una contraseña temporal generada automáticamente.</p>
+          <button class="btn-plantilla" onclick="descargarPlantilla('docentes')">⬇ Descargar plantilla_docentes.xlsx</button>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-txt">
+          <p class="paso-titulo">Llénala y súbela aquí</p>
+          <p class="paso-desc">Cada correo debe ser único y no estar ya registrado en el sistema.</p>
+          <div class="dropzone" id="dropzone-docentes" onclick="document.getElementById('file-docentes').click()">
+            <p>Arrastra tu archivo aquí, o haz clic para seleccionarlo</p>
+            <p class="nombre-archivo" id="nombreArchivo-docentes"></p>
+          </div>
+          <input type="file" id="file-docentes" accept=".xlsx,.xls,.csv"/>
+        </div>
+      </div>
+
+      <div class="tabla-preview-wrap" id="preview-wrap-docentes">
+        <table><thead><tr id="preview-head-docentes"></tr></thead><tbody id="preview-body-docentes"></tbody></table>
+      </div>
+      <div class="resumen" id="resumen-docentes" style="display:none"></div>
+      <div class="msg" id="msg-docentes"><span></span></div>
+      <button class="btn-primario" id="btnCargar-docentes" disabled>Crear cuentas de docentes</button>
+      <div class="password-list" id="listaPasswords" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- ASIGNATURAS -->
+  <div class="panel" id="panel-asignaturas">
+    <div class="card">
+      <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-txt">
+          <p class="paso-titulo">Descarga la plantilla</p>
+          <p class="paso-desc">Columnas: nombre, grado (déjalo vacío si aplica a todos), docente, intensidad. Aquí defines la carga académica: qué docente dicta qué materia en qué grado.</p>
+          <button class="btn-plantilla" onclick="descargarPlantilla('asignaturas')">⬇ Descargar plantilla_asignaturas.xlsx</button>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-txt">
+          <p class="paso-titulo">Llénala y súbela aquí</p>
+          <p class="paso-desc">El nombre del docente es solo texto de referencia (no necesita tener cuenta creada todavía).</p>
+          <div class="dropzone" id="dropzone-asignaturas" onclick="document.getElementById('file-asignaturas').click()">
+            <p>Arrastra tu archivo aquí, o haz clic para seleccionarlo</p>
+            <p class="nombre-archivo" id="nombreArchivo-asignaturas"></p>
+          </div>
+          <input type="file" id="file-asignaturas" accept=".xlsx,.xls,.csv"/>
+        </div>
+      </div>
+
+      <div class="tabla-preview-wrap" id="preview-wrap-asignaturas">
+        <table><thead><tr id="preview-head-asignaturas"></tr></thead><tbody id="preview-body-asignaturas"></tbody></table>
+      </div>
+      <div class="resumen" id="resumen-asignaturas" style="display:none"></div>
+      <div class="msg" id="msg-asignaturas"><span></span></div>
+      <button class="btn-primario" id="btnCargar-asignaturas" disabled>Cargar asignaturas</button>
+    </div>
+  </div>
+
+</main>
+
+<script type="module">
+  import { auth, db, firebaseConfig, initializeApp, getAuth, createUserWithEmailAndPassword, onAuthStateChanged, signOut, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, serverTimestamp } from './firebase.js';
+
+  let institucionId = null;
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'index.html'; return; }
+    const usuarioSnap = await getDoc(doc(db, 'usuarios', user.uid));
+    if (!usuarioSnap.exists() || usuarioSnap.data().rol !== 'admin') { window.location.href = 'dashboard.html'; return; }
+    institucionId = usuarioSnap.data().institucionId;
+  });
+
+  document.getElementById('btnSalir').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'index.html';
+  });
+
+  // ── Tabs ──
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('activo'));
+      btn.classList.add('activo');
+      document.getElementById(`panel-${btn.dataset.tab}`).classList.add('activo');
+    });
+  });
+
+  // ── Plantillas descargables ──
+  const PLANTILLAS = {
+    estudiantes: {
+      columnas: ['nombres', 'apellidos', 'tipoDoc', 'documento', 'grado', 'acudiente', 'telefonoAcudiente'],
+      ejemplo: ['Juan David', 'Pérez Gómez', 'TI', '1098765432', '5° A', 'María Gómez', '3001234567'],
+    },
+    docentes: {
+      columnas: ['nombres', 'apellidos', 'email'],
+      ejemplo: ['Laura', 'Ramírez', 'laura.ramirez@ejemplo.com'],
+    },
+    asignaturas: {
+      columnas: ['nombre', 'grado', 'docente', 'intensidad'],
+      ejemplo: ['Matemáticas', '5° A', 'Laura Ramírez', '4'],
+    },
+  };
+
+  window.descargarPlantilla = function(tipo) {
+    const { columnas, ejemplo } = PLANTILLAS[tipo];
+    const ws = XLSX.utils.aoa_to_sheet([columnas, ejemplo]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Plantilla');
+    XLSX.writeFile(wb, `plantilla_${tipo}.xlsx`);
+  };
+
+  // ── Parseo genérico de archivo ──
+  function leerArchivo(file, callback) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const filas = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      callback(filas);
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function setupDropzone(tipo, onFile) {
+    const dz = document.getElementById(`dropzone-${tipo}`);
+    const input = document.getElementById(`file-${tipo}`);
+    input.addEventListener('change', () => { if (input.files[0]) onFile(input.files[0]); });
+    dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+    dz.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dz.classList.remove('dragover');
+      if (e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0]);
+    });
+  }
+
+  function renderPreview(tipo, filas, columnas, validador) {
+    document.getElementById(`nombreArchivo-${tipo}`).textContent = `${filas.length} filas encontradas`;
+    const head = document.getElementById(`preview-head-${tipo}`);
+    const body = document.getElementById(`preview-body-${tipo}`);
+    head.innerHTML = columnas.map(c => `<th>${c}</th>`).join('') + '<th>Estado</th>';
+
+    let validas = 0, invalidas = 0;
+    body.innerHTML = filas.map(fila => {
+      const error = validador(fila);
+      if (error) invalidas++; else validas++;
+      const celdas = columnas.map(c => `<td>${fila[c] ?? ''}</td>`).join('');
+      const estado = error ? `<span class="badge-error">✕ ${error}</span>` : `<span class="badge-ok">✓ Lista</span>`;
+      return `<tr class="${error ? 'fila-error' : ''}">${celdas}<td>${estado}</td></tr>`;
+    }).join('');
+
+    document.getElementById(`preview-wrap-${tipo}`).classList.add('visible');
+    const resumenEl = document.getElementById(`resumen-${tipo}`);
+    resumenEl.style.display = 'flex';
+    resumenEl.innerHTML = `
+      <div class="resumen-item"><div class="resumen-num">${filas.length}</div><div class="resumen-label">Filas totales</div></div>
+      <div class="resumen-item" style="background:var(--verde-light)"><div class="resumen-num" style="color:var(--verde)">${validas}</div><div class="resumen-label">Listas para cargar</div></div>
+      <div class="resumen-item" style="background:var(--rojo-light)"><div class="resumen-num" style="color:var(--rojo)">${invalidas}</div><div class="resumen-label">Con error</div></div>
+    `;
+    document.getElementById(`btnCargar-${tipo}`).disabled = validas === 0;
+    return validas;
+  }
+
+  // ================= ESTUDIANTES =================
+  let filasEstudiantes = [];
+  setupDropzone('estudiantes', (file) => {
+    leerArchivo(file, (filas) => {
+      filasEstudiantes = filas;
+      renderPreview('estudiantes', filas, ['nombres','apellidos','tipoDoc','documento','grado','acudiente','telefonoAcudiente'],
+        (f) => (!f.nombres || !f.apellidos || !f.documento || !f.grado) ? 'Faltan datos obligatorios' : null);
+    });
+  });
+
+  document.getElementById('btnCargar-estudiantes').addEventListener('click', async () => {
+    const btn = document.getElementById('btnCargar-estudiantes');
+    btn.disabled = true; btn.textContent = 'Cargando...';
+    let cargados = 0, fallidos = 0;
+    for (const f of filasEstudiantes) {
+      if (!f.nombres || !f.apellidos || !f.documento || !f.grado) { fallidos++; continue; }
+      try {
+        await addDoc(collection(db, 'estudiantes'), {
+          institucionId,
+          nombres: String(f.nombres).trim(),
+          apellidos: String(f.apellidos).trim(),
+          tipoDoc: f.tipoDoc ? String(f.tipoDoc).trim() : 'TI',
+          documento: String(f.documento).trim(),
+          grado: String(f.grado).trim(),
+          acudiente: f.acudiente ? String(f.acudiente).trim() : '',
+          telefonoAcudiente: f.telefonoAcudiente ? String(f.telefonoAcudiente).trim() : '',
+          creadoPor: auth.currentUser.uid,
+          fechaCreacion: serverTimestamp(),
+        });
+        cargados++;
+      } catch (err) { fallidos++; console.error(err); }
+    }
+    const msg = document.getElementById('msg-estudiantes');
+    msg.className = 'msg visible ' + (fallidos === 0 ? 'msg-ok' : 'msg-warn');
+    msg.querySelector('span').textContent = `✓ ${cargados} estudiantes cargados correctamente.` + (fallidos > 0 ? ` ${fallidos} filas con error se omitieron.` : '');
+    btn.disabled = false; btn.textContent = 'Cargar estudiantes';
+  });
+
+  // ================= DOCENTES =================
+  let filasDocentes = [];
+  setupDropzone('docentes', (file) => {
+    leerArchivo(file, (filas) => {
+      filasDocentes = filas;
+      renderPreview('docentes', filas, ['nombres','apellidos','email'],
+        (f) => (!f.nombres || !f.apellidos || !f.email) ? 'Faltan datos obligatorios' : null);
+    });
+  });
+
+  function generarPasswordTemporal() {
+    return 'Edu' + Math.random().toString(36).slice(-6) + '!';
+  }
+
+  document.getElementById('btnCargar-docentes').addEventListener('click', async () => {
+    const btn = document.getElementById('btnCargar-docentes');
+    btn.disabled = true; btn.textContent = 'Creando cuentas...';
+    let cargados = 0, fallidos = 0;
+    const passwordsGenerados = [];
+
+    for (const f of filasDocentes) {
+      if (!f.nombres || !f.apellidos || !f.email) { fallidos++; continue; }
+      const email = String(f.email).trim();
+      const password = generarPasswordTemporal();
+      const nombreAppTemp = 'carga-docente-' + Date.now() + Math.random();
+      const appTemp = initializeApp(firebaseConfig, nombreAppTemp);
+      const authTemp = getAuth(appTemp);
+      try {
+        const cred = await createUserWithEmailAndPassword(authTemp, email, password);
+        await signOut(authTemp);
+        await setDoc(doc(db, 'usuarios', cred.user.uid), {
+          nombre: `${f.nombres} ${f.apellidos}`.trim(),
+          email,
+          rol: 'docente',
+          institucionId,
+          fechaCreacion: serverTimestamp(),
+        });
+        passwordsGenerados.push({ nombre: `${f.nombres} ${f.apellidos}`, email, password });
+        cargados++;
+      } catch (err) {
+        fallidos++;
+        console.error(`Error creando cuenta para ${email}:`, err);
+      }
+    }
+
+    const msg = document.getElementById('msg-docentes');
+    msg.className = 'msg visible ' + (fallidos === 0 ? 'msg-ok' : 'msg-warn');
+    msg.querySelector('span').textContent = `✓ ${cargados} cuentas de docentes creadas.` + (fallidos > 0 ? ` ${fallidos} filas con error (revisa si el correo ya existía).` : '');
+
+    if (passwordsGenerados.length > 0) {
+      const lista = document.getElementById('listaPasswords');
+      lista.style.display = 'block';
+      lista.innerHTML = '<p style="font-weight:700;margin-bottom:0.5rem">Comparte estas contraseñas temporales con cada docente:</p>' +
+        passwordsGenerados.map(p => `<div><span>${p.nombre} (${p.email})</span><b>${p.password}</b></div>`).join('');
+    }
+
+    btn.disabled = false; btn.textContent = 'Crear cuentas de docentes';
+  });
+
+  // ================= ASIGNATURAS =================
+  let filasAsignaturas = [];
+  setupDropzone('asignaturas', (file) => {
+    leerArchivo(file, (filas) => {
+      filasAsignaturas = filas;
+      renderPreview('asignaturas', filas, ['nombre','grado','docente','intensidad'],
+        (f) => (!f.nombre) ? 'Falta el nombre de la asignatura' : null);
+    });
+  });
+
+  document.getElementById('btnCargar-asignaturas').addEventListener('click', async () => {
+    const btn = document.getElementById('btnCargar-asignaturas');
+    btn.disabled = true; btn.textContent = 'Cargando...';
+    let cargados = 0, fallidos = 0;
+    for (const f of filasAsignaturas) {
+      if (!f.nombre) { fallidos++; continue; }
+      try {
+        await addDoc(collection(db, 'asignaturas'), {
+          institucionId,
+          nombre: String(f.nombre).trim(),
+          grado: f.grado ? String(f.grado).trim() : '',
+          docente: f.docente ? String(f.docente).trim() : '',
+          intensidad: f.intensidad ? parseInt(f.intensidad, 10) : null,
+          creadoPor: auth.currentUser.uid,
+          fechaCreacion: serverTimestamp(),
+        });
+        cargados++;
+      } catch (err) { fallidos++; console.error(err); }
+    }
+    const msg = document.getElementById('msg-asignaturas');
+    msg.className = 'msg visible ' + (fallidos === 0 ? 'msg-ok' : 'msg-warn');
+    msg.querySelector('span').textContent = `✓ ${cargados} asignaturas cargadas correctamente.` + (fallidos > 0 ? ` ${fallidos} filas con error se omitieron.` : '');
+    btn.disabled = false; btn.textContent = 'Cargar asignaturas';
+  });
+</script>
+</body>
+</html>
