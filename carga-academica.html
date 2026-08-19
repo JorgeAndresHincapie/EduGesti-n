@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduGestión — Carga Académica</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
+  --verde: #1A7A5E; --verde-light: #E8F5F0;
+  --naranja: #C05621; --naranja-light: #FFF3EB;
+  --gris: #F4F6F9; --borde: #DDE3EC;
+  --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
+  --blanco: #FFFFFF;
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); color: var(--texto); min-height: 100vh; }
+
+.topbar { background: var(--azul); height: 58px; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.topbar-left { display: flex; align-items: center; gap: 0.9rem; }
+.topbar-back { color: white; text-decoration: none; font-size: 0.85rem; opacity: 0.85; }
+.topbar-back:hover { opacity: 1; }
+.topbar-brand { font-size: 1.0rem; font-weight: 700; color: white; }
+.btn-salir { background: rgba(255,255,255,0.12); color: white; border: none; padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+.main { max-width: 950px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
+.titulo { font-family: 'Instrument Serif', serif; font-size: 1.8rem; margin-bottom: 0.4rem; }
+.subtitulo { font-size: 0.85rem; color: var(--texto-light); margin-bottom: 1.6rem; }
+
+.resumen-top { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.resumen-card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.1rem; }
+.resumen-num { font-size: 1.6rem; font-weight: 700; }
+.resumen-label { font-size: 0.74rem; color: var(--texto-light); }
+
+.docente-card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 14px; padding: 1.4rem 1.6rem; margin-bottom: 1.1rem; }
+.docente-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+.docente-nombre { font-family: 'Instrument Serif', serif; font-size: 1.2rem; }
+.docente-horas { background: var(--azul-light); color: var(--azul); font-size: 0.78rem; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 20px; }
+.docente-horas.alto { background: var(--naranja-light); color: var(--naranja); }
+
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; color: var(--texto-light); padding: 0.5rem 0.6rem; border-bottom: 1.5px solid var(--borde); }
+td { padding: 0.5rem 0.6rem; font-size: 0.82rem; border-bottom: 1px solid var(--borde); }
+tr:last-child td { border-bottom: none; }
+.chip { display: inline-block; background: var(--verde-light); color: var(--verde); font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.55rem; border-radius: 8px; }
+
+.aviso { text-align: center; padding: 3rem 1.5rem; color: var(--texto-light); font-size: 0.88rem; background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; }
+.loading-wrap { text-align: center; padding: 2rem; color: var(--texto-light); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="dashboard.html" class="topbar-back">← Panel</a>
+    <span class="topbar-brand">Carga Académica</span>
+  </div>
+  <button class="btn-salir" id="btnSalir">Salir</button>
+</header>
+
+<main class="main">
+  <p class="titulo">Carga Académica por Docente</p>
+  <p class="subtitulo">Qué materias y grupos tiene asignado cada docente, con sus horas semanales totales.</p>
+
+  <div class="resumen-top" id="resumenTop"></div>
+
+  <div id="contenedorDocentes"><p class="loading-wrap">Cargando...</p></div>
+</main>
+
+<script type="module">
+  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, collection, getDocs, query, where } from './firebase.js';
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'index.html'; return; }
+    const usuarioSnap = await getDoc(doc(db, 'usuarios', user.uid));
+    if (!usuarioSnap.exists()) { window.location.href = 'index.html'; return; }
+    const institucionId = usuarioSnap.data().institucionId;
+
+    const asigSnap = await getDocs(query(collection(db, 'asignaturas'), where('institucionId', '==', institucionId)));
+    const asignaturas = [];
+    asigSnap.forEach(d => asignaturas.push({ id: d.id, ...d.data() }));
+
+    renderVista(asignaturas);
+  });
+
+  function renderVista(asignaturas) {
+    const conDocente = asignaturas.filter(a => a.docente && a.docente.trim() !== '');
+    const sinDocente = asignaturas.filter(a => !a.docente || a.docente.trim() === '');
+
+    const porDocente = {};
+    conDocente.forEach(a => {
+      const nombre = a.docente.trim();
+      if (!porDocente[nombre]) porDocente[nombre] = [];
+      porDocente[nombre].push(a);
+    });
+
+    const nombresDocentes = Object.keys(porDocente).sort();
+    const totalHoras = conDocente.reduce((sum, a) => sum + (a.intensidad || 0), 0);
+
+    document.getElementById('resumenTop').innerHTML = `
+      <div class="resumen-card"><div class="resumen-num">${nombresDocentes.length}</div><div class="resumen-label">Docentes con carga asignada</div></div>
+      <div class="resumen-card"><div class="resumen-num">${conDocente.length}</div><div class="resumen-label">Materias con docente</div></div>
+      <div class="resumen-card"><div class="resumen-num">${sinDocente.length}</div><div class="resumen-label">Materias sin docente asignar</div></div>
+    `;
+
+    const cont = document.getElementById('contenedorDocentes');
+
+    if (nombresDocentes.length === 0) {
+      cont.innerHTML = '<div class="aviso">Todavía no hay materias con un docente asignado. Ve a Asignaturas y llena el campo "Docente" en cada una.</div>';
+      return;
+    }
+
+    cont.innerHTML = nombresDocentes.map(nombre => {
+      const materias = porDocente[nombre].sort((a, b) => (a.grado || '').localeCompare(b.grado || ''));
+      const horasTotales = materias.reduce((sum, m) => sum + (m.intensidad || 0), 0);
+      const filas = materias.map(m => `
+        <tr>
+          <td>${m.nombre}</td>
+          <td><span class="chip">${m.grado || 'Todos los grados'}</span></td>
+          <td>${m.intensidad != null && m.intensidad !== '' ? m.intensidad + ' h/sem' : '—'}</td>
+        </tr>
+      `).join('');
+      return `
+        <div class="docente-card">
+          <div class="docente-header">
+            <p class="docente-nombre">${nombre}</p>
+            <span class="docente-horas ${horasTotales > 22 ? 'alto' : ''}">${horasTotales} horas/semana</span>
+          </div>
+          <table>
+            <thead><tr><th>Materia</th><th>Grado/Grupo</th><th>Intensidad</th></tr></thead>
+            <tbody>${filas}</tbody>
+          </table>
+        </div>
+      `;
+    }).join('');
+
+    if (sinDocente.length > 0) {
+      cont.innerHTML += `
+        <div class="docente-card" style="border-color:var(--naranja);background:var(--naranja-light)">
+          <p class="docente-nombre" style="color:var(--naranja);font-size:1rem">⚠ Materias sin docente asignar</p>
+          <table>
+            <thead><tr><th>Materia</th><th>Grado/Grupo</th></tr></thead>
+            <tbody>${sinDocente.map(a => `<tr><td>${a.nombre}</td><td><span class="chip">${a.grado || 'Todos los grados'}</span></td></tr>`).join('')}</tbody>
+          </table>
+        </div>
+      `;
+    }
+  }
+
+  document.getElementById('btnSalir').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'index.html';
+  });
+</script>
+</body>
+</html>

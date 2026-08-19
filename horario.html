@@ -257,7 +257,27 @@ table.horario td { border: 1px solid var(--borde); padding: 0; height: 62px; ver
     if (!asignaturaId) return;
 
     const asignatura = asignaturasCache.find(a => a.id === asignaturaId);
+    const docente = asignatura.docente || '';
     const horarioId = `${grado}_${celdaActual.dia}_${celdaActual.hora}`.replace(/\s+/g, '-');
+
+    if (docente) {
+      const qConflicto = query(
+        collection(db, 'horario'),
+        where('institucionId', '==', institucionId),
+        where('dia', '==', celdaActual.dia),
+        where('hora', '==', celdaActual.hora),
+        where('docente', '==', docente)
+      );
+      const snapConflicto = await getDocs(qConflicto);
+      const choque = snapConflicto.docs.find(d => d.data().grado !== grado);
+      if (choque) {
+        const datosChoque = choque.data();
+        const continuar = confirm(
+          `⚠ Choque de horario: ${docente} ya tiene clase de "${datosChoque.asignaturaNombre}" con el grupo ${datosChoque.grado} el ${celdaActual.dia} a las ${celdaActual.hora}.\n\n¿Quieres asignarlo de todas formas en este grupo también?`
+        );
+        if (!continuar) return;
+      }
+    }
 
     try {
       await setDoc(doc(db, 'horario', horarioId), {
@@ -267,7 +287,7 @@ table.horario td { border: 1px solid var(--borde); padding: 0; height: 62px; ver
         hora: celdaActual.hora,
         asignaturaId,
         asignaturaNombre: asignatura.nombre,
-        docente: asignatura.docente || '',
+        docente: docente,
       });
       document.getElementById('modalCelda').style.display = 'none';
       await cargarHorario();
