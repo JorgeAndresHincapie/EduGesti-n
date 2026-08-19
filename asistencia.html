@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduGestión — Asistencia</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
+  --verde: #1A7A5E; --verde-light: #E8F5F0;
+  --rojo: #C53030; --rojo-light: #FFF5F5;
+  --amarillo: #B7791F; --amarillo-light: #FFF9E6;
+  --morado: #553C9A; --morado-light: #F0EBFF;
+  --gris: #F4F6F9; --borde: #DDE3EC;
+  --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
+  --blanco: #FFFFFF;
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); color: var(--texto); min-height: 100vh; }
+
+.topbar { background: var(--azul); height: 58px; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.topbar-left { display: flex; align-items: center; gap: 0.9rem; }
+.topbar-back { color: white; text-decoration: none; font-size: 0.85rem; opacity: 0.85; }
+.topbar-back:hover { opacity: 1; }
+.topbar-brand { font-size: 1.0rem; font-weight: 700; color: white; }
+.btn-salir { background: rgba(255,255,255,0.12); color: white; border: none; padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+.main { max-width: 950px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
+.tabs-vista { display: flex; gap: 0.5rem; background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 0.4rem; margin-bottom: 1.5rem; max-width: 340px; }
+.tab-vista-btn { flex: 1; padding: 0.55rem; border: none; background: none; border-radius: 9px; font-family: inherit; font-size: 0.82rem; font-weight: 700; color: var(--texto-light); cursor: pointer; }
+.tab-vista-btn.activo { background: var(--azul); color: white; }
+.vista-panel { display: none; }
+.vista-panel.activo { display: block; }
+
+.titulo { font-family: 'Instrument Serif', serif; font-size: 1.8rem; margin-bottom: 1.5rem; }
+
+.filtros-box { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.3rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
+.filtro-field { flex: 1; min-width: 180px; }
+.filtro-field label { display: block; font-size: 0.74rem; font-weight: 700; color: var(--texto-mid); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.filtro-field select, .filtro-field input { width: 100%; padding: 0.6rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.85rem; background: white; }
+
+.aviso { text-align: center; padding: 3rem 1.5rem; color: var(--texto-light); font-size: 0.88rem; background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; }
+
+.tabla-wrap { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; overflow: hidden; display: none; }
+.tabla-wrap.visible { display: block; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--texto-light); padding: 0.8rem 1rem; background: var(--gris); border-bottom: 1.5px solid var(--borde); }
+td { padding: 0.65rem 1rem; font-size: 0.85rem; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+
+.estado-botones { display: flex; gap: 0.4rem; }
+.estado-btn { padding: 0.4rem 0.8rem; border-radius: 7px; font-size: 0.76rem; font-weight: 700; cursor: pointer; border: 1.5px solid var(--borde); background: white; color: var(--texto-mid); font-family: inherit; }
+.estado-btn.sel-presente.activo { background: var(--verde); color: white; border-color: var(--verde); }
+.estado-btn.sel-ausente.activo { background: var(--rojo); color: white; border-color: var(--rojo); }
+.estado-btn.sel-tarde.activo { background: var(--amarillo); color: white; border-color: var(--amarillo); }
+.estado-btn.sel-excusa.activo { background: var(--morado); color: white; border-color: var(--morado); }
+
+.footer-acciones { display: flex; justify-content: space-between; align-items: center; margin-top: 1.3rem; }
+.btn-primario { background: var(--azul); color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 9px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; }
+.btn-primario:hover { background: var(--azul-dark); }
+.contador { font-size: 0.8rem; color: var(--texto-light); }
+
+.resumen-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.resumen-card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.1rem; text-align: center; }
+.resumen-num { font-size: 1.6rem; font-weight: 700; }
+.resumen-label { font-size: 0.72rem; color: var(--texto-light); }
+
+.chip-alerta { display: inline-block; background: var(--rojo-light); color: var(--rojo); font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 8px; margin-left: 0.4rem; }
+.loading-wrap { text-align: center; padding: 2rem; color: var(--texto-light); font-size: 0.85rem; }
+
+@media (max-width: 700px) {
+  .estado-botones { flex-wrap: wrap; }
+  .resumen-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="dashboard.html" class="topbar-back">← Panel</a>
+    <span class="topbar-brand">Asistencia</span>
+  </div>
+  <button class="btn-salir" id="btnSalir">Salir</button>
+</header>
+
+<main class="main">
+  <p class="titulo">Seguimiento de Asistencia</p>
+
+  <div class="tabs-vista">
+    <button class="tab-vista-btn activo" data-vista="registrar">Registrar del día</button>
+    <button class="tab-vista-btn" data-vista="resumen">Resumen por estudiante</button>
+  </div>
+
+  <!-- REGISTRAR -->
+  <div class="vista-panel activo" id="vista-registrar">
+    <div class="filtros-box">
+      <div class="filtro-field">
+        <label>Grado / Grupo</label>
+        <select id="selGrado"><option value="">Selecciona...</option></select>
+      </div>
+      <div class="filtro-field">
+        <label>Fecha</label>
+        <input type="date" id="selFecha"/>
+      </div>
+    </div>
+
+    <div class="aviso" id="avisoVacio">Selecciona un grado/grupo para tomar asistencia.</div>
+
+    <div class="tabla-wrap" id="tablaWrap">
+      <table>
+        <thead>
+          <tr><th>Estudiante</th><th>Asistencia</th><th>Observación (opcional)</th></tr>
+        </thead>
+        <tbody id="cuerpoTabla"></tbody>
+      </table>
+    </div>
+
+    <div class="footer-acciones" id="footerAcciones" style="display:none">
+      <span class="contador" id="contadorGuardadas"></span>
+      <button class="btn-primario" id="btnGuardarTodas">Guardar asistencia</button>
+    </div>
+  </div>
+
+  <!-- RESUMEN -->
+  <div class="vista-panel" id="vista-resumen">
+    <div class="filtros-box">
+      <div class="filtro-field">
+        <label>Grado / Grupo</label>
+        <select id="selGradoResumen"><option value="">Selecciona...</option></select>
+      </div>
+    </div>
+    <div class="aviso" id="avisoResumenVacio">Selecciona un grado/grupo para ver el resumen de asistencia de sus estudiantes.</div>
+    <div class="tabla-wrap" id="tablaResumenWrap">
+      <table>
+        <thead>
+          <tr><th>Estudiante</th><th>Presentes</th><th>Ausencias</th><th>Tarde</th><th>Excusas</th><th>% Asistencia</th></tr>
+        </thead>
+        <tbody id="cuerpoResumen"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, setDoc, collection, getDocs, query, where } from './firebase.js';
+
+  let institucionId = null;
+  let estudiantesCache = [];
+  let asistenciaActual = {}; // key: estudianteId -> {estado, observacion}
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'index.html'; return; }
+    const usuarioSnap = await getDoc(doc(db, 'usuarios', user.uid));
+    if (!usuarioSnap.exists()) { window.location.href = 'index.html'; return; }
+    institucionId = usuarioSnap.data().institucionId;
+
+    const estSnap = await getDocs(query(collection(db, 'estudiantes'), where('institucionId', '==', institucionId)));
+    estSnap.forEach(d => estudiantesCache.push({ id: d.id, ...d.data() }));
+
+    llenarSelectsGrados();
+
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('selFecha').value = hoy;
+  });
+
+  function llenarSelectsGrados() {
+    const grados = [...new Set(estudiantesCache.map(e => e.grado).filter(Boolean))].sort();
+    const opciones = '<option value="">Selecciona...</option>' + grados.map(g => `<option value="${g}">${g}</option>`).join('');
+    document.getElementById('selGrado').innerHTML = opciones;
+    document.getElementById('selGradoResumen').innerHTML = opciones;
+  }
+
+  // ── Tabs ──
+  document.querySelectorAll('.tab-vista-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-vista-btn').forEach(b => b.classList.remove('activo'));
+      document.querySelectorAll('.vista-panel').forEach(p => p.classList.remove('activo'));
+      btn.classList.add('activo');
+      document.getElementById(`vista-${btn.dataset.vista}`).classList.add('activo');
+    });
+  });
+
+  // ================= REGISTRAR =================
+  document.getElementById('selGrado').addEventListener('change', cargarAsistenciaDelDia);
+  document.getElementById('selFecha').addEventListener('change', cargarAsistenciaDelDia);
+
+  async function cargarAsistenciaDelDia() {
+    const grado = document.getElementById('selGrado').value;
+    const fecha = document.getElementById('selFecha').value;
+    const aviso = document.getElementById('avisoVacio');
+    const tablaWrap = document.getElementById('tablaWrap');
+    const footer = document.getElementById('footerAcciones');
+
+    if (!grado || !fecha) {
+      aviso.style.display = 'block';
+      tablaWrap.classList.remove('visible');
+      footer.style.display = 'none';
+      return;
+    }
+
+    const estudiantesDelGrado = estudiantesCache
+      .filter(e => e.grado === grado)
+      .sort((a, b) => (a.apellidos || '').localeCompare(b.apellidos || ''));
+
+    if (estudiantesDelGrado.length === 0) {
+      aviso.textContent = 'No hay estudiantes registrados en este grado/grupo todavía.';
+      aviso.style.display = 'block';
+      tablaWrap.classList.remove('visible');
+      footer.style.display = 'none';
+      return;
+    }
+
+    aviso.style.display = 'none';
+    tablaWrap.classList.add('visible');
+    footer.style.display = 'flex';
+
+    asistenciaActual = {};
+    for (const est of estudiantesDelGrado) {
+      const asisId = `${est.id}_${fecha}`;
+      try {
+        const asisSnap = await getDoc(doc(db, 'asistencia', asisId));
+        if (asisSnap.exists()) {
+          asistenciaActual[est.id] = { estado: asisSnap.data().estado, observacion: asisSnap.data().observacion || '' };
+        }
+      } catch (e) { /* no existe todavía */ }
+    }
+
+    renderTablaAsistencia(estudiantesDelGrado);
+  }
+
+  function renderTablaAsistencia(estudiantesDelGrado) {
+    const cuerpo = document.getElementById('cuerpoTabla');
+    cuerpo.innerHTML = estudiantesDelGrado.map(est => {
+      const actual = asistenciaActual[est.id] || { estado: 'presente', observacion: '' };
+      const estados = [
+        { key: 'presente', label: 'Presente' },
+        { key: 'ausente', label: 'Ausente' },
+        { key: 'tarde', label: 'Tarde' },
+        { key: 'excusa', label: 'Excusa' },
+      ];
+      const botones = estados.map(e => `
+        <button type="button" class="estado-btn sel-${e.key} ${actual.estado === e.key ? 'activo' : ''}" id="btn-${est.id}-${e.key}" onclick="marcarEstado('${est.id}','${e.key}')">${e.label}</button>
+      `).join('');
+
+      return `
+        <tr>
+          <td><b>${est.apellidos}</b> ${est.nombres}</td>
+          <td><div class="estado-botones">${botones}</div></td>
+          <td><input type="text" style="width:100%;padding:0.4rem 0.5rem;border:1.5px solid var(--borde);border-radius:6px;font-family:inherit;font-size:0.8rem" id="obs-${est.id}" value="${actual.observacion}" placeholder="Ej: cita médica"/></td>
+        </tr>
+      `;
+    }).join('');
+    actualizarContadorAsistencia(estudiantesDelGrado.length);
+  }
+
+  window.marcarEstado = function(estudianteId, estadoKey) {
+    if (!asistenciaActual[estudianteId]) asistenciaActual[estudianteId] = { estado: 'presente', observacion: '' };
+    asistenciaActual[estudianteId].estado = estadoKey;
+    ['presente','ausente','tarde','excusa'].forEach(k => {
+      const btn = document.getElementById(`btn-${estudianteId}-${k}`);
+      if (btn) btn.classList.toggle('activo', k === estadoKey);
+    });
+  };
+
+  function actualizarContadorAsistencia(total) {
+    document.getElementById('contadorGuardadas').textContent = `${total} estudiantes en este grado`;
+  }
+
+  document.getElementById('btnGuardarTodas').addEventListener('click', async () => {
+    const grado = document.getElementById('selGrado').value;
+    const fecha = document.getElementById('selFecha').value;
+    const btn = document.getElementById('btnGuardarTodas');
+    btn.disabled = true; btn.textContent = 'Guardando...';
+
+    const estudiantesDelGrado = estudiantesCache.filter(e => e.grado === grado);
+    let guardadas = 0;
+
+    for (const est of estudiantesDelGrado) {
+      const estado = (asistenciaActual[est.id] && asistenciaActual[est.id].estado) || 'presente';
+      const obsInput = document.getElementById(`obs-${est.id}`);
+      const observacion = obsInput ? obsInput.value.trim() : '';
+      const asisId = `${est.id}_${fecha}`;
+      try {
+        await setDoc(doc(db, 'asistencia', asisId), {
+          institucionId,
+          estudianteId: est.id,
+          grado,
+          fecha,
+          estado,
+          observacion,
+          registradoPor: auth.currentUser.uid,
+        });
+        guardadas++;
+      } catch (err) { console.error(err); }
+    }
+
+    btn.disabled = false; btn.textContent = 'Guardar asistencia';
+    alert(`✓ Asistencia guardada para ${guardadas} estudiantes.`);
+  });
+
+  // ================= RESUMEN =================
+  document.getElementById('selGradoResumen').addEventListener('change', cargarResumen);
+
+  async function cargarResumen() {
+    const grado = document.getElementById('selGradoResumen').value;
+    const aviso = document.getElementById('avisoResumenVacio');
+    const wrap = document.getElementById('tablaResumenWrap');
+
+    if (!grado) { aviso.style.display = 'block'; wrap.classList.remove('visible'); return; }
+
+    const estudiantesDelGrado = estudiantesCache
+      .filter(e => e.grado === grado)
+      .sort((a, b) => (a.apellidos || '').localeCompare(b.apellidos || ''));
+
+    if (estudiantesDelGrado.length === 0) {
+      aviso.textContent = 'No hay estudiantes en este grado/grupo.';
+      aviso.style.display = 'block';
+      wrap.classList.remove('visible');
+      return;
+    }
+
+    aviso.style.display = 'none';
+    wrap.classList.add('visible');
+    const cuerpo = document.getElementById('cuerpoResumen');
+    cuerpo.innerHTML = `<tr><td colspan="6" class="loading-wrap">Cargando...</td></tr>`;
+
+    const filas = [];
+    for (const est of estudiantesDelGrado) {
+      const q = query(collection(db, 'asistencia'), where('estudianteId', '==', est.id));
+      const snap = await getDocs(q);
+      let presente = 0, ausente = 0, tarde = 0, excusa = 0;
+      snap.forEach(d => {
+        const e = d.data().estado;
+        if (e === 'presente') presente++;
+        else if (e === 'ausente') ausente++;
+        else if (e === 'tarde') tarde++;
+        else if (e === 'excusa') excusa++;
+      });
+      const total = presente + ausente + tarde + excusa;
+      const porcentaje = total > 0 ? Math.round(((presente + tarde) / total) * 100) : 100;
+      filas.push({ est, presente, ausente, tarde, excusa, porcentaje });
+    }
+
+    cuerpo.innerHTML = filas.map(f => `
+      <tr>
+        <td><b>${f.est.apellidos}</b> ${f.est.nombres}</td>
+        <td>${f.presente}</td>
+        <td>${f.ausente}${f.ausente >= 3 ? '<span class="chip-alerta">⚠ Revisar</span>' : ''}</td>
+        <td>${f.tarde}</td>
+        <td>${f.excusa}</td>
+        <td><b>${f.porcentaje}%</b></td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('btnSalir').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'index.html';
+  });
+</script>
+</body>
+</html>
