@@ -48,6 +48,8 @@ td { padding: 0.7rem 1rem; font-size: 0.85rem; border-bottom: 1px solid var(--bo
 tr:last-child td { border-bottom: none; }
 .input-nota { width: 80px; padding: 0.45rem 0.6rem; border: 1.5px solid var(--borde); border-radius: 7px; font-family: inherit; font-size: 0.88rem; font-weight: 600; text-align: center; }
 .input-nota:focus { outline: none; border-color: var(--azul); }
+.input-logro { width: 100%; min-width: 220px; padding: 0.5rem 0.65rem; border: 1.5px solid var(--borde); border-radius: 7px; font-family: inherit; font-size: 0.8rem; resize: vertical; min-height: 42px; }
+.input-logro:focus { outline: none; border-color: var(--azul); }
 .nivel-chip { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 10px; }
 .nivel-vacio { color: var(--texto-light); font-size: 0.78rem; }
 .estado-guardado { font-size: 0.72rem; color: var(--verde); font-weight: 600; }
@@ -105,6 +107,7 @@ tr:last-child td { border-bottom: none; }
           <th>Estudiante</th>
           <th>Nota</th>
           <th>Nivel</th>
+          <th>Logro / Observación</th>
           <th>Estado</th>
         </tr>
       </thead>
@@ -219,7 +222,7 @@ tr:last-child td { border-bottom: none; }
       try {
         const notaSnap = await getDoc(doc(db, 'notas', notaId));
         if (notaSnap.exists()) {
-          notasActuales[est.id] = { valor: notaSnap.data().valorNumerico, guardado: true };
+          notasActuales[est.id] = { valor: notaSnap.data().valorNumerico, logro: notaSnap.data().logro || '', guardado: true };
         }
       } catch (e) { /* no existe todavía, se ignora */ }
     }
@@ -263,6 +266,7 @@ tr:last-child td { border-bottom: none; }
     cuerpo.innerHTML = estudiantesDelGrado.map(est => {
       const notaInfo = notasActuales[est.id];
       const valor = notaInfo ? notaInfo.valor : '';
+      const logro = notaInfo ? (notaInfo.logro || '') : '';
       const guardado = notaInfo ? notaInfo.guardado : false;
       const nivel = nivelDeNota(valor);
       const nivelHtml = nivel
@@ -274,6 +278,7 @@ tr:last-child td { border-bottom: none; }
           <td><b>${est.apellidos}</b> ${est.nombres}</td>
           <td><input type="number" class="input-nota" id="nota-${est.id}" min="${min}" max="${max}" step="0.1" value="${valor}" oninput="actualizarNivel('${est.id}')"/></td>
           <td>${nivelHtml}</td>
+          <td><textarea class="input-logro" id="logro-${est.id}" placeholder="Ej: Reconoce y aplica las operaciones básicas con seguridad.">${logro}</textarea></td>
           <td><span class="estado-guardado" id="estado-${est.id}">${guardado ? '✓ Guardado' : ''}</span></td>
         </tr>
       `;
@@ -317,8 +322,10 @@ tr:last-child td { border-bottom: none; }
 
     for (const est of estudiantesDelGrado) {
       const input = document.getElementById(`nota-${est.id}`);
+      const logroInput = document.getElementById(`logro-${est.id}`);
       if (!input || input.value === '') continue;
       const valor = parseFloat(input.value);
+      const logro = logroInput ? logroInput.value.trim() : '';
       const notaId = `${est.id}_${asignaturaId}_${periodo}`;
       const nivel = nivelDeNota(valor);
       try {
@@ -329,10 +336,11 @@ tr:last-child td { border-bottom: none; }
           periodo: parseInt(periodo, 10),
           valorNumerico: valor,
           valorCualitativo: nivel ? nivel.nombre : null,
+          logro: logro,
           docenteId: auth.currentUser.uid,
           fechaActualizacion: new Date().toISOString(),
         });
-        notasActuales[est.id] = { valor, guardado: true };
+        notasActuales[est.id] = { valor, logro, guardado: true };
         const estadoEl = document.getElementById(`estado-${est.id}`);
         if (estadoEl) { estadoEl.textContent = '✓ Guardado'; estadoEl.style.color = 'var(--verde)'; }
         guardadas++;

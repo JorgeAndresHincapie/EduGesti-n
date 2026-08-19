@@ -59,6 +59,14 @@ td:first-child { text-align: left; font-weight: 600; }
 .sin-nota { color: var(--texto-light); }
 
 .resumen-final { display: flex; justify-content: space-between; align-items: center; background: var(--azul-light); border-radius: 10px; padding: 1rem 1.3rem; }
+
+.logros-titulo { font-family: 'Instrument Serif', serif; font-size: 1.15rem; margin: 1.5rem 0 0.9rem; }
+.logro-item { border-bottom: 1px solid var(--borde); padding: 0.8rem 0; }
+.logro-item:last-child { border-bottom: none; }
+.logro-materia { font-size: 0.82rem; font-weight: 700; margin-bottom: 0.3rem; }
+.logro-periodo-txt { font-size: 0.8rem; color: var(--texto-mid); line-height: 1.5; margin-bottom: 0.25rem; }
+.logro-periodo-txt b { color: var(--azul); font-weight: 700; }
+.sin-logros { text-align: center; padding: 1.5rem; color: var(--texto-light); font-size: 0.82rem; }
 .resumen-label { font-size: 0.78rem; color: var(--azul); font-weight: 600; }
 .resumen-valor { font-family: 'Instrument Serif', serif; font-size: 1.6rem; color: var(--azul); }
 
@@ -137,6 +145,9 @@ td:first-child { text-align: left; font-weight: 600; }
         <span class="resumen-label">Promedio general del año</span>
         <span class="resumen-valor" id="promedioGeneral">—</span>
       </div>
+
+      <p class="logros-titulo">Logros y observaciones</p>
+      <div id="cuerpoLogros"><p class="sin-logros">Cargando...</p></div>
     </div>
   </div>
 </main>
@@ -252,6 +263,8 @@ td:first-child { text-align: left; font-weight: 600; }
       const n = d.data();
       if (!notasPorAsignatura[n.asignaturaId]) notasPorAsignatura[n.asignaturaId] = {};
       notasPorAsignatura[n.asignaturaId][n.periodo] = n.valorNumerico;
+      if (!notasPorAsignatura[n.asignaturaId].logros) notasPorAsignatura[n.asignaturaId].logros = {};
+      if (n.logro) notasPorAsignatura[n.asignaturaId].logros[n.periodo] = n.logro;
     });
 
     const cuerpo = document.getElementById('cuerpoBoletin');
@@ -293,6 +306,24 @@ td:first-child { text-align: left; font-weight: 600; }
 
     const promedioGeneral = cantidadConNota > 0 ? (sumaPromedios / cantidadConNota) : null;
     document.getElementById('promedioGeneral').textContent = promedioGeneral !== null ? promedioGeneral.toFixed(2) : 'Sin notas registradas';
+
+    // ── Logros y observaciones ──
+    const cuerpoLogros = document.getElementById('cuerpoLogros');
+    const asignaturasConLogro = asignaturasDelGrado.filter(asig => {
+      const logros = (notasPorAsignatura[asig.id] || {}).logros || {};
+      return Object.keys(logros).length > 0;
+    });
+
+    if (asignaturasConLogro.length === 0) {
+      cuerpoLogros.innerHTML = '<p class="sin-logros">Todavía no hay logros u observaciones registrados para este estudiante.</p>';
+    } else {
+      cuerpoLogros.innerHTML = asignaturasConLogro.map(asig => {
+        const logros = (notasPorAsignatura[asig.id] || {}).logros || {};
+        const periodosConTexto = Object.keys(logros).sort();
+        const textoLogros = periodosConTexto.map(p => `<p class="logro-periodo-txt"><b>Periodo ${p}:</b> ${logros[p]}</p>`).join('');
+        return `<div class="logro-item"><p class="logro-materia">${asig.nombre}</p>${textoLogros}</div>`;
+      }).join('');
+    }
   }
 
   document.getElementById('btnImprimir').addEventListener('click', () => window.print());
