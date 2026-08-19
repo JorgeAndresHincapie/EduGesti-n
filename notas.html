@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduGestión — Notas</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
+  --verde: #1A7A5E; --verde-light: #E8F5F0;
+  --naranja: #C05621; --naranja-light: #FFF3EB;
+  --rojo: #C53030; --rojo-light: #FFF5F5;
+  --amarillo: #B7791F; --amarillo-light: #FFF9E6;
+  --gris: #F4F6F9; --borde: #DDE3EC;
+  --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
+  --blanco: #FFFFFF;
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); color: var(--texto); min-height: 100vh; }
+
+.topbar { background: var(--azul); height: 58px; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.topbar-left { display: flex; align-items: center; gap: 0.9rem; }
+.topbar-back { color: white; text-decoration: none; font-size: 0.85rem; opacity: 0.85; }
+.topbar-back:hover { opacity: 1; }
+.topbar-brand { font-size: 1.0rem; font-weight: 700; color: white; }
+.btn-salir { background: rgba(255,255,255,0.12); color: white; border: none; padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+.main { max-width: 1000px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
+.titulo { font-family: 'Instrument Serif', serif; font-size: 1.8rem; margin-bottom: 1.5rem; }
+
+.filtros-box { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.3rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
+.filtro-field { flex: 1; min-width: 160px; }
+.filtro-field label { display: block; font-size: 0.74rem; font-weight: 700; color: var(--texto-mid); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.filtro-field select { width: 100%; padding: 0.6rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.85rem; background: white; }
+
+.escala-info { background: var(--azul-light); border-radius: 10px; padding: 0.9rem 1.1rem; margin-bottom: 1.3rem; font-size: 0.8rem; color: var(--azul); display: none; }
+.escala-info.visible { display: block; }
+.escala-info b { font-weight: 700; }
+
+.aviso { text-align: center; padding: 3rem 1.5rem; color: var(--texto-light); font-size: 0.88rem; background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; }
+
+.tabla-wrap { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; overflow: hidden; display: none; }
+.tabla-wrap.visible { display: block; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--texto-light); padding: 0.8rem 1rem; background: var(--gris); border-bottom: 1.5px solid var(--borde); }
+td { padding: 0.7rem 1rem; font-size: 0.85rem; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+.input-nota { width: 80px; padding: 0.45rem 0.6rem; border: 1.5px solid var(--borde); border-radius: 7px; font-family: inherit; font-size: 0.88rem; font-weight: 600; text-align: center; }
+.input-nota:focus { outline: none; border-color: var(--azul); }
+.nivel-chip { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 10px; }
+.nivel-vacio { color: var(--texto-light); font-size: 0.78rem; }
+.estado-guardado { font-size: 0.72rem; color: var(--verde); font-weight: 600; }
+
+.footer-acciones { display: flex; justify-content: space-between; align-items: center; margin-top: 1.3rem; }
+.btn-primario { background: var(--azul); color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 9px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; }
+.btn-primario:hover { background: var(--azul-dark); }
+.btn-primario:disabled { opacity: 0.6; cursor: default; }
+.contador { font-size: 0.8rem; color: var(--texto-light); }
+
+.loading-wrap { text-align: center; padding: 2rem; color: var(--texto-light); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="dashboard.html" class="topbar-back">← Panel</a>
+    <span class="topbar-brand">Notas</span>
+  </div>
+  <button class="btn-salir" id="btnSalir">Salir</button>
+</header>
+
+<main class="main">
+  <p class="titulo">Registro de Notas</p>
+
+  <div class="filtros-box">
+    <div class="filtro-field">
+      <label>Grado / Grupo</label>
+      <select id="selGrado"><option value="">Selecciona...</option></select>
+    </div>
+    <div class="filtro-field">
+      <label>Asignatura</label>
+      <select id="selAsignatura"><option value="">Selecciona un grado primero</option></select>
+    </div>
+    <div class="filtro-field">
+      <label>Periodo</label>
+      <select id="selPeriodo">
+        <option value="1">Periodo 1</option>
+        <option value="2">Periodo 2</option>
+        <option value="3">Periodo 3</option>
+        <option value="4">Periodo 4</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="escala-info" id="escalaInfo"></div>
+
+  <div class="aviso" id="avisoVacio">Selecciona un grado/grupo y una asignatura para empezar a registrar notas.</div>
+
+  <div class="tabla-wrap" id="tablaWrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Estudiante</th>
+          <th>Nota</th>
+          <th>Nivel</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="cuerpoTabla"></tbody>
+    </table>
+  </div>
+
+  <div class="footer-acciones" id="footerAcciones" style="display:none">
+    <span class="contador" id="contadorGuardadas">0 notas registradas</span>
+    <button class="btn-primario" id="btnGuardarTodas">Guardar todas las notas</button>
+  </div>
+</main>
+
+<script type="module">
+  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, setDoc, collection, getDocs, query, where } from './firebase.js';
+
+  let institucionId = null;
+  let usuarioActual = null;
+  let escalaCalificacion = null;
+  let estudiantesCache = [];
+  let asignaturasCache = [];
+  let notasActuales = {}; // key: estudianteId -> {valor, guardado}
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'index.html'; return; }
+    const usuarioSnap = await getDoc(doc(db, 'usuarios', user.uid));
+    if (!usuarioSnap.exists()) { window.location.href = 'index.html'; return; }
+    usuarioActual = usuarioSnap.data();
+    institucionId = usuarioActual.institucionId;
+
+    const instSnap = await getDoc(doc(db, 'instituciones', institucionId));
+    if (instSnap.exists()) {
+      escalaCalificacion = instSnap.data().escalaCalificacion;
+    }
+
+    const [estSnap, asigSnap] = await Promise.all([
+      getDocs(query(collection(db, 'estudiantes'), where('institucionId', '==', institucionId))),
+      getDocs(query(collection(db, 'asignaturas'), where('institucionId', '==', institucionId))),
+    ]);
+    estSnap.forEach(d => estudiantesCache.push({ id: d.id, ...d.data() }));
+    asigSnap.forEach(d => asignaturasCache.push({ id: d.id, ...d.data() }));
+
+    llenarSelectGrados();
+    mostrarInfoEscala();
+  });
+
+  function llenarSelectGrados() {
+    const grados = [...new Set(estudiantesCache.map(e => e.grado).filter(Boolean))].sort();
+    const sel = document.getElementById('selGrado');
+    sel.innerHTML = '<option value="">Selecciona...</option>' + grados.map(g => `<option value="${g}">${g}</option>`).join('');
+  }
+
+  function mostrarInfoEscala() {
+    const info = document.getElementById('escalaInfo');
+    if (!escalaCalificacion || !escalaCalificacion.niveles) return;
+    const partes = escalaCalificacion.niveles.map(n => `<b>${n.nombre}</b>: ${n.min}-${n.max}`).join('  ·  ');
+    info.innerHTML = `Escala de tu institución — ${partes}`;
+    info.classList.add('visible');
+  }
+
+  document.getElementById('selGrado').addEventListener('change', () => {
+    const grado = document.getElementById('selGrado').value;
+    const selAsig = document.getElementById('selAsignatura');
+    if (!grado) {
+      selAsig.innerHTML = '<option value="">Selecciona un grado primero</option>';
+      renderTabla();
+      return;
+    }
+    const asignaturasDelGrado = asignaturasCache.filter(a => !a.grado || a.grado === grado);
+    if (asignaturasDelGrado.length === 0) {
+      selAsig.innerHTML = '<option value="">No hay asignaturas para este grado</option>';
+    } else {
+      selAsig.innerHTML = '<option value="">Selecciona...</option>' +
+        asignaturasDelGrado.map(a => `<option value="${a.id}">${a.nombre}</option>`).join('');
+    }
+    renderTabla();
+  });
+
+  document.getElementById('selAsignatura').addEventListener('change', cargarNotasExistentes);
+  document.getElementById('selPeriodo').addEventListener('change', cargarNotasExistentes);
+
+  function nivelDeNota(valor) {
+    if (!escalaCalificacion || !escalaCalificacion.niveles || valor === null || valor === '' || isNaN(valor)) return null;
+    const v = parseFloat(valor);
+    return escalaCalificacion.niveles.find(n => v >= n.min && v <= n.max) || null;
+  }
+
+  function colorNivel(nombre) {
+    const mapa = {
+      'Superior': { bg: 'var(--verde-light)', c: 'var(--verde)' },
+      'Alto': { bg: 'var(--azul-light)', c: 'var(--azul)' },
+      'Básico': { bg: 'var(--amarillo-light)', c: 'var(--amarillo)' },
+      'Bajo': { bg: 'var(--rojo-light)', c: 'var(--rojo)' },
+      'Aprobado': { bg: 'var(--verde-light)', c: 'var(--verde)' },
+      'Reprobado': { bg: 'var(--rojo-light)', c: 'var(--rojo)' },
+    };
+    return mapa[nombre] || { bg: 'var(--gris)', c: 'var(--texto-mid)' };
+  }
+
+  async function cargarNotasExistentes() {
+    renderTabla();
+    const grado = document.getElementById('selGrado').value;
+    const asignaturaId = document.getElementById('selAsignatura').value;
+    const periodo = document.getElementById('selPeriodo').value;
+    if (!grado || !asignaturaId) return;
+
+    const estudiantesDelGrado = estudiantesCache.filter(e => e.grado === grado);
+    notasActuales = {};
+
+    for (const est of estudiantesDelGrado) {
+      const notaId = `${est.id}_${asignaturaId}_${periodo}`;
+      try {
+        const notaSnap = await getDoc(doc(db, 'notas', notaId));
+        if (notaSnap.exists()) {
+          notasActuales[est.id] = { valor: notaSnap.data().valorNumerico, guardado: true };
+        }
+      } catch (e) { /* no existe todavía, se ignora */ }
+    }
+    renderTabla();
+  }
+
+  function renderTabla() {
+    const grado = document.getElementById('selGrado').value;
+    const asignaturaId = document.getElementById('selAsignatura').value;
+    const aviso = document.getElementById('avisoVacio');
+    const tablaWrap = document.getElementById('tablaWrap');
+    const footer = document.getElementById('footerAcciones');
+
+    if (!grado || !asignaturaId) {
+      aviso.style.display = 'block';
+      tablaWrap.classList.remove('visible');
+      footer.style.display = 'none';
+      return;
+    }
+
+    const estudiantesDelGrado = estudiantesCache
+      .filter(e => e.grado === grado)
+      .sort((a, b) => (a.apellidos || '').localeCompare(b.apellidos || ''));
+
+    if (estudiantesDelGrado.length === 0) {
+      aviso.textContent = 'No hay estudiantes registrados en este grado/grupo todavía.';
+      aviso.style.display = 'block';
+      tablaWrap.classList.remove('visible');
+      footer.style.display = 'none';
+      return;
+    }
+
+    aviso.style.display = 'none';
+    tablaWrap.classList.add('visible');
+    footer.style.display = 'flex';
+
+    const cuerpo = document.getElementById('cuerpoTabla');
+    const min = escalaCalificacion && escalaCalificacion.niveles ? Math.min(...escalaCalificacion.niveles.map(n => n.min)) : 0;
+    const max = escalaCalificacion && escalaCalificacion.niveles ? Math.max(...escalaCalificacion.niveles.map(n => n.max)) : 5;
+
+    cuerpo.innerHTML = estudiantesDelGrado.map(est => {
+      const notaInfo = notasActuales[est.id];
+      const valor = notaInfo ? notaInfo.valor : '';
+      const guardado = notaInfo ? notaInfo.guardado : false;
+      const nivel = nivelDeNota(valor);
+      const nivelHtml = nivel
+        ? `<span class="nivel-chip" style="background:${colorNivel(nivel.nombre).bg};color:${colorNivel(nivel.nombre).c}" id="nivel-${est.id}">${nivel.nombre}</span>`
+        : `<span class="nivel-vacio" id="nivel-${est.id}">—</span>`;
+
+      return `
+        <tr>
+          <td><b>${est.apellidos}</b> ${est.nombres}</td>
+          <td><input type="number" class="input-nota" id="nota-${est.id}" min="${min}" max="${max}" step="0.1" value="${valor}" oninput="actualizarNivel('${est.id}')"/></td>
+          <td>${nivelHtml}</td>
+          <td><span class="estado-guardado" id="estado-${est.id}">${guardado ? '✓ Guardado' : ''}</span></td>
+        </tr>
+      `;
+    }).join('');
+
+    actualizarContador();
+  }
+
+  window.actualizarNivel = function(estudianteId) {
+    const input = document.getElementById(`nota-${estudianteId}`);
+    const nivelEl = document.getElementById(`nivel-${estudianteId}`);
+    const estadoEl = document.getElementById(`estado-${estudianteId}`);
+    const nivel = nivelDeNota(input.value);
+    if (nivel) {
+      const colores = colorNivel(nivel.nombre);
+      nivelEl.outerHTML = `<span class="nivel-chip" style="background:${colores.bg};color:${colores.c}" id="nivel-${estudianteId}">${nivel.nombre}</span>`;
+    } else {
+      nivelEl.outerHTML = `<span class="nivel-vacio" id="nivel-${estudianteId}">—</span>`;
+    }
+    estadoEl.textContent = '';
+    estadoEl.style.color = 'var(--texto-light)';
+  };
+
+  function actualizarContador() {
+    const grado = document.getElementById('selGrado').value;
+    const total = estudiantesCache.filter(e => e.grado === grado).length;
+    const conNota = Object.keys(notasActuales).filter(k => notasActuales[k].guardado).length;
+    document.getElementById('contadorGuardadas').textContent = `${conNota} de ${total} notas registradas`;
+  }
+
+  document.getElementById('btnGuardarTodas').addEventListener('click', async () => {
+    const grado = document.getElementById('selGrado').value;
+    const asignaturaId = document.getElementById('selAsignatura').value;
+    const periodo = document.getElementById('selPeriodo').value;
+    const btn = document.getElementById('btnGuardarTodas');
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+
+    const estudiantesDelGrado = estudiantesCache.filter(e => e.grado === grado);
+    let guardadas = 0;
+
+    for (const est of estudiantesDelGrado) {
+      const input = document.getElementById(`nota-${est.id}`);
+      if (!input || input.value === '') continue;
+      const valor = parseFloat(input.value);
+      const notaId = `${est.id}_${asignaturaId}_${periodo}`;
+      const nivel = nivelDeNota(valor);
+      try {
+        await setDoc(doc(db, 'notas', notaId), {
+          institucionId,
+          estudianteId: est.id,
+          asignaturaId,
+          periodo: parseInt(periodo, 10),
+          valorNumerico: valor,
+          valorCualitativo: nivel ? nivel.nombre : null,
+          docenteId: auth.currentUser.uid,
+          fechaActualizacion: new Date().toISOString(),
+        });
+        notasActuales[est.id] = { valor, guardado: true };
+        const estadoEl = document.getElementById(`estado-${est.id}`);
+        if (estadoEl) { estadoEl.textContent = '✓ Guardado'; estadoEl.style.color = 'var(--verde)'; }
+        guardadas++;
+      } catch (err) {
+        console.error(`Error guardando nota de ${est.nombres}:`, err);
+      }
+    }
+
+    actualizarContador();
+    btn.disabled = false;
+    btn.textContent = 'Guardar todas las notas';
+    alert(`✓ Se guardaron ${guardadas} notas correctamente.`);
+  });
+
+  document.getElementById('btnSalir').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'index.html';
+  });
+</script>
+</body>
+</html>
