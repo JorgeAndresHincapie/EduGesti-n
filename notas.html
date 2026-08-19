@@ -53,6 +53,8 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
 .banco-item-quitar { background: none; border: none; color: var(--texto-light); cursor: pointer; font-size: 1rem; flex-shrink: 0; }
 .banco-item-quitar:hover { color: var(--rojo); }
 .form-banco { display: flex; gap: 0.5rem; margin-top: 1rem; }
+.btn-plantillas-logro { width: 100%; background: var(--gris); border: 1.3px dashed var(--borde); color: var(--texto-mid); padding: 0.6rem; border-radius: 8px; font-weight: 600; font-size: 0.78rem; cursor: pointer; font-family: inherit; margin-top: 0.8rem; }
+.btn-plantillas-logro:hover { background: var(--azul-light); color: var(--azul); border-color: var(--azul); }
 .form-banco textarea { flex: 1; padding: 0.55rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.82rem; resize: vertical; min-height: 60px; }
 .btn-agregar-banco { background: var(--azul); color: white; border: none; border-radius: 8px; padding: 0.5rem 0.9rem; font-weight: 700; font-size: 0.8rem; cursor: pointer; font-family: inherit; align-self: flex-start; }
 
@@ -148,6 +150,7 @@ tr:last-child td { border-bottom: none; }
       <button class="modal-close" id="btnCerrarBanco">&times;</button>
     </div>
     <div id="listaBancoLogros"></div>
+    <button class="btn-plantillas-logro" id="btnPlantillasLogro">✨ Cargar plantillas genéricas de ejemplo</button>
     <div class="form-banco">
       <textarea id="nuevoLogroTexto" placeholder="Escribe un logro nuevo para guardar en el banco..."></textarea>
       <button class="btn-agregar-banco" id="btnAgregarLogroBanco">Agregar</button>
@@ -276,6 +279,28 @@ tr:last-child td { border-bottom: none; }
       renderListaBanco();
     } catch (err) {
       alert('No se pudo guardar el logro.');
+      console.error(err);
+    }
+  });
+
+  const PLANTILLAS_LOGROS = [
+    'Identifica y comprende los conceptos básicos trabajados durante el periodo.',
+    'Aplica los conocimientos adquiridos en situaciones prácticas y cotidianas.',
+    'Participa activamente en las actividades propuestas en clase.',
+    'Demuestra responsabilidad y compromiso con las tareas y compromisos asignados.',
+    'Presenta dificultades para alcanzar los logros propuestos; requiere refuerzo y acompañamiento adicional.',
+  ];
+
+  document.getElementById('btnPlantillasLogro').addEventListener('click', async () => {
+    const asignaturaId = document.getElementById('selAsignatura').value;
+    if (!asignaturaId) return;
+    if (!confirm('Se van a agregar 5 frases genéricas de ejemplo al banco de esta asignatura, para que las edites a tu gusto. ¿Continuar?')) return;
+    try {
+      await Promise.all(PLANTILLAS_LOGROS.map(texto => addDoc(collection(db, 'banco_logros'), { institucionId, asignaturaId, texto })));
+      await cargarBancoLogros();
+      renderListaBanco();
+    } catch (err) {
+      alert('No se pudieron cargar las plantillas.');
       console.error(err);
     }
   });
