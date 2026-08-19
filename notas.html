@@ -38,6 +38,24 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
 .escala-info.visible { display: block; }
 .escala-info b { font-weight: 700; }
 
+.banco-toggle { background: var(--verde-light); color: var(--verde); border: 1.5px solid var(--verde); padding: 0.5rem 0.9rem; border-radius: 8px; font-weight: 700; font-size: 0.78rem; cursor: pointer; font-family: inherit; margin-bottom: 1rem; display: none; }
+.banco-toggle:hover { background: var(--verde); color: white; }
+.banco-toggle.visible { display: inline-block; }
+.select-logro-banco { width: 100%; padding: 0.4rem 0.5rem; border: 1.5px solid var(--borde); border-radius: 6px; font-family: inherit; font-size: 0.75rem; margin-bottom: 0.35rem; background: var(--gris); color: var(--texto-mid); }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(20,25,35,0.55); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
+.modal-box { background: var(--blanco); border-radius: 14px; width: 100%; max-width: 460px; max-height: 85vh; overflow-y: auto; padding: 1.6rem; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.modal-header h2 { font-family: 'Instrument Serif', serif; font-size: 1.2rem; }
+.modal-close { background: none; border: none; font-size: 1.6rem; color: var(--texto-light); cursor: pointer; }
+.banco-item { display: flex; justify-content: space-between; align-items: start; gap: 0.6rem; padding: 0.6rem 0; border-bottom: 1px solid var(--borde); font-size: 0.82rem; }
+.banco-item:last-child { border-bottom: none; }
+.banco-item-quitar { background: none; border: none; color: var(--texto-light); cursor: pointer; font-size: 1rem; flex-shrink: 0; }
+.banco-item-quitar:hover { color: var(--rojo); }
+.form-banco { display: flex; gap: 0.5rem; margin-top: 1rem; }
+.form-banco textarea { flex: 1; padding: 0.55rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.82rem; resize: vertical; min-height: 60px; }
+.btn-agregar-banco { background: var(--azul); color: white; border: none; border-radius: 8px; padding: 0.5rem 0.9rem; font-weight: 700; font-size: 0.8rem; cursor: pointer; font-family: inherit; align-self: flex-start; }
+
 .aviso { text-align: center; padding: 3rem 1.5rem; color: var(--texto-light); font-size: 0.88rem; background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; }
 
 .tabla-wrap { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; overflow: hidden; display: none; }
@@ -98,6 +116,8 @@ tr:last-child td { border-bottom: none; }
 
   <div class="escala-info" id="escalaInfo"></div>
 
+  <button class="banco-toggle" id="btnBancoLogros">📋 Banco de logros de esta asignatura</button>
+
   <div class="aviso" id="avisoVacio">Selecciona un grado/grupo y una asignatura para empezar a registrar notas.</div>
 
   <div class="tabla-wrap" id="tablaWrap">
@@ -121,8 +141,22 @@ tr:last-child td { border-bottom: none; }
   </div>
 </main>
 
+<div id="modalBanco" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Banco de logros — <span id="bancoAsignaturaNombre"></span></h2>
+      <button class="modal-close" id="btnCerrarBanco">&times;</button>
+    </div>
+    <div id="listaBancoLogros"></div>
+    <div class="form-banco">
+      <textarea id="nuevoLogroTexto" placeholder="Escribe un logro nuevo para guardar en el banco..."></textarea>
+      <button class="btn-agregar-banco" id="btnAgregarLogroBanco">Agregar</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
-  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, setDoc, collection, getDocs, query, where } from './firebase.js';
+  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, setDoc, addDoc, deleteDoc, collection, getDocs, query, where } from './firebase.js';
 
   let institucionId = null;
   let usuarioActual = null;
@@ -130,6 +164,7 @@ tr:last-child td { border-bottom: none; }
   let estudiantesCache = [];
   let asignaturasCache = [];
   let notasActuales = {}; // key: estudianteId -> {valor, guardado}
+  let bancoLogrosCache = []; // [{id, texto}] de la asignatura actual
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) { window.location.href = 'index.html'; return; }
@@ -186,7 +221,81 @@ tr:last-child td { border-bottom: none; }
     renderTabla();
   });
 
-  document.getElementById('selAsignatura').addEventListener('change', cargarNotasExistentes);
+  document.getElementById('selAsignatura').addEventListener('change', () => {
+    cargarNotasExistentes();
+    cargarBancoLogros();
+  });
+
+  async function cargarBancoLogros() {
+    const asignaturaId = document.getElementById('selAsignatura').value;
+    const btnBanco = document.getElementById('btnBancoLogros');
+    if (!asignaturaId) {
+      btnBanco.classList.remove('visible');
+      bancoLogrosCache = [];
+      return;
+    }
+    btnBanco.classList.add('visible');
+    const q = query(collection(db, 'banco_logros'), where('institucionId', '==', institucionId), where('asignaturaId', '==', asignaturaId));
+    const snap = await getDocs(q);
+    bancoLogrosCache = [];
+    snap.forEach(d => bancoLogrosCache.push({ id: d.id, texto: d.data().texto }));
+  }
+
+  document.getElementById('btnBancoLogros').addEventListener('click', () => {
+    const selAsig = document.getElementById('selAsignatura');
+    document.getElementById('bancoAsignaturaNombre').textContent = selAsig.options[selAsig.selectedIndex]?.text || '';
+    renderListaBanco();
+    document.getElementById('modalBanco').style.display = 'flex';
+  });
+  document.getElementById('btnCerrarBanco').addEventListener('click', () => { document.getElementById('modalBanco').style.display = 'none'; });
+  document.getElementById('modalBanco').addEventListener('click', (e) => { if (e.target.id === 'modalBanco') document.getElementById('modalBanco').style.display = 'none'; });
+
+  function renderListaBanco() {
+    const lista = document.getElementById('listaBancoLogros');
+    if (bancoLogrosCache.length === 0) {
+      lista.innerHTML = '<p style="font-size:0.82rem;color:var(--texto-light);text-align:center;padding:1rem 0">Todavía no hay logros guardados para esta asignatura.</p>';
+      return;
+    }
+    lista.innerHTML = bancoLogrosCache.map(l => `
+      <div class="banco-item">
+        <span>${l.texto}</span>
+        <button class="banco-item-quitar" onclick="quitarLogroBanco('${l.id}')" title="Quitar del banco">&times;</button>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('btnAgregarLogroBanco').addEventListener('click', async () => {
+    const textarea = document.getElementById('nuevoLogroTexto');
+    const texto = textarea.value.trim();
+    const asignaturaId = document.getElementById('selAsignatura').value;
+    if (!texto || !asignaturaId) return;
+    try {
+      await addDoc(collection(db, 'banco_logros'), { institucionId, asignaturaId, texto });
+      textarea.value = '';
+      await cargarBancoLogros();
+      renderListaBanco();
+    } catch (err) {
+      alert('No se pudo guardar el logro.');
+      console.error(err);
+    }
+  });
+
+  window.quitarLogroBanco = async function(id) {
+    try {
+      await deleteDoc(doc(db, 'banco_logros', id));
+      await cargarBancoLogros();
+      renderListaBanco();
+    } catch (err) {
+      alert('No se pudo quitar.');
+      console.error(err);
+    }
+  };
+
+  window.aplicarLogroBanco = function(estudianteId, selectEl) {
+    if (!selectEl.value) return;
+    document.getElementById(`logro-${estudianteId}`).value = selectEl.value;
+    selectEl.value = '';
+  };
   document.getElementById('selPeriodo').addEventListener('change', cargarNotasExistentes);
 
   function nivelDeNota(valor) {
@@ -278,7 +387,13 @@ tr:last-child td { border-bottom: none; }
           <td><b>${est.apellidos}</b> ${est.nombres}</td>
           <td><input type="number" class="input-nota" id="nota-${est.id}" min="${min}" max="${max}" step="0.1" value="${valor}" oninput="actualizarNivel('${est.id}')"/></td>
           <td>${nivelHtml}</td>
-          <td><textarea class="input-logro" id="logro-${est.id}" placeholder="Ej: Reconoce y aplica las operaciones básicas con seguridad.">${logro}</textarea></td>
+          <td>
+            <select class="select-logro-banco" onchange="aplicarLogroBanco('${est.id}', this)">
+              <option value="">Elegir del banco...</option>
+              ${bancoLogrosCache.map(l => `<option value="${l.texto.replace(/"/g,'&quot;')}">${l.texto.substring(0,60)}${l.texto.length>60?'...':''}</option>`).join('')}
+            </select>
+            <textarea class="input-logro" id="logro-${est.id}" placeholder="Ej: Reconoce y aplica las operaciones básicas con seguridad.">${logro}</textarea>
+          </td>
           <td><span class="estado-guardado" id="estado-${est.id}">${guardado ? '✓ Guardado' : ''}</span></td>
         </tr>
       `;
