@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduGestión — Programación Curricular</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
+  --verde: #1A7A5E; --verde-light: #E8F5F0;
+  --gris: #F4F6F9; --borde: #DDE3EC;
+  --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
+  --blanco: #FFFFFF; --rojo: #C53030; --rojo-light: #FFF5F5;
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); color: var(--texto); min-height: 100vh; }
+
+.topbar { background: var(--azul); height: 58px; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.topbar-left { display: flex; align-items: center; gap: 0.9rem; }
+.topbar-back { color: white; text-decoration: none; font-size: 0.85rem; opacity: 0.85; }
+.topbar-back:hover { opacity: 1; }
+.topbar-brand { font-size: 1.0rem; font-weight: 700; color: white; }
+.btn-salir { background: rgba(255,255,255,0.12); color: white; border: none; padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+.main { max-width: 850px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
+.titulo { font-family: 'Instrument Serif', serif; font-size: 1.8rem; margin-bottom: 1.5rem; }
+
+.filtros-box { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.3rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
+.filtro-field { flex: 1; min-width: 160px; }
+.filtro-field label { display: block; font-size: 0.74rem; font-weight: 700; color: var(--texto-mid); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.filtro-field select { width: 100%; padding: 0.6rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.85rem; background: white; }
+
+.aviso { text-align: center; padding: 3rem 1.5rem; color: var(--texto-light); font-size: 0.88rem; background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; }
+
+.card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 14px; padding: 1.8rem; display: none; }
+.card.visible { display: block; }
+.card-titulo { font-family: 'Instrument Serif', serif; font-size: 1.2rem; margin-bottom: 1.3rem; }
+
+.field { margin-bottom: 1.2rem; }
+.field label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--texto-mid); margin-bottom: 0.4rem; }
+.field-hint { display: block; font-size: 0.72rem; color: var(--texto-light); margin-top: 0.3rem; }
+.field textarea { width: 100%; padding: 0.7rem 0.8rem; border: 1.5px solid var(--borde); border-radius: 9px; font-family: inherit; font-size: 0.85rem; resize: vertical; min-height: 100px; }
+.field input[type="url"] { width: 100%; padding: 0.6rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.85rem; }
+.field textarea:focus, .field input:focus { outline: none; border-color: var(--azul); }
+
+.enlaces-lista { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
+.enlace-fila { display: flex; gap: 0.5rem; }
+.enlace-fila input[type="text"] { flex: 1; padding: 0.55rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.82rem; }
+.enlace-fila input[type="url"] { flex: 1.4; padding: 0.55rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.82rem; }
+.btn-quitar-enlace { background: var(--rojo-light); color: var(--rojo); border: none; border-radius: 7px; padding: 0 0.7rem; cursor: pointer; font-weight: 700; }
+.btn-agregar-enlace { background: var(--gris); border: 1.3px dashed var(--borde); color: var(--texto-mid); padding: 0.5rem 0.9rem; border-radius: 8px; font-weight: 600; font-size: 0.78rem; cursor: pointer; font-family: inherit; margin-top: 0.4rem; }
+.btn-agregar-enlace:hover { background: var(--azul-light); color: var(--azul); border-color: var(--azul); }
+
+.btn-guardar { width: 100%; background: var(--azul); color: white; border: none; padding: 0.8rem; border-radius: 10px; font-weight: 700; font-size: 0.9rem; cursor: pointer; font-family: inherit; margin-top: 0.5rem; }
+.btn-guardar:hover { background: var(--azul-dark); }
+.btn-guardar:disabled { opacity: 0.6; cursor: default; }
+
+.msg { display: none; font-size: 0.82rem; padding: 0.7rem 0.9rem; border-radius: 9px; margin-top: 1rem; }
+.msg.visible { display: block; }
+.msg-ok { background: var(--verde-light); color: var(--verde); }
+.msg-err { background: var(--rojo-light); color: var(--rojo); }
+
+.enlaces-existentes { margin-top: 1.5rem; }
+.enlaces-existentes-titulo { font-size: 0.8rem; font-weight: 700; color: var(--texto-mid); margin-bottom: 0.6rem; }
+.enlace-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: var(--gris); border-radius: 8px; margin-bottom: 0.4rem; font-size: 0.82rem; }
+.enlace-item a { color: var(--azul); text-decoration: none; font-weight: 600; }
+.enlace-item a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="dashboard.html" class="topbar-back">← Panel</a>
+    <span class="topbar-brand">Programación Curricular</span>
+  </div>
+  <button class="btn-salir" id="btnSalir">Salir</button>
+</header>
+
+<main class="main">
+  <p class="titulo">Programación Curricular y Evaluaciones</p>
+
+  <div class="filtros-box">
+    <div class="filtro-field">
+      <label>Grado / Grupo</label>
+      <select id="selGrado"><option value="">Selecciona...</option></select>
+    </div>
+    <div class="filtro-field">
+      <label>Asignatura</label>
+      <select id="selAsignatura"><option value="">Selecciona un grado primero</option></select>
+    </div>
+    <div class="filtro-field">
+      <label>Periodo</label>
+      <select id="selPeriodo">
+        <option value="1">Periodo 1</option>
+        <option value="2">Periodo 2</option>
+        <option value="3">Periodo 3</option>
+        <option value="4">Periodo 4</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="aviso" id="avisoVacio">Selecciona un grado/grupo y una asignatura para ver o cargar su programación.</div>
+
+  <div class="card" id="cardProgramacion">
+    <p class="card-titulo" id="cardTitulo">—</p>
+
+    <div class="field">
+      <label>Temas y contenidos a desarrollar</label>
+      <textarea id="fTemas" placeholder="Ej: Unidad 1 - Números naturales: lectura, escritura y comparación..."></textarea>
+      <span class="field-hint">Lo que se va a enseñar en este periodo, en esta materia y grado.</span>
+    </div>
+
+    <div class="field">
+      <label>Metodología / Actividades</label>
+      <textarea id="fMetodologia" placeholder="Ej: Trabajo en grupo, talleres prácticos, uso de material concreto..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Enlaces (evaluaciones, guías, material de apoyo)</label>
+      <span class="field-hint">Pega el link de Google Drive, Classroom, o donde tengas el documento — no se sube el archivo aquí, solo el enlace.</span>
+      <div class="enlaces-lista" id="enlacesLista"></div>
+      <button type="button" class="btn-agregar-enlace" id="btnAgregarEnlace">+ Agregar otro enlace</button>
+    </div>
+
+    <div class="msg" id="msgGuardado"><span></span></div>
+    <button class="btn-guardar" id="btnGuardar">Guardar programación</button>
+  </div>
+</main>
+
+<script type="module">
+  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, setDoc, collection, getDocs, query, where } from './firebase.js';
+
+  let institucionId = null;
+  let estudiantesCache = [];
+  let asignaturasCache = [];
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'index.html'; return; }
+    const usuarioSnap = await getDoc(doc(db, 'usuarios', user.uid));
+    if (!usuarioSnap.exists()) { window.location.href = 'index.html'; return; }
+    institucionId = usuarioSnap.data().institucionId;
+
+    const [estSnap, asigSnap] = await Promise.all([
+      getDocs(query(collection(db, 'estudiantes'), where('institucionId', '==', institucionId))),
+      getDocs(query(collection(db, 'asignaturas'), where('institucionId', '==', institucionId))),
+    ]);
+    estSnap.forEach(d => estudiantesCache.push({ id: d.id, ...d.data() }));
+    asigSnap.forEach(d => asignaturasCache.push({ id: d.id, ...d.data() }));
+
+    llenarSelectGrados();
+  });
+
+  function llenarSelectGrados() {
+    const grados = [...new Set(estudiantesCache.map(e => e.grado).filter(Boolean))].sort();
+    document.getElementById('selGrado').innerHTML = '<option value="">Selecciona...</option>' + grados.map(g => `<option value="${g}">${g}</option>`).join('');
+  }
+
+  document.getElementById('selGrado').addEventListener('change', () => {
+    const grado = document.getElementById('selGrado').value;
+    const selAsig = document.getElementById('selAsignatura');
+    if (!grado) {
+      selAsig.innerHTML = '<option value="">Selecciona un grado primero</option>';
+      ocultarCard();
+      return;
+    }
+    const asignaturasDelGrado = asignaturasCache.filter(a => !a.grado || a.grado === grado);
+    selAsig.innerHTML = asignaturasDelGrado.length === 0
+      ? '<option value="">No hay asignaturas para este grado</option>'
+      : '<option value="">Selecciona...</option>' + asignaturasDelGrado.map(a => `<option value="${a.id}">${a.nombre}</option>`).join('');
+    ocultarCard();
+  });
+
+  document.getElementById('selAsignatura').addEventListener('change', cargarProgramacion);
+  document.getElementById('selPeriodo').addEventListener('change', cargarProgramacion);
+
+  function ocultarCard() {
+    document.getElementById('avisoVacio').style.display = 'block';
+    document.getElementById('cardProgramacion').classList.remove('visible');
+  }
+
+  let enlacesActuales = [];
+
+  function renderEnlaces() {
+    const cont = document.getElementById('enlacesLista');
+    if (enlacesActuales.length === 0) enlacesActuales.push({ nombre: '', url: '' });
+    cont.innerHTML = enlacesActuales.map((en, i) => `
+      <div class="enlace-fila">
+        <input type="text" placeholder="Nombre (ej: Evaluación periodo 1)" value="${en.nombre}" oninput="actualizarEnlace(${i},'nombre',this.value)"/>
+        <input type="url" placeholder="https://..." value="${en.url}" oninput="actualizarEnlace(${i},'url',this.value)"/>
+        <button type="button" class="btn-quitar-enlace" onclick="quitarEnlace(${i})">&times;</button>
+      </div>
+    `).join('');
+  }
+
+  window.actualizarEnlace = function(i, campo, valor) { enlacesActuales[i][campo] = valor; };
+  window.quitarEnlace = function(i) { enlacesActuales.splice(i, 1); renderEnlaces(); };
+  document.getElementById('btnAgregarEnlace').addEventListener('click', () => { enlacesActuales.push({ nombre: '', url: '' }); renderEnlaces(); });
+
+  async function cargarProgramacion() {
+    const grado = document.getElementById('selGrado').value;
+    const asignaturaId = document.getElementById('selAsignatura').value;
+    const periodo = document.getElementById('selPeriodo').value;
+    if (!grado || !asignaturaId) { ocultarCard(); return; }
+
+    document.getElementById('avisoVacio').style.display = 'none';
+    document.getElementById('cardProgramacion').classList.add('visible');
+
+    const asignatura = asignaturasCache.find(a => a.id === asignaturaId);
+    document.getElementById('cardTitulo').textContent = `${asignatura.nombre} — ${grado} — Periodo ${periodo}`;
+
+    const progId = `${asignaturaId}_${grado}_${periodo}`.replace(/\s+/g, '-');
+    document.getElementById('msgGuardado').classList.remove('visible');
+
+    try {
+      const progSnap = await getDoc(doc(db, 'programacion', progId));
+      if (progSnap.exists()) {
+        const data = progSnap.data();
+        document.getElementById('fTemas').value = data.temas || '';
+        document.getElementById('fMetodologia').value = data.metodologia || '';
+        enlacesActuales = (data.enlaces && data.enlaces.length > 0) ? data.enlaces : [{ nombre: '', url: '' }];
+      } else {
+        document.getElementById('fTemas').value = '';
+        document.getElementById('fMetodologia').value = '';
+        enlacesActuales = [{ nombre: '', url: '' }];
+      }
+    } catch (e) {
+      document.getElementById('fTemas').value = '';
+      document.getElementById('fMetodologia').value = '';
+      enlacesActuales = [{ nombre: '', url: '' }];
+    }
+    renderEnlaces();
+  }
+
+  document.getElementById('btnGuardar').addEventListener('click', async () => {
+    const grado = document.getElementById('selGrado').value;
+    const asignaturaId = document.getElementById('selAsignatura').value;
+    const periodo = document.getElementById('selPeriodo').value;
+    if (!grado || !asignaturaId) return;
+
+    const btn = document.getElementById('btnGuardar');
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    const msg = document.getElementById('msgGuardado');
+
+    const progId = `${asignaturaId}_${grado}_${periodo}`.replace(/\s+/g, '-');
+    const enlacesLimpios = enlacesActuales.filter(en => en.url && en.url.trim() !== '');
+
+    try {
+      await setDoc(doc(db, 'programacion', progId), {
+        institucionId,
+        grado,
+        asignaturaId,
+        periodo: parseInt(periodo, 10),
+        temas: document.getElementById('fTemas').value.trim(),
+        metodologia: document.getElementById('fMetodologia').value.trim(),
+        enlaces: enlacesLimpios,
+        docenteId: auth.currentUser.uid,
+        fechaActualizacion: new Date().toISOString(),
+      });
+      msg.className = 'msg visible msg-ok';
+      msg.querySelector('span').textContent = '✓ Programación guardada correctamente.';
+    } catch (err) {
+      msg.className = 'msg visible msg-err';
+      msg.querySelector('span').textContent = 'No se pudo guardar. Intenta de nuevo.';
+      console.error(err);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Guardar programación';
+    }
+  });
+
+  document.getElementById('btnSalir').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'index.html';
+  });
+</script>
+</body>
+</html>
