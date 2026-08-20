@@ -202,8 +202,17 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
       <div id="cardCargaMasiva" style="display:none">
         <a class="module-card m-morado" href="carga-masiva.html">
           <div class="module-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
-          <p class="module-name">Carga masiva desde Excel</p>
-          <p class="module-desc">Sube estudiantes, docentes y asignaturas de una sola vez, desde un archivo.</p>
+          <p class="module-name">Carga masiva de estudiantes</p>
+          <p class="module-desc">Sube estudiantes desde un archivo Excel o CSV, con validación y detección de duplicados.</p>
+          <span class="module-badge badge-azul">Admin</span>
+        </a>
+      </div>
+
+      <div id="cardCargaMasivaDocentes" style="display:none">
+        <a class="module-card m-morado" href="carga-masiva-docentes.html">
+          <div class="module-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+          <p class="module-name">Carga masiva de docentes</p>
+          <p class="module-desc">Crea las cuentas de acceso de varios docentes de una sola vez, desde un archivo.</p>
           <span class="module-badge badge-azul">Admin</span>
         </a>
       </div>
@@ -246,6 +255,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
       if (usuario.rol === 'admin') {
         document.getElementById('cardCrearUsuario').style.display = 'block';
         document.getElementById('cardCargaMasiva').style.display = 'block';
+        document.getElementById('cardCargaMasivaDocentes').style.display = 'block';
       }
 
       // Cargar estadísticas (best-effort, no bloquea el panel si falla)

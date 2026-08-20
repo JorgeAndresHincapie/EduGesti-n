@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduGestión — Carga masiva de docentes</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
+  --verde: #1A7A5E; --verde-light: #E8F5F0;
+  --naranja: #C05621; --naranja-light: #FFF3EB;
+  --rojo: #C53030; --rojo-light: #FFF5F5;
+  --gris: #F4F6F9; --borde: #DDE3EC;
+  --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
+  --blanco: #FFFFFF;
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); color: var(--texto); min-height: 100vh; }
+
+.topbar { background: var(--azul); height: 58px; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.topbar-left { display: flex; align-items: center; gap: 0.9rem; }
+.topbar-back { color: white; text-decoration: none; font-size: 0.85rem; opacity: 0.85; }
+.topbar-back:hover { opacity: 1; }
+.topbar-brand { font-size: 1.0rem; font-weight: 700; color: white; }
+.btn-salir { background: rgba(255,255,255,0.12); color: white; border: none; padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+.main { max-width: 950px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
+.titulo { font-family: 'Instrument Serif', serif; font-size: 1.8rem; margin-bottom: 0.4rem; }
+.sub { font-size: 0.85rem; color: var(--texto-light); margin-bottom: 1.6rem; line-height: 1.5; }
+
+.card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.3rem; }
+.card-titulo { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.6rem; }
+
+.info-box { background: var(--azul-light); color: var(--azul); border-radius: 10px; padding: 0.9rem 1.1rem; font-size: 0.8rem; line-height: 1.6; margin-bottom: 1rem; }
+.info-box code { background: rgba(26,79,138,0.1); padding: 0.1rem 0.35rem; border-radius: 4px; font-weight: 600; }
+
+.btn-descargar { background: var(--gris); border: 1.3px dashed var(--borde); color: var(--texto-mid); padding: 0.55rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
+.btn-descargar:hover { background: var(--azul-light); color: var(--azul); border-color: var(--azul); }
+
+.dropzone { border: 2px dashed var(--borde); border-radius: 12px; padding: 2.2rem; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.dropzone:hover, .dropzone.arrastrando { border-color: var(--azul); background: var(--azul-light); }
+.dropzone p { font-size: 0.85rem; color: var(--texto-mid); }
+.dropzone .nombre-archivo { font-weight: 700; color: var(--azul); margin-top: 0.4rem; }
+input[type="file"] { display: none; }
+
+.opcion-modo { display: flex; align-items: start; gap: 0.7rem; padding: 0.9rem 1rem; border: 1.5px solid var(--borde); border-radius: 10px; cursor: pointer; margin-bottom: 0.6rem; }
+.opcion-modo.activa { border-color: var(--azul); background: var(--azul-light); }
+.opcion-modo input { margin-top: 0.2rem; }
+.opcion-modo-texto b { display: block; font-size: 0.85rem; margin-bottom: 0.15rem; }
+.opcion-modo-texto span { font-size: 0.78rem; color: var(--texto-light); line-height: 1.4; }
+
+.resumen-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; margin: 1rem 0 1.3rem; }
+.resumen-item { text-align: center; padding: 0.9rem; border-radius: 10px; }
+.resumen-num { font-family: 'Instrument Serif', serif; font-size: 1.6rem; }
+.resumen-label { font-size: 0.7rem; color: var(--texto-light); margin-top: 0.15rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.ri-total { background: var(--gris); }
+.ri-validos { background: var(--verde-light); }
+.ri-duplicados { background: var(--naranja-light); }
+.ri-errores { background: var(--rojo-light); }
+.ri-total .resumen-num { color: var(--texto); }
+.ri-validos .resumen-num { color: var(--verde); }
+.ri-duplicados .resumen-num { color: var(--naranja); }
+.ri-errores .resumen-num { color: var(--rojo); }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+th { text-align: left; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--texto-light); padding: 0.6rem 0.6rem; background: var(--gris); border-bottom: 1.5px solid var(--borde); position: sticky; top: 0; }
+td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--borde); vertical-align: top; }
+.tabla-scroll { max-height: 420px; overflow-y: auto; border: 1.5px solid var(--borde); border-radius: 10px; }
+.fila-error { background: var(--rojo-light); }
+.fila-duplicado { background: var(--naranja-light); }
+.estado-chip { font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 8px; display: inline-block; }
+.chip-ok { background: var(--verde-light); color: var(--verde); }
+.chip-error { background: var(--rojo-light); color: var(--rojo); }
+.chip-duplicado { background: var(--naranja-light); color: var(--naranja); }
+.detalle-error { font-size: 0.72rem; color: var(--rojo); margin-top: 0.15rem; }
+.chip-creado { background: var(--verde-light); color: var(--verde); }
+.chip-fallido { background: var(--rojo-light); color: var(--rojo); }
+
+.footer-acciones { display: flex; justify-content: space-between; align-items: center; margin-top: 1.3rem; }
+.btn-primario { background: var(--azul); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 9px; font-weight: 700; font-size: 0.88rem; cursor: pointer; font-family: inherit; }
+.btn-primario:hover { background: var(--azul-dark); }
+.btn-primario:disabled { opacity: 0.5; cursor: default; }
+.contador-final { font-size: 0.82rem; color: var(--texto-light); }
+
+.progreso-wrap { margin-top: 1rem; display: none; }
+.progreso-wrap.visible { display: block; }
+.barra-bg { background: var(--gris); border-radius: 8px; height: 10px; overflow: hidden; }
+.barra-fill { background: var(--verde); height: 100%; width: 0%; transition: width 0.15s; }
+.progreso-texto { font-size: 0.8rem; color: var(--texto-mid); margin-top: 0.5rem; text-align: center; }
+
+.resultado-final { margin-top: 1rem; padding: 1rem 1.2rem; border-radius: 10px; font-size: 0.85rem; display: none; }
+.resultado-final.visible { display: block; }
+.resultado-final.ok { background: var(--verde-light); color: var(--verde); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="dashboard.html" class="topbar-back">← Panel</a>
+    <span class="topbar-brand">Carga masiva de docentes</span>
+  </div>
+  <button class="btn-salir" id="btnSalir">Salir</button>
+</header>
+
+<main class="main">
+  <p class="titulo">Carga masiva de docentes</p>
+  <p class="sub">Sube un archivo con tus docentes y el sistema crea la cuenta de acceso de cada uno automáticamente, sin sacarte de tu propia sesión de administrador.</p>
+
+  <div class="card">
+    <p class="card-titulo">1. Formato del archivo</p>
+    <div class="info-box">
+      Columnas esperadas: <code>Nombres</code>, <code>Correo</code>. La columna <code>Contraseña</code> es opcional (ver modo de contraseña abajo). Se aceptan archivos <code>.csv</code>, <code>.xlsx</code> o <code>.xls</code>.
+    </div>
+    <button class="btn-descargar" id="btnDescargarPlantilla">⬇ Descargar plantilla CSV de ejemplo</button>
+  </div>
+
+  <div class="card">
+    <p class="card-titulo">2. ¿Cómo asignamos la contraseña?</p>
+    <label class="opcion-modo activa" id="opcionAuto">
+      <input type="radio" name="modoPassword" value="auto" checked/>
+      <div class="opcion-modo-texto">
+        <b>Cada docente crea su propia contraseña (recomendado)</b>
+        <span>Se crea la cuenta con una contraseña temporal aleatoria y de inmediato se envía un correo de restablecimiento a cada docente para que defina la suya. No necesitas comunicarles nada manualmente.</span>
+      </div>
+    </label>
+    <label class="opcion-modo" id="opcionManual">
+      <input type="radio" name="modoPassword" value="manual"/>
+      <div class="opcion-modo-texto">
+        <b>Yo defino la contraseña (columna "Contraseña" en el archivo)</b>
+        <span>Usa la contraseña que traiga cada fila (mínimo 6 caracteres). Tendrás que comunicarla tú mismo a cada docente.</span>
+      </div>
+    </label>
+  </div>
+
+  <div class="card">
+    <p class="card-titulo">3. Sube tu archivo</p>
+    <div class="dropzone" id="dropzone">
+      <p>Arrastra tu archivo aquí, o haz clic para seleccionarlo</p>
+      <p class="nombre-archivo" id="nombreArchivo"></p>
+      <input type="file" id="inputArchivo" accept=".csv,.xlsx,.xls"/>
+    </div>
+  </div>
+
+  <div id="cardResumen" class="card" style="display:none">
+    <p class="card-titulo">4. Revisión antes de crear las cuentas</p>
+    <div class="resumen-grid">
+      <div class="resumen-item ri-total"><div class="resumen-num" id="numTotal">0</div><div class="resumen-label">Filas leídas</div></div>
+      <div class="resumen-item ri-validos"><div class="resumen-num" id="numValidos">0</div><div class="resumen-label">Listos para crear</div></div>
+      <div class="resumen-item ri-duplicados"><div class="resumen-num" id="numDuplicados">0</div><div class="resumen-label">Correo repetido</div></div>
+      <div class="resumen-item ri-errores"><div class="resumen-num" id="numErrores">0</div><div class="resumen-label">Con errores</div></div>
+    </div>
+
+    <div class="tabla-scroll">
+      <table>
+        <thead>
+          <tr><th>Fila</th><th>Nombre</th><th>Correo</th><th>Estado</th></tr>
+        </thead>
+        <tbody id="cuerpoRevision"></tbody>
+      </table>
+    </div>
+
+    <div class="footer-acciones">
+      <span class="contador-final" id="contadorFinal">0 docentes listos para crear</span>
+      <button class="btn-primario" id="btnConfirmarCarga" disabled>Crear cuentas de docentes</button>
+    </div>
+
+    <div class="progreso-wrap" id="progresoWrap">
+      <div class="barra-bg"><div class="barra-fill" id="barraFill"></div></div>
+      <p class="progreso-texto" id="progresoTexto">0 / 0</p>
+    </div>
+
+    <div class="resultado-final" id="resultadoFinal"></div>
+  </div>
+</main>
+
+<script type="module">
+  import { auth, db, firebaseConfig, onAuthStateChanged, signOut, doc, getDoc, setDoc, getDocs, collection, query, where, serverTimestamp, sendPasswordResetEmail } from './firebase.js';
+  import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth as getAuthSecundario, createUserWithEmailAndPassword, signOut as signOutSecundario } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  let institucionId = null;
+  let correosExistentes = new Set();
+  let filasProcesadas = [];
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'index.html'; return; }
+    const usuarioSnap = await getDoc(doc(db, 'usuarios', user.uid));
+    if (!usuarioSnap.exists()) { window.location.href = 'index.html'; return; }
+    const usuarioActual = usuarioSnap.data();
+    if (usuarioActual.rol !== 'admin') { window.location.href = 'dashboard.html'; return; }
+    institucionId = usuarioActual.institucionId;
+
+    const usuariosSnap = await getDocs(query(collection(db, 'usuarios'), where('institucionId', '==', institucionId)));
+    usuariosSnap.forEach(d => { if (d.data().email) correosExistentes.add(d.data().email.toLowerCase()); });
+  });
+
+  // ── Selección de modo de contraseña ──
+  document.querySelectorAll('input[name="modoPassword"]').forEach(r => {
+    r.addEventListener('change', () => {
+      document.getElementById('opcionAuto').classList.toggle('activa', document.querySelector('input[value="auto"]').checked);
+      document.getElementById('opcionManual').classList.toggle('activa', document.querySelector('input[value="manual"]').checked);
+      if (filasProcesadas.length > 0) validarYMostrar(filasProcesadas.map(f => f._crudo));
+    });
+  });
+
+  function modoPasswordActual() {
+    return document.querySelector('input[name="modoPassword"]:checked').value;
+  }
+
+  // ── Plantilla descargable ──
+  document.getElementById('btnDescargarPlantilla').addEventListener('click', () => {
+    const contenido = 'Nombres,Correo,Contraseña\n' +
+      'Laura Martínez,laura.martinez@colegio.edu.co,\n' +
+      'Carlos Gómez,carlos.gomez@colegio.edu.co,\n';
+    const blob = new Blob(['\uFEFF' + contenido], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'plantilla_docentes.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // ── Drag & drop / selección de archivo ──
+  const dropzone = document.getElementById('dropzone');
+  const inputArchivo = document.getElementById('inputArchivo');
+  dropzone.addEventListener('click', () => inputArchivo.click());
+  dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('arrastrando'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('arrastrando'));
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('arrastrando');
+    if (e.dataTransfer.files.length > 0) procesarArchivo(e.dataTransfer.files[0]);
+  });
+  inputArchivo.addEventListener('change', () => {
+    if (inputArchivo.files.length > 0) procesarArchivo(inputArchivo.files[0]);
+  });
+
+  function normalizarEncabezado(s) {
+    return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+  }
+
+  const MAPA_ENCABEZADOS = {
+    'nombres': 'nombres', 'nombre': 'nombres', 'nombrecompleto': 'nombres',
+    'correo': 'correo', 'email': 'correo', 'correoelectronico': 'correo',
+    'contrasena': 'contrasena', 'contraseña': 'contrasena', 'password': 'contrasena', 'clave': 'contrasena',
+  };
+
+  function procesarArchivo(archivo) {
+    document.getElementById('nombreArchivo').textContent = archivo.name;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const primeraHoja = wb.Sheets[wb.SheetNames[0]];
+        const filas = XLSX.utils.sheet_to_json(primeraHoja, { defval: '' });
+        validarYMostrar(filas);
+      } catch (err) {
+        alert('No se pudo leer el archivo. Verifica que sea un .csv, .xlsx o .xls válido.');
+        console.error(err);
+      }
+    };
+    reader.readAsArrayBuffer(archivo);
+  }
+
+  function emailValido(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  function generarPasswordTemporal() {
+    return Math.random().toString(36).slice(-6) + Math.random().toString(36).slice(-6).toUpperCase() + '!7';
+  }
+
+  function validarYMostrar(filasCrudas) {
+    const modo = modoPasswordActual();
+    const correosVistosEnArchivo = new Set();
+
+    filasProcesadas = filasCrudas.map((filaCruda, idx) => {
+      const fila = {};
+      Object.keys(filaCruda).forEach(k => {
+        const clave = MAPA_ENCABEZADOS[normalizarEncabezado(k)];
+        if (clave) fila[clave] = filaCruda[k];
+      });
+
+      const nombres = (fila.nombres || '').toString().trim();
+      const correo = (fila.correo || '').toString().trim().toLowerCase();
+      const contrasenaArchivo = (fila.contrasena || '').toString().trim();
+
+      const errores = [];
+      if (!nombres) errores.push('Falta el nombre');
+      if (!correo) errores.push('Falta el correo');
+      else if (!emailValido(correo)) errores.push('Correo con formato inválido');
+      if (modo === 'manual') {
+        if (!contrasenaArchivo) errores.push('Falta la contraseña (modo manual)');
+        else if (contrasenaArchivo.length < 6) errores.push('La contraseña debe tener al menos 6 caracteres');
+      }
+
+      let esDuplicado = false;
+      if (correo) {
+        if (correosExistentes.has(correo)) esDuplicado = true;
+        else if (correosVistosEnArchivo.has(correo)) esDuplicado = true;
+        else correosVistosEnArchivo.add(correo);
+      }
+
+      let estado = 'ok';
+      if (errores.length > 0) estado = 'error';
+      else if (esDuplicado) estado = 'duplicado';
+
+      const passwordFinal = modo === 'manual' ? contrasenaArchivo : generarPasswordTemporal();
+
+      return { fila: idx + 2, nombres, correo, password: passwordFinal, errores, estado, _crudo: filaCruda };
+    });
+
+    renderRevision();
+  }
+
+  function renderRevision() {
+    document.getElementById('cardResumen').style.display = 'block';
+    const total = filasProcesadas.length;
+    const validos = filasProcesadas.filter(f => f.estado === 'ok').length;
+    const duplicados = filasProcesadas.filter(f => f.estado === 'duplicado').length;
+    const errores = filasProcesadas.filter(f => f.estado === 'error').length;
+
+    document.getElementById('numTotal').textContent = total;
+    document.getElementById('numValidos').textContent = validos;
+    document.getElementById('numDuplicados').textContent = duplicados;
+    document.getElementById('numErrores').textContent = errores;
+
+    const cuerpo = document.getElementById('cuerpoRevision');
+    cuerpo.innerHTML = filasProcesadas.map(f => {
+      const claseFila = f.estado === 'error' ? 'fila-error' : f.estado === 'duplicado' ? 'fila-duplicado' : '';
+      const chip = f.estado === 'ok'
+        ? '<span class="estado-chip chip-ok">✓ Lista</span>'
+        : f.estado === 'duplicado'
+          ? '<span class="estado-chip chip-duplicado">Correo repetido</span>'
+          : '<span class="estado-chip chip-error">Error</span>';
+      const detalleError = f.errores.length > 0 ? `<div class="detalle-error">${f.errores.join('; ')}</div>` : (f.estado === 'duplicado' ? '<div class="detalle-error" style="color:var(--naranja)">Ya existe un usuario con este correo</div>' : '');
+      return `
+        <tr class="${claseFila}" id="fila-${f.fila}">
+          <td>${f.fila}</td>
+          <td>${f.nombres || '—'}</td>
+          <td>${f.correo || '—'}</td>
+          <td class="celda-estado">${chip}${detalleError}</td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('contadorFinal').textContent = `${validos} docente(s) listos para crear${duplicados > 0 ? ` — ${duplicados} correo(s) repetido(s) se omitirán` : ''}${errores > 0 ? ` — ${errores} con errores se omitirán` : ''}`;
+    document.getElementById('btnConfirmarCarga').disabled = validos === 0;
+    document.getElementById('resultadoFinal').classList.remove('visible');
+  }
+
+  document.getElementById('btnConfirmarCarga').addEventListener('click', async () => {
+    const validos = filasProcesadas.filter(f => f.estado === 'ok');
+    if (validos.length === 0) return;
+    const modo = modoPasswordActual();
+
+    const btn = document.getElementById('btnConfirmarCarga');
+    const wrap = document.getElementById('progresoWrap');
+    const fill = document.getElementById('barraFill');
+    const texto = document.getElementById('progresoTexto');
+    btn.disabled = true;
+    wrap.classList.add('visible');
+
+    let creados = 0, fallidos = 0;
+    for (let i = 0; i < validos.length; i++) {
+      const f = validos[i];
+      const celdaEstado = document.querySelector(`#fila-${f.fila} .celda-estado`);
+      let appSecundaria = null;
+      try {
+        // App secundaria "desechable": crea la cuenta sin tocar la sesión del admin
+        appSecundaria = initializeApp(firebaseConfig, `secundaria-${f.fila}-${Date.now()}`);
+        const authSecundario = getAuthSecundario(appSecundaria);
+
+        const cred = await createUserWithEmailAndPassword(authSecundario, f.correo, f.password);
+        const uid = cred.user.uid;
+
+        await setDoc(doc(db, 'usuarios', uid), {
+          nombre: f.nombres,
+          email: f.correo,
+          rol: 'docente',
+          institucionId,
+          fechaCreacion: serverTimestamp(),
+        });
+
+        if (modo === 'auto') {
+          await sendPasswordResetEmail(authSecundario, f.correo);
+        }
+
+        await signOutSecundario(authSecundario);
+        creados++;
+        if (celdaEstado) celdaEstado.innerHTML = '<span class="estado-chip chip-creado">✓ Cuenta creada</span>';
+      } catch (err) {
+        console.error('Error creando docente', f.correo, err);
+        fallidos++;
+        let msg = 'No se pudo crear';
+        if (err.code === 'auth/email-already-in-use') msg = 'El correo ya está en uso';
+        if (celdaEstado) celdaEstado.innerHTML = `<span class="estado-chip chip-fallido">✗ Falló</span><div class="detalle-error">${msg}</div>`;
+      } finally {
+        if (appSecundaria) { try { await deleteApp(appSecundaria); } catch (e) {} }
+      }
+
+      const pct = Math.round(((i + 1) / validos.length) * 100);
+      fill.style.width = pct + '%';
+      texto.textContent = `${i + 1} / ${validos.length}`;
+    }
+
+    const resultado = document.getElementById('resultadoFinal');
+    resultado.classList.add('visible', 'ok');
+    resultado.textContent = fallidos === 0
+      ? `✓ Se crearon ${creados} cuentas de docentes correctamente.${modo === 'auto' ? ' Se envió un correo a cada uno para que defina su contraseña.' : ''}`
+      : `Se crearon ${creados} cuentas, pero ${fallidos} fallaron. Revisa el detalle en la tabla e intenta de nuevo con esos casos.`;
+    btn.disabled = false;
+    btn.textContent = 'Crear cuentas de docentes';
+  });
+
+  document.getElementById('btnSalir').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'index.html';
+  });
+</script>
+</body>
+</html>
