@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduGestión — Generador con IA</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
+  --morado: #553C9A; --morado-dark: #402D75; --morado-light: #F0EBFF;
+  --verde: #1A7A5E; --verde-light: #E8F5F0;
+  --naranja: #C05621; --naranja-light: #FFF3EB;
+  --gris: #F4F6F9; --borde: #DDE3EC;
+  --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
+  --blanco: #FFFFFF; --rojo: #C53030; --rojo-light: #FFF5F5;
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); color: var(--texto); min-height: 100vh; }
+
+.topbar { background: var(--morado); height: 58px; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.topbar-left { display: flex; align-items: center; gap: 0.9rem; }
+.topbar-back { color: white; text-decoration: none; font-size: 0.85rem; opacity: 0.85; }
+.topbar-back:hover { opacity: 1; }
+.topbar-brand { font-size: 1.0rem; font-weight: 700; color: white; }
+.btn-salir { background: rgba(255,255,255,0.12); color: white; border: none; padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+.main { max-width: 800px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
+.titulo { font-family: 'Instrument Serif', serif; font-size: 1.8rem; margin-bottom: 0.4rem; }
+.sub { font-size: 0.85rem; color: var(--texto-light); margin-bottom: 1.6rem; line-height: 1.5; }
+
+.tabs { display: flex; gap: 0.5rem; margin-bottom: 1.4rem; }
+.tab-btn { flex: 1; background: var(--blanco); border: 1.5px solid var(--borde); padding: 0.7rem; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; color: var(--texto-mid); }
+.tab-btn.activo { background: var(--morado); color: white; border-color: var(--morado); }
+
+.card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.6rem; margin-bottom: 1.3rem; }
+.field { margin-bottom: 1.1rem; }
+.field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--texto-mid); margin-bottom: 0.4rem; }
+.field input, .field select, .field textarea { width: 100%; padding: 0.65rem 0.75rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.88rem; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--morado); }
+.field textarea { resize: vertical; min-height: 80px; }
+.field-row { display: flex; gap: 0.9rem; }
+.field-row .field { flex: 1; }
+.field-hint { display: block; font-size: 0.72rem; color: var(--texto-light); margin-top: 0.3rem; }
+
+.chips-tipo { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.chip-tipo { border: 1.5px solid var(--borde); border-radius: 20px; padding: 0.4rem 0.9rem; font-size: 0.78rem; font-weight: 600; cursor: pointer; color: var(--texto-mid); background: white; }
+.chip-tipo.activo { background: var(--morado-light); border-color: var(--morado); color: var(--morado); }
+
+.btn-generar { width: 100%; background: var(--morado); color: white; border: none; border-radius: 9px; font-weight: 700; font-size: 0.9rem; padding: 0.8rem; cursor: pointer; margin-top: 0.4rem; font-family: inherit; }
+.btn-generar:hover { background: var(--morado-dark); }
+.btn-generar:disabled { opacity: 0.6; cursor: default; }
+
+.msg { display: none; font-size: 0.82rem; padding: 0.7rem 0.9rem; border-radius: 8px; margin-bottom: 1rem; }
+.msg.visible { display: block; }
+.msg-err { background: var(--rojo-light); color: var(--rojo); }
+.msg-info { background: var(--morado-light); color: var(--morado); }
+
+.spinner-wrap { text-align: center; padding: 2rem; display: none; }
+.spinner-wrap.visible { display: block; }
+.spinner { width: 34px; height: 34px; border: 3px solid var(--borde); border-top-color: var(--morado); border-radius: 50%; margin: 0 auto 0.8rem; animation: girar 0.8s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+.spinner-texto { font-size: 0.82rem; color: var(--texto-light); }
+
+/* ── Resultado: contenido ── */
+.resultado-wrap { display: none; }
+.resultado-wrap.visible { display: block; }
+
+/* ── Reutilizado del constructor de preguntas de evaluaciones.html ── */
+.preguntas-titulo { font-size: 0.85rem; font-weight: 700; margin: 1.2rem 0 0.7rem; padding-top: 1rem; border-top: 1.5px dashed var(--borde); }
+.pregunta-card { background: var(--gris); border-radius: 10px; padding: 0.9rem; margin-bottom: 0.8rem; }
+.pregunta-card-top { display: flex; gap: 0.6rem; align-items: start; margin-bottom: 0.6rem; }
+.pregunta-card select.tipo-pregunta { max-width: 190px; }
+.btn-quitar-pregunta { background: none; border: none; color: var(--rojo); cursor: pointer; font-size: 0.76rem; font-weight: 700; padding: 0.3rem 0.5rem; }
+.opciones-wrap { margin-top: 0.6rem; }
+.opcion-fila { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
+.opcion-fila input[type="text"] { flex: 1; padding: 0.45rem 0.6rem; border: 1.3px solid var(--borde); border-radius: 6px; font-family: inherit; font-size: 0.8rem; }
+.opcion-fila input[type="radio"] { width: 16px; height: 16px; flex-shrink: 0; }
+.btn-quitar-opcion { background: none; border: none; color: var(--texto-light); cursor: pointer; font-size: 1rem; padding: 0 0.3rem; }
+.btn-agregar-opcion { background: none; border: 1.3px dashed var(--borde); color: var(--texto-mid); padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.74rem; cursor: pointer; font-family: inherit; margin-top: 0.2rem; }
+.vf-opciones { display: flex; gap: 1.2rem; margin-top: 0.6rem; }
+.vf-opciones label { display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; cursor: pointer; }
+.btn-agregar-pregunta { width: 100%; background: var(--morado-light); color: var(--morado); border: 1.5px dashed var(--morado); padding: 0.7rem; border-radius: 9px; font-weight: 700; font-size: 0.84rem; cursor: pointer; font-family: inherit; margin-bottom: 1.2rem; }
+.btn-agregar-pregunta:hover { background: var(--morado); color: white; }
+
+.btn-guardar-final { width: 100%; background: var(--azul); color: white; border: none; border-radius: 9px; font-weight: 700; font-size: 0.88rem; padding: 0.78rem; cursor: pointer; font-family: inherit; }
+.btn-guardar-final:hover { background: var(--azul-dark); }
+.btn-guardar-final:disabled { opacity: 0.6; }
+.aviso-editable { background: var(--verde-light); color: var(--verde); border-radius: 8px; padding: 0.7rem 0.9rem; font-size: 0.8rem; margin-bottom: 1rem; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="dashboard.html" class="topbar-back">← Panel</a>
+    <span class="topbar-brand">✨ Generador con IA</span>
+  </div>
+  <button class="btn-salir" id="btnSalir">Salir</button>
+</header>
+
+<main class="main">
+  <p class="titulo">Generador de contenido y evaluaciones</p>
+  <p class="sub">Describe el tema y deja que la IA te arme un primer borrador — siempre revisable y editable antes de guardar.</p>
+
+  <div class="tabs">
+    <button class="tab-btn activo" id="tabContenido">📄 Contenido educativo</button>
+    <button class="tab-btn" id="tabEvaluacion">✅ Evaluación</button>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label>Tema / objetivo de aprendizaje</label>
+      <textarea id="fTema" placeholder="Ej: Las fracciones equivalentes, con ejemplos de la vida cotidiana"></textarea>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Asignatura</label>
+        <input type="text" id="fAsignatura" placeholder="Ej: Matemáticas"/>
+      </div>
+      <div class="field">
+        <label>Grado / Grupo</label>
+        <input type="text" id="fGrado" placeholder="Ej: 5° A"/>
+      </div>
+    </div>
+
+    <div id="opcionesEvaluacion" style="display:none">
+      <div class="field">
+        <label>Número de preguntas</label>
+        <input type="number" id="fNumPreguntas" min="2" max="8" value="5"/>
+      </div>
+      <div class="field">
+        <label>Tipos de pregunta a incluir</label>
+        <div class="chips-tipo">
+          <button type="button" class="chip-tipo activo" data-tipo="multiple">Selección múltiple</button>
+          <button type="button" class="chip-tipo activo" data-tipo="vf">Verdadero/Falso</button>
+          <button type="button" class="chip-tipo" data-tipo="abierta">Abiertas</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="msg msg-err" id="msgErr"><span id="msgErrTexto"></span></div>
+    <button class="btn-generar" id="btnGenerar">✨ Generar con IA</button>
+  </div>
+
+  <div class="spinner-wrap" id="spinnerWrap">
+    <div class="spinner"></div>
+    <p class="spinner-texto" id="spinnerTexto">Generando...</p>
+  </div>
+
+  <!-- ── Resultado: contenido educativo ── -->
+  <div class="resultado-wrap" id="resultadoContenido">
+    <div class="card">
+      <div class="aviso-editable">✓ Borrador generado. Revísalo y edítalo antes de guardar.</div>
+      <div class="field">
+        <label>Título</label>
+        <input type="text" id="rcTitulo"/>
+      </div>
+      <div class="field">
+        <label>Contenido</label>
+        <textarea id="rcContenido" style="min-height:260px"></textarea>
+      </div>
+      <button class="btn-guardar-final" id="btnGuardarContenido">Guardar en Programación curricular</button>
+    </div>
+  </div>
+
+  <!-- ── Resultado: evaluación ── -->
+  <div class="resultado-wrap" id="resultadoEvaluacion">
+    <div class="card">
+      <div class="aviso-editable">✓ Preguntas generadas. Revísalas, ajústalas y quita o agrega lo que necesites antes de guardar.</div>
+      <div class="field">
+        <label>Título de la evaluación</label>
+        <input type="text" id="reTitulo"/>
+      </div>
+      <p class="preguntas-titulo">Preguntas</p>
+      <div id="listaPreguntas"></div>
+      <button type="button" class="btn-agregar-pregunta" id="btnAgregarPregunta">+ Agregar pregunta</button>
+      <button class="btn-guardar-final" id="btnGuardarEvaluacion">Guardar en Evaluaciones</button>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, addDoc, collection, serverTimestamp } from './firebase.js';
+
+  let institucionId = null;
+  let usuarioActual = null;
+  let uidActual = null;
+  let modo = 'contenido';
+  let tiposActivos = new Set(['multiple', 'vf']);
+  let contadorPreguntas = 0;
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'index.html'; return; }
+    const usuarioSnap = await getDoc(doc(db, 'usuarios', user.uid));
+    if (!usuarioSnap.exists()) { window.location.href = 'index.html'; return; }
+    usuarioActual = usuarioSnap.data();
+    uidActual = user.uid;
+    institucionId = usuarioActual.institucionId;
+  });
+
+  // ── Tabs ──
+  document.getElementById('tabContenido').addEventListener('click', () => cambiarModo('contenido'));
+  document.getElementById('tabEvaluacion').addEventListener('click', () => cambiarModo('evaluacion'));
+
+  function cambiarModo(m) {
+    modo = m;
+    document.getElementById('tabContenido').classList.toggle('activo', m === 'contenido');
+    document.getElementById('tabEvaluacion').classList.toggle('activo', m === 'evaluacion');
+    document.getElementById('opcionesEvaluacion').style.display = m === 'evaluacion' ? 'block' : 'none';
+    document.getElementById('resultadoContenido').classList.remove('visible');
+    document.getElementById('resultadoEvaluacion').classList.remove('visible');
+  }
+
+  document.querySelectorAll('.chip-tipo').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const tipo = chip.dataset.tipo;
+      if (tiposActivos.has(tipo)) {
+        if (tiposActivos.size === 1) return; // al menos un tipo activo
+        tiposActivos.delete(tipo);
+        chip.classList.remove('activo');
+      } else {
+        tiposActivos.add(tipo);
+        chip.classList.add('activo');
+      }
+    });
+  });
+
+  function limpiarJSON(texto) {
+    return texto.replace(/```json/gi, '').replace(/```/g, '').trim();
+  }
+
+  async function llamarClaude(prompt, maxTokens) {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: maxTokens,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    const data = await response.json();
+    const texto = (data.content || []).map(b => b.text || '').join('\n');
+    return texto;
+  }
+
+  document.getElementById('btnGenerar').addEventListener('click', async () => {
+    const tema = document.getElementById('fTema').value.trim();
+    const asignatura = document.getElementById('fAsignatura').value.trim();
+    const grado = document.getElementById('fGrado').value.trim();
+    const msgErr = document.getElementById('msgErr');
+    msgErr.classList.remove('visible');
+
+    if (!tema) {
+      msgErr.querySelector('#msgErrTexto').textContent = 'Describe el tema u objetivo de aprendizaje primero.';
+      msgErr.classList.add('visible');
+      return;
+    }
+
+    const btn = document.getElementById('btnGenerar');
+    btn.disabled = true;
+    document.getElementById('spinnerWrap').classList.add('visible');
+    document.getElementById('spinnerTexto').textContent = modo === 'contenido' ? 'Redactando el contenido...' : 'Redactando las preguntas...';
+    document.getElementById('resultadoContenido').classList.remove('visible');
+    document.getElementById('resultadoEvaluacion').classList.remove('visible');
+
+    try {
+      if (modo === 'contenido') {
+        const prompt = `Eres un asistente pedagógico. Redacta contenido educativo claro y bien estructurado para usar en clase, sobre este tema: "${tema}"${asignatura ? `, para la asignatura ${asignatura}` : ''}${grado ? `, dirigido a estudiantes de ${grado}` : ''}.
+Responde ÚNICAMENTE con un JSON válido, sin texto adicional ni marcado de código, con esta forma exacta:
+{"titulo": "...", "contenido": "..."}
+El campo "contenido" debe tener el texto completo listo para usar (puede incluir varios párrafos separados por saltos de línea), en español, con un tono claro y apropiado para el nivel indicado.`;
+
+        const texto = await llamarClaude(prompt, 1200);
+        const json = JSON.parse(limpiarJSON(texto));
+        document.getElementById('rcTitulo').value = json.titulo || tema;
+        document.getElementById('rcContenido').value = json.contenido || '';
+        document.getElementById('resultadoContenido').classList.add('visible');
+        document.getElementById('resultadoContenido').scrollIntoView({ behavior: 'smooth' });
+      } else {
+        const numPreguntas = parseInt(document.getElementById('fNumPreguntas').value, 10) || 5;
+        const tiposTexto = [...tiposActivos].map(t => t === 'multiple' ? 'selección múltiple (con 4 opciones)' : t === 'vf' ? 'verdadero o falso' : 'pregunta abierta').join(', ');
+
+        const prompt = `Eres un asistente pedagógico. Genera una evaluación de ${numPreguntas} preguntas sobre el tema: "${tema}"${asignatura ? `, asignatura ${asignatura}` : ''}${grado ? `, para estudiantes de ${grado}` : ''}.
+Combina estos tipos de pregunta: ${tiposTexto}.
+Responde ÚNICAMENTE con un JSON válido, sin texto adicional ni marcado de código, con esta forma exacta:
+{"titulo": "...", "preguntas": [
+  {"tipo": "multiple", "enunciado": "...", "opciones": ["...", "...", "...", "..."], "correcta": 0},
+  {"tipo": "vf", "enunciado": "...", "correcta": true},
+  {"tipo": "abierta", "enunciado": "..."}
+]}
+"correcta" en preguntas de tipo "multiple" es el índice (empezando en 0) de la opción correcta dentro de "opciones". "correcta" en tipo "vf" es true o false. Las preguntas abiertas no llevan "correcta". Todo el texto en español.`;
+
+        const texto = await llamarClaude(prompt, 1800);
+        const json = JSON.parse(limpiarJSON(texto));
+        document.getElementById('reTitulo').value = json.titulo || tema;
+        document.getElementById('listaPreguntas').innerHTML = '';
+        contadorPreguntas = 0;
+        (json.preguntas || []).forEach(p => crearFilaPregunta(p));
+        document.getElementById('resultadoEvaluacion').classList.add('visible');
+        document.getElementById('resultadoEvaluacion').scrollIntoView({ behavior: 'smooth' });
+      }
+    } catch (err) {
+      console.error(err);
+      msgErr.querySelector('#msgErrTexto').textContent = 'No se pudo generar. Intenta de nuevo, o ajusta la descripción del tema.';
+      msgErr.classList.add('visible');
+    } finally {
+      btn.disabled = false;
+      document.getElementById('spinnerWrap').classList.remove('visible');
+    }
+  });
+
+  // ── Constructor de preguntas (igual que en evaluaciones.html) ──
+  function crearFilaPregunta(pregunta = null) {
+    contadorPreguntas++;
+    const idLocal = `preg-${contadorPreguntas}`;
+    const div = document.createElement('div');
+    div.className = 'pregunta-card';
+    div.dataset.idLocal = idLocal;
+    div.innerHTML = `
+      <div class="pregunta-card-top">
+        <select class="tipo-pregunta" onchange="cambiarTipoPregunta('${idLocal}', this.value)">
+          <option value="multiple">Selección múltiple</option>
+          <option value="vf">Verdadero o falso</option>
+          <option value="abierta">Pregunta abierta</option>
+        </select>
+        <input type="text" class="enunciado-pregunta" placeholder="Escribe la pregunta..." style="flex:1"/>
+        <button type="button" class="btn-quitar-pregunta" onclick="quitarPregunta('${idLocal}')">✕ Quitar</button>
+      </div>
+      <div class="cuerpo-pregunta"></div>
+    `;
+    document.getElementById('listaPreguntas').appendChild(div);
+    const tipo = pregunta ? pregunta.tipo : 'multiple';
+    div.querySelector('.tipo-pregunta').value = tipo;
+    if (pregunta) div.querySelector('.enunciado-pregunta').value = pregunta.enunciado || '';
+    renderCuerpoPregunta(idLocal, tipo, pregunta);
+  }
+
+  window.cambiarTipoPregunta = function(idLocal, tipo) {
+    renderCuerpoPregunta(idLocal, tipo, null);
+  };
+
+  function renderCuerpoPregunta(idLocal, tipo, preguntaExistente) {
+    const div = document.querySelector(`.pregunta-card[data-id-local="${idLocal}"] .cuerpo-pregunta`);
+    if (tipo === 'multiple') {
+      div.innerHTML = `<div class="opciones-wrap"></div><button type="button" class="btn-agregar-opcion" onclick="agregarOpcion('${idLocal}')">+ Agregar opción</button>`;
+      const opciones = (preguntaExistente && preguntaExistente.opciones) || ['', ''];
+      const correcta = preguntaExistente ? preguntaExistente.correcta : 0;
+      opciones.forEach((texto, i) => agregarOpcion(idLocal, texto, i === correcta));
+    } else if (tipo === 'vf') {
+      const correcta = preguntaExistente && typeof preguntaExistente.correcta === 'boolean' ? preguntaExistente.correcta : true;
+      div.innerHTML = `
+        <div class="vf-opciones">
+          <label><input type="radio" name="vf-${idLocal}" value="true" ${correcta ? 'checked' : ''}/> Verdadero</label>
+          <label><input type="radio" name="vf-${idLocal}" value="false" ${!correcta ? 'checked' : ''}/> Falso</label>
+        </div>`;
+    } else {
+      div.innerHTML = `<p style="font-size:0.76rem;color:var(--texto-light)">El estudiante responderá con texto libre.</p>`;
+    }
+  }
+
+  window.agregarOpcion = function(idLocal, texto = '', marcada = false) {
+    const wrap = document.querySelector(`.pregunta-card[data-id-local="${idLocal}"] .opciones-wrap`);
+    const fila = document.createElement('div');
+    fila.className = 'opcion-fila';
+    fila.innerHTML = `
+      <input type="radio" name="correcta-${idLocal}" ${marcada ? 'checked' : ''}/>
+      <input type="text" placeholder="Texto de la opción" value="${(texto || '').replace(/"/g, '&quot;')}"/>
+      <button type="button" class="btn-quitar-opcion" onclick="this.parentElement.remove()">✕</button>
+    `;
+    wrap.appendChild(fila);
+  };
+
+  window.quitarPregunta = function(idLocal) {
+    document.querySelector(`.pregunta-card[data-id-local="${idLocal}"]`).remove();
+  };
+
+  document.getElementById('btnAgregarPregunta').addEventListener('click', () => crearFilaPregunta());
+
+  function recolectarPreguntas() {
+    const preguntas = [];
+    document.querySelectorAll('#listaPreguntas .pregunta-card').forEach((card, idx) => {
+      const tipo = card.querySelector('.tipo-pregunta').value;
+      const enunciado = card.querySelector('.enunciado-pregunta').value.trim();
+      if (!enunciado) return;
+      const pregunta = { id: `p${idx + 1}`, tipo, enunciado };
+      if (tipo === 'multiple') {
+        const opciones = [];
+        let correcta = 0;
+        card.querySelectorAll('.opcion-fila').forEach((fila) => {
+          const texto = fila.querySelector('input[type="text"]').value.trim();
+          const marcada = fila.querySelector('input[type="radio"]').checked;
+          if (texto) {
+            opciones.push(texto);
+            if (marcada) correcta = opciones.length - 1;
+          }
+        });
+        pregunta.opciones = opciones;
+        pregunta.correcta = correcta;
+      } else if (tipo === 'vf') {
+        const seleccion = card.querySelector('input[type="radio"]:checked');
+        pregunta.correcta = seleccion ? seleccion.value === 'true' : true;
+      }
+      preguntas.push(pregunta);
+    });
+    return preguntas;
+  }
+
+  // ── Guardar contenido en Programación curricular ──
+  document.getElementById('btnGuardarContenido').addEventListener('click', async () => {
+    const btn = document.getElementById('btnGuardarContenido');
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+    try {
+      await addDoc(collection(db, 'programacion'), {
+        institucionId,
+        titulo: document.getElementById('rcTitulo').value.trim(),
+        tipo: 'Programación',
+        periodo: '',
+        grado: document.getElementById('fGrado').value.trim(),
+        asignatura: document.getElementById('fAsignatura').value.trim(),
+        enlace: '',
+        contenido: document.getElementById('rcContenido').value.trim(),
+        creadoPor: uidActual,
+        creadoPorNombre: usuarioActual.nombre || '',
+        fechaCreacion: serverTimestamp(),
+      });
+      btn.textContent = '✓ Guardado — ve a Programación curricular para verlo';
+    } catch (err) {
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = 'Guardar en Programación curricular';
+      alert('No se pudo guardar. Intenta de nuevo.');
+    }
+  });
+
+  // ── Guardar evaluación en Evaluaciones ──
+  document.getElementById('btnGuardarEvaluacion').addEventListener('click', async () => {
+    const preguntas = recolectarPreguntas();
+    if (preguntas.length === 0) {
+      alert('Agrega al menos una pregunta con su enunciado.');
+      return;
+    }
+    const btn = document.getElementById('btnGuardarEvaluacion');
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+    try {
+      await addDoc(collection(db, 'evaluaciones'), {
+        institucionId,
+        titulo: document.getElementById('reTitulo').value.trim(),
+        grado: document.getElementById('fGrado').value.trim(),
+        asignatura: document.getElementById('fAsignatura').value.trim(),
+        preguntas,
+        enlace: '',
+        contenido: '',
+        creadoPor: uidActual,
+        creadoPorNombre: usuarioActual.nombre || '',
+        fechaCreacion: serverTimestamp(),
+      });
+      btn.textContent = '✓ Guardado — ve a Evaluaciones para verla';
+    } catch (err) {
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = 'Guardar en Evaluaciones';
+      alert('No se pudo guardar. Intenta de nuevo.');
+    }
+  });
+
+  document.getElementById('btnSalir').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'index.html';
+  });
+</script>
+</body>
+</html>
