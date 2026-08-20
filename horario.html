@@ -73,6 +73,19 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
 .mensaje-guardado.visible { display: block; }
 .mensaje-guardado.ok { background: var(--verde-light); color: var(--verde); }
 .mensaje-guardado.warn { background: var(--naranja-light); color: var(--naranja); }
+
+.progreso-wrap.visible, .progreso-wrap[style*="display: block"] {}
+.barra-bg { background: var(--gris); border-radius: 8px; height: 10px; overflow: hidden; }
+.barra-fill { background: var(--verde); height: 100%; width: 0%; transition: width 0.15s; }
+.progreso-texto { font-size: 0.8rem; color: var(--texto-mid); margin-top: 0.5rem; text-align: center; }
+
+.resultado-grado-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.7rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 0.4rem; }
+.resultado-grado-item.ok { background: var(--verde-light); color: var(--verde); }
+.resultado-grado-item.parcial { background: var(--naranja-light); color: var(--naranja); }
+
+.cruce-item { background: var(--rojo-light); color: var(--rojo); border-radius: 8px; padding: 0.7rem 0.9rem; margin-bottom: 0.6rem; font-size: 0.8rem; line-height: 1.5; }
+.cruce-item b { display: block; margin-bottom: 0.2rem; }
+.sin-cruces { background: var(--verde-light); color: var(--verde); border-radius: 8px; padding: 0.8rem 1rem; font-size: 0.85rem; }
 </style>
 </head>
 <body>
@@ -102,6 +115,20 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
     <button class="btn-primario" id="btnGuardarHorario" disabled>Guardar horario</button>
   </div>
 
+  <div class="card" style="margin-bottom:1.3rem">
+    <p class="card-titulo" style="font-size:0.9rem;font-weight:700;margin-bottom:0.5rem">Todos los grados a la vez</p>
+    <p class="sub" style="margin-bottom:0.9rem">Genera y guarda el horario de todos los grados en un solo paso, evitando que un mismo docente quede ocupado en dos salones a la misma hora. También puedes revisar si hay cruces en los horarios ya guardados (incluyendo ajustes manuales).</p>
+    <div style="display:flex;gap:0.7rem;flex-wrap:wrap">
+      <button class="btn-secundario" id="btnGenerarTodos">🗓 Generar todos los horarios (evitando cruces)</button>
+      <button class="btn-secundario" id="btnVerCruces">🔍 Ver cruces en los horarios guardados</button>
+    </div>
+    <div class="progreso-wrap" id="progresoTodosWrap" style="display:none;margin-top:1rem">
+      <div class="barra-bg"><div class="barra-fill" id="barraTodosFill"></div></div>
+      <p class="progreso-texto" id="progresoTodosTexto">0 / 0</p>
+    </div>
+    <div id="resultadoTodos" style="margin-top:1rem"></div>
+  </div>
+
   <div class="aviso" id="avisoVacio">Selecciona un grado para ver o armar su horario.</div>
 
   <div class="contenido-grid" id="contenidoGrid" style="display:none">
@@ -123,6 +150,9 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
   import { auth, db, onAuthStateChanged, signOut, doc, getDoc, setDoc, getDocs, collection, query, where, serverTimestamp } from './firebase.js';
 
   const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  // Firestore no permite arreglos anidados (array dentro de array), así que cada fila del grid
+  // se guarda como un objeto {lunes: ..., martes: ...} en vez de un array por día.
+  const DIA_KEYS = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
   const COLOR_PALETA = ['#1A4F8A', '#1A7A5E', '#C05621', '#553C9A', '#B83280', '#2C7A7B', '#975A16', '#2B6CB0'];
 
   let institucionId = null;
@@ -216,13 +246,19 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
   }
 
   function crearGridVacio() {
-    return Array.from({ length: numPeriodos }, () => Array.from({ length: DIAS.length }, () => null));
+    return Array.from({ length: numPeriodos }, () => {
+      const fila = {};
+      DIA_KEYS.forEach(k => fila[k] = null);
+      return fila;
+    });
   }
 
   function redimensionarGrid() {
-    const nuevo = Array.from({ length: numPeriodos }, (_, p) =>
-      Array.from({ length: DIAS.length }, (_, d) => (grid[p] && grid[p][d]) ? grid[p][d] : null)
-    );
+    const nuevo = Array.from({ length: numPeriodos }, (_, p) => {
+      const fila = {};
+      DIA_KEYS.forEach(k => fila[k] = (grid[p] && grid[p][k]) ? grid[p][k] : null);
+      return fila;
+    });
     grid = nuevo;
   }
 
@@ -263,8 +299,8 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
         let mejorCelda = null;
         for (let p = 0; p < numPeriodos; p++) {
           for (let d = 0; d < DIAS.length; d++) {
-            if (grid[p][d] !== null) continue;
-            const yaEnEseDia = grid.some(fila => fila[d] && fila[d].asignaturaId === asig.id);
+            if (grid[p][DIA_KEYS[d]] !== null) continue;
+            const yaEnEseDia = grid.some(fila => fila[DIA_KEYS[d]] && fila[DIA_KEYS[d]].asignaturaId === asig.id);
             if (!yaEnEseDia) { mejorCelda = { p, d }; break; }
           }
           if (mejorCelda) break;
@@ -273,12 +309,12 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
         if (!mejorCelda) {
           for (let p = 0; p < numPeriodos && !mejorCelda; p++) {
             for (let d = 0; d < DIAS.length; d++) {
-              if (grid[p][d] === null) { mejorCelda = { p, d }; break; }
+              if (grid[p][DIA_KEYS[d]] === null) { mejorCelda = { p, d }; break; }
             }
           }
         }
         if (!mejorCelda) break; // no hay más espacio
-        grid[mejorCelda.p][mejorCelda.d] = { asignaturaId: asig.id, nombre: asig.nombre, docente: asig.docente };
+        grid[mejorCelda.p][DIA_KEYS[mejorCelda.d]] = { asignaturaId: asig.id, nombre: asig.nombre, docente: asig.docente };
         asig.restantes--;
       }
     }
@@ -300,7 +336,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
     for (let p = 0; p < numPeriodos; p++) {
       tbody += `<tr><td class="celda-periodo">Periodo ${p + 1}</td>`;
       for (let d = 0; d < DIAS.length; d++) {
-        const actual = grid[p][d];
+        const actual = grid[p][DIA_KEYS[d]];
         const opciones = asignaturasDelGrado.map(a =>
           `<option value="${a.id}" ${actual && actual.asignaturaId === a.id ? 'selected' : ''}>${a.nombre}${a.docente ? ' — ' + a.docente : ''}</option>`
         ).join('');
@@ -319,10 +355,10 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
 
   window.cambiarCelda = function(p, d, asignaturaId) {
     if (!asignaturaId) {
-      grid[p][d] = null;
+      grid[p][DIA_KEYS[d]] = null;
     } else {
       const a = asignaturasDelGrado.find(x => x.id === asignaturaId);
-      grid[p][d] = a ? { asignaturaId: a.id, nombre: a.nombre, docente: a.docente } : null;
+      grid[p][DIA_KEYS[d]] = a ? { asignaturaId: a.id, nombre: a.nombre, docente: a.docente } : null;
     }
     renderTabla();
     renderResumen();
@@ -336,7 +372,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
     }
     cont.innerHTML = asignaturasDelGrado.map(a => {
       let colocadas = 0;
-      grid.forEach(fila => fila.forEach(c => { if (c && c.asignaturaId === a.id) colocadas++; }));
+      grid.forEach(fila => DIA_KEYS.forEach(k => { const c = fila[k]; if (c && c.asignaturaId === a.id) colocadas++; }));
       const meta = a.intensidad;
       let clase = 'resumen-incompleto';
       let textoEstado = meta != null ? `${colocadas} / ${meta}h ubicadas` : `${colocadas}h ubicadas (sin meta definida)`;
@@ -382,6 +418,190 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
       btn.disabled = false;
       btn.textContent = 'Guardar horario';
     }
+  });
+
+  // ── Generar todos los horarios de la institución de una vez, evitando cruces de docentes ──
+  document.getElementById('btnGenerarTodos').addEventListener('click', async () => {
+    if (!confirm('Esto va a generar y GUARDAR el horario de todos los grados, reemplazando lo que tengan actualmente guardado. ¿Continuar?')) return;
+
+    const gradosOpciones = [...document.getElementById('selGrado').options].map(o => o.value).filter(v => v);
+    if (gradosOpciones.length === 0) { alert('No hay grados con estudiantes registrados.'); return; }
+
+    const btn = document.getElementById('btnGenerarTodos');
+    btn.disabled = true;
+    const wrap = document.getElementById('progresoTodosWrap');
+    const fill = document.getElementById('barraTodosFill');
+    const texto = document.getElementById('progresoTodosTexto');
+    wrap.style.display = 'block';
+    document.getElementById('resultadoTodos').innerHTML = '';
+
+    const periodos = parseInt(document.getElementById('inputPeriodos').value, 10) || 6;
+
+    const asigSnap = await getDocs(query(collection(db, 'asignaturas'), where('institucionId', '==', institucionId)));
+    const todasAsignaturas = [];
+    asigSnap.forEach(d => todasAsignaturas.push({ id: d.id, ...d.data() }));
+
+    // ocupacionDocente[dia][periodo] = Set con los nombres de docente ya ocupados en ese cruce horario, en CUALQUIER grado
+    const ocupacionDocente = Array.from({ length: DIAS.length }, () => Array.from({ length: periodos }, () => new Set()));
+    const resultados = [];
+
+    for (let gi = 0; gi < gradosOpciones.length; gi++) {
+      const grado = gradosOpciones[gi];
+      const asignaturasGrado = todasAsignaturas
+        .filter(a => !a.grado || a.grado === grado)
+        .map(a => ({ id: a.id, nombre: a.nombre, docente: a.docente || '', intensidad: typeof a.intensidad === 'number' ? a.intensidad : null }));
+
+      const gridGrado = Array.from({ length: periodos }, () => {
+        const fila = {};
+        DIA_KEYS.forEach(k => fila[k] = null);
+        return fila;
+      });
+      const pendientes = asignaturasGrado
+        .filter(a => a.intensidad && a.intensidad > 0)
+        .map(a => ({ ...a, restantes: a.intensidad }))
+        .sort((a, b) => b.intensidad - a.intensidad);
+
+      let sinUbicar = 0;
+      for (const asig of pendientes) {
+        let intentos = 0;
+        while (asig.restantes > 0 && intentos < periodos * DIAS.length * 3) {
+          intentos++;
+          let mejorCelda = null;
+          // Prioridad 1: celda libre, sin repetir la materia ese día, y con el docente libre a esa hora en CUALQUIER grado
+          for (let p = 0; p < periodos && !mejorCelda; p++) {
+            for (let d = 0; d < DIAS.length; d++) {
+              if (gridGrado[p][DIA_KEYS[d]] !== null) continue;
+              const yaEnEseDia = gridGrado.some(fila => fila[DIA_KEYS[d]] && fila[DIA_KEYS[d]].asignaturaId === asig.id);
+              const docenteLibre = !asig.docente || !ocupacionDocente[d][p].has(asig.docente);
+              if (!yaEnEseDia && docenteLibre) { mejorCelda = { p, d }; break; }
+            }
+          }
+          // Prioridad 2: sin repetir materia el mismo día (aunque el docente ya esté ocupado en otro grado — se marcará como cruce)
+          if (!mejorCelda) {
+            for (let p = 0; p < periodos && !mejorCelda; p++) {
+              for (let d = 0; d < DIAS.length; d++) {
+                if (gridGrado[p][DIA_KEYS[d]] !== null) continue;
+                const yaEnEseDia = gridGrado.some(fila => fila[DIA_KEYS[d]] && fila[DIA_KEYS[d]].asignaturaId === asig.id);
+                if (!yaEnEseDia) { mejorCelda = { p, d }; break; }
+              }
+            }
+          }
+          // Prioridad 3: cualquier celda libre
+          if (!mejorCelda) {
+            for (let p = 0; p < periodos && !mejorCelda; p++) {
+              for (let d = 0; d < DIAS.length; d++) {
+                if (gridGrado[p][DIA_KEYS[d]] === null) { mejorCelda = { p, d }; break; }
+              }
+            }
+          }
+          if (!mejorCelda) break;
+          gridGrado[mejorCelda.p][DIA_KEYS[mejorCelda.d]] = { asignaturaId: asig.id, nombre: asig.nombre, docente: asig.docente };
+          if (asig.docente) ocupacionDocente[mejorCelda.d][mejorCelda.p].add(asig.docente);
+          asig.restantes--;
+        }
+        sinUbicar += asig.restantes;
+      }
+
+      let errorGuardado = null;
+      try {
+        await setDoc(doc(db, 'horarios', `${institucionId}__${grado}`), {
+          institucionId,
+          grado,
+          periodosPorDia: periodos,
+          grid: gridGrado,
+          actualizadoPor: auth.currentUser.uid,
+          fechaActualizacion: serverTimestamp(),
+        });
+      } catch (err) {
+        console.error(`Error guardando horario de ${grado}:`, err);
+        errorGuardado = err.message || 'Error desconocido';
+      }
+
+      resultados.push({ grado, sinUbicar, errorGuardado });
+      const pct = Math.round(((gi + 1) / gradosOpciones.length) * 100);
+      fill.style.width = pct + '%';
+      texto.textContent = `${gi + 1} / ${gradosOpciones.length} grados`;
+    }
+
+    if (gradoActual && gradosOpciones.includes(gradoActual)) {
+      document.getElementById('inputPeriodos').value = periodos;
+      await cargarGrado();
+    }
+
+    const cont = document.getElementById('resultadoTodos');
+    const huboErrores = resultados.some(r => r.errorGuardado);
+    cont.innerHTML = '<p style="font-weight:700;font-size:0.85rem;margin-bottom:0.6rem">Resultado por grado</p>' +
+      resultados.map(r => {
+        if (r.errorGuardado) {
+          return `<div class="resultado-grado-item" style="background:var(--rojo-light);color:var(--rojo)">
+            <span>${r.grado}</span>
+            <span>✗ No se pudo guardar: ${r.errorGuardado}</span>
+          </div>`;
+        }
+        return `
+        <div class="resultado-grado-item ${r.sinUbicar > 0 ? 'parcial' : 'ok'}">
+          <span>${r.grado}</span>
+          <span>${r.sinUbicar > 0 ? `⚠ ${r.sinUbicar}h no se pudieron ubicar sin cruce` : '✓ Completo, sin cruces'}</span>
+        </div>`;
+      }).join('') +
+      (huboErrores
+        ? '<p style="font-size:0.76rem;color:var(--rojo);margin-top:0.6rem">Algunos grados no se pudieron guardar — revisa la consola del navegador (F12) para más detalle, o intenta de nuevo.</p>'
+        : '<p style="font-size:0.76rem;color:var(--texto-light);margin-top:0.6rem">Si alguna hora no se pudo ubicar sin cruce, revisa "Ver cruces" para ver exactamente dónde chocan, o ajusta manualmente ese grado.</p>');
+
+    btn.disabled = false;
+  });
+
+  // ── Revisar cruces en los horarios ya guardados (incluye ajustes manuales) ──
+  document.getElementById('btnVerCruces').addEventListener('click', async () => {
+    const btn = document.getElementById('btnVerCruces');
+    btn.disabled = true;
+    btn.textContent = 'Revisando...';
+    const cont = document.getElementById('resultadoTodos');
+    cont.innerHTML = '<p style="color:var(--texto-light);font-size:0.85rem">Revisando horarios guardados...</p>';
+
+    const horSnap = await getDocs(query(collection(db, 'horarios'), where('institucionId', '==', institucionId)));
+    const ocupacion = {}; // "dia|periodo|docente" -> [{grado, asignatura}]
+
+    horSnap.forEach(docSnap => {
+      const data = docSnap.data();
+      const grado = data.grado;
+      const gridGuardado = data.grid || [];
+      gridGuardado.forEach((fila, p) => {
+        DIA_KEYS.forEach((k, d) => {
+          const celda = fila[k];
+          if (celda && celda.docente) {
+            const key = `${d}|${p}|${celda.docente}`;
+            if (!ocupacion[key]) ocupacion[key] = [];
+            ocupacion[key].push({ grado, asignatura: celda.nombre });
+          }
+        });
+      });
+    });
+
+    const cruces = [];
+    Object.entries(ocupacion).forEach(([key, lista]) => {
+      if (lista.length > 1) {
+        const [d, p, docente] = key.split('|');
+        cruces.push({ dia: DIAS[parseInt(d, 10)], periodo: parseInt(p, 10) + 1, docente, lista });
+      }
+    });
+
+    btn.disabled = false;
+    btn.textContent = '🔍 Ver cruces en los horarios guardados';
+
+    if (cruces.length === 0) {
+      cont.innerHTML = '<div class="sin-cruces">✓ No se encontraron cruces de docentes entre los horarios guardados.</div>';
+      return;
+    }
+
+    cont.innerHTML = `<p style="font-weight:700;font-size:0.85rem;margin-bottom:0.6rem">${cruces.length} cruce(s) encontrados</p>
+      <p style="font-size:0.76rem;color:var(--texto-light);margin-bottom:0.7rem">Se compara por número de periodo, asumiendo que todos los grados usan la misma cantidad de periodos por día.</p>` +
+      cruces.map(c => `
+        <div class="cruce-item">
+          <b>${c.docente} — ${c.dia}, Periodo ${c.periodo}</b>
+          Asignado al mismo tiempo en: ${c.lista.map(l => `${l.grado} (${l.asignatura})`).join(' y ')}
+        </div>
+      `).join('');
   });
 
   document.getElementById('btnSalir').addEventListener('click', async () => {

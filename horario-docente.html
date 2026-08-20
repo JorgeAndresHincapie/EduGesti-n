@@ -123,6 +123,7 @@ td { padding: 0.5rem 0.4rem; border: 1px solid var(--borde); text-align: center;
   import { auth, db, onAuthStateChanged, signOut, doc, getDoc, getDocs, collection, query, where } from './firebase.js';
 
   const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  const DIA_KEYS = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
 
   let institucionId = null;
   let institucionNombre = '';
@@ -148,7 +149,7 @@ td { padding: 0.5rem 0.4rem; border: 1px solid var(--borde); text-align: center;
       const nombresConHorario = new Set();
       horSnapTodos.forEach(d => {
         const grid = d.data().grid || [];
-        grid.forEach(fila => fila.forEach(celda => { if (celda && celda.docente) nombresConHorario.add(celda.docente); }));
+        grid.forEach(fila => DIA_KEYS.forEach(k => { const celda = fila[k]; if (celda && celda.docente) nombresConHorario.add(celda.docente); }));
       });
       const nombres = [...nombresConHorario].sort();
       const sel = document.getElementById('selDocente');
@@ -190,7 +191,8 @@ td { padding: 0.5rem 0.4rem; border: 1px solid var(--borde); text-align: center;
       const grid = data.grid || [];
       if (data.periodosPorDia > periodosMax) periodosMax = data.periodosPorDia;
       grid.forEach((fila, p) => {
-        fila.forEach((celda, dIdx) => {
+        DIA_KEYS.forEach((k, dIdx) => {
+          const celda = fila[k];
           if (celda && celda.docente === nombreDocente) {
             entradas.push({ grado: data.grado, periodo: p, dia: dIdx, asignatura: celda.nombre });
           }
