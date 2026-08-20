@@ -109,7 +109,7 @@ td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--borde); vertical-al
     <p class="card-titulo">1. Formato del archivo</p>
     <div class="info-box">
       Columnas esperadas (el orden no importa, pero los nombres de encabezado deben coincidir): <code>Nombres</code>, <code>Apellidos</code>, <code>TipoDoc</code>, <code>Documento</code>, <code>Grado</code>, <code>Acudiente</code>, <code>TelefonoAcudiente</code>.<br/>
-      <code>TipoDoc</code> debe ser uno de: RC, TI, CC, NES, PPT. Se aceptan archivos <code>.csv</code>, <code>.xlsx</code> o <code>.xls</code>.
+      <code>TipoDoc</code> debe ser uno de: RC, TI, CC, NUIP, NES, PPT. Se aceptan archivos <code>.csv</code>, <code>.xlsx</code> o <code>.xls</code>.
     </div>
     <button class="btn-descargar" id="btnDescargarPlantilla">⬇ Descargar plantilla CSV de ejemplo</button>
   </div>
@@ -173,7 +173,7 @@ td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--borde); vertical-al
   let estudiantesExistentes = []; // documentos ya registrados en la institución
   let filasProcesadas = []; // resultado del parseo + validación
 
-  const TIPOS_DOC_VALIDOS = ['RC', 'TI', 'CC', 'NES', 'PPT'];
+  const TIPOS_DOC_VALIDOS = ['RC', 'TI', 'CC', 'NUIP', 'NES', 'PPT'];
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) { window.location.href = 'index.html'; return; }
@@ -199,7 +199,8 @@ td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--borde); vertical-al
   document.getElementById('btnDescargarPlantilla').addEventListener('click', () => {
     const contenido = 'Nombres,Apellidos,TipoDoc,Documento,Grado,Acudiente,TelefonoAcudiente\n' +
       'Juan,Pérez Gómez,RC,1234567890,Primero A,María Gómez,3001234567\n' +
-      'Ana Sofía,Rodríguez Díaz,TI,1098765432,Segundo B,Carlos Rodríguez,3109876543\n';
+      'Ana Sofía,Rodríguez Díaz,TI,1098765432,Segundo B,Carlos Rodríguez,3109876543\n' +
+      'Mateo,Villamizar Niño,NUIP,1193456712,Transición,Ana Niño,3017654321\n';
     const blob = new Blob(['\uFEFF' + contenido], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -285,7 +286,7 @@ td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--borde); vertical-al
       if (!apellidos) errores.push('Falta el apellido');
       if (!documento) errores.push('Falta el documento');
       if (!grado) errores.push('Falta el grado (y no hay grado por defecto seleccionado)');
-      if (tipoDoc && !TIPOS_DOC_VALIDOS.includes(tipoDoc)) errores.push(`Tipo de documento inválido: "${tipoDoc}" (debe ser RC, TI, CC, NES o PPT)`);
+      if (tipoDoc && !TIPOS_DOC_VALIDOS.includes(tipoDoc)) errores.push(`Tipo de documento inválido: "${tipoDoc}" (debe ser RC, TI, CC, NUIP, NES o PPT)`);
       if (!tipoDoc) errores.push('Falta el tipo de documento');
 
       let esDuplicado = false;
