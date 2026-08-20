@@ -10,8 +10,8 @@
 :root {
   --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
   --verde: #1A7A5E; --verde-light: #E8F5F0;
+  --naranja: #C05621; --naranja-light: #FFF3EB;
   --rojo: #C53030; --rojo-light: #FFF5F5;
-  --amarillo: #B7791F; --amarillo-light: #FFF9E6;
   --morado: #553C9A; --morado-light: #F0EBFF;
   --gris: #F4F6F9; --borde: #DDE3EC;
   --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
@@ -26,53 +26,53 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
 .topbar-brand { font-size: 1.0rem; font-weight: 700; color: white; }
 .btn-salir { background: rgba(255,255,255,0.12); color: white; border: none; padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
 
-.main { max-width: 950px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
-.tabs-vista { display: flex; gap: 0.5rem; background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 0.4rem; margin-bottom: 1.5rem; max-width: 340px; }
-.tab-vista-btn { flex: 1; padding: 0.55rem; border: none; background: none; border-radius: 9px; font-family: inherit; font-size: 0.82rem; font-weight: 700; color: var(--texto-light); cursor: pointer; }
-.tab-vista-btn.activo { background: var(--azul); color: white; }
-.vista-panel { display: none; }
-.vista-panel.activo { display: block; }
+.main { max-width: 1000px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
+.titulo { font-family: 'Instrument Serif', serif; font-size: 1.8rem; margin-bottom: 0.4rem; }
+.sub { font-size: 0.85rem; color: var(--texto-light); margin-bottom: 1.4rem; line-height: 1.5; }
 
-.titulo { font-family: 'Instrument Serif', serif; font-size: 1.8rem; margin-bottom: 1.5rem; }
+.tabs { display: flex; gap: 0.5rem; margin-bottom: 1.3rem; }
+.tab-btn { background: var(--blanco); border: 1.5px solid var(--borde); padding: 0.55rem 1.1rem; border-radius: 9px; font-weight: 700; font-size: 0.82rem; cursor: pointer; font-family: inherit; color: var(--texto-mid); }
+.tab-btn.activo { background: var(--azul); color: white; border-color: var(--azul); }
 
-.filtros-box { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.3rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
-.filtro-field { flex: 1; min-width: 180px; }
+.filtros-box { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.2rem; margin-bottom: 1.3rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
+.filtro-field { min-width: 180px; }
 .filtro-field label { display: block; font-size: 0.74rem; font-weight: 700; color: var(--texto-mid); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.03em; }
 .filtro-field select, .filtro-field input { width: 100%; padding: 0.6rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.85rem; background: white; }
-
-.aviso { text-align: center; padding: 3rem 1.5rem; color: var(--texto-light); font-size: 0.88rem; background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; }
-
-.tabla-wrap { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; overflow: hidden; display: none; }
-.tabla-wrap.visible { display: block; }
-table { width: 100%; border-collapse: collapse; }
-th { text-align: left; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--texto-light); padding: 0.8rem 1rem; background: var(--gris); border-bottom: 1.5px solid var(--borde); }
-td { padding: 0.65rem 1rem; font-size: 0.85rem; border-bottom: 1px solid var(--borde); vertical-align: middle; }
-tr:last-child td { border-bottom: none; }
-
-.estado-botones { display: flex; gap: 0.4rem; }
-.estado-btn { padding: 0.4rem 0.8rem; border-radius: 7px; font-size: 0.76rem; font-weight: 700; cursor: pointer; border: 1.5px solid var(--borde); background: white; color: var(--texto-mid); font-family: inherit; }
-.estado-btn.sel-presente.activo { background: var(--verde); color: white; border-color: var(--verde); }
-.estado-btn.sel-ausente.activo { background: var(--rojo); color: white; border-color: var(--rojo); }
-.estado-btn.sel-tarde.activo { background: var(--amarillo); color: white; border-color: var(--amarillo); }
-.estado-btn.sel-excusa.activo { background: var(--morado); color: white; border-color: var(--morado); }
-
-.footer-acciones { display: flex; justify-content: space-between; align-items: center; margin-top: 1.3rem; }
-.btn-primario { background: var(--azul); color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 9px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; }
+.btn-secundario { background: var(--morado-light); color: var(--morado); border: 1.5px solid var(--morado); padding: 0.6rem 1.1rem; border-radius: 9px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.btn-secundario:hover { background: var(--morado); color: white; }
+.btn-primario { background: var(--azul); color: white; border: none; padding: 0.65rem 1.3rem; border-radius: 9px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; white-space: nowrap; }
 .btn-primario:hover { background: var(--azul-dark); }
-.contador { font-size: 0.8rem; color: var(--texto-light); }
+.btn-primario:disabled { opacity: 0.5; cursor: default; }
 
-.resumen-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
-.resumen-card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.1rem; text-align: center; }
-.resumen-num { font-size: 1.6rem; font-weight: 700; }
-.resumen-label { font-size: 0.72rem; color: var(--texto-light); }
+.aviso { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 2.5rem; text-align: center; color: var(--texto-light); font-size: 0.85rem; }
 
-.chip-alerta { display: inline-block; background: var(--rojo-light); color: var(--rojo); font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 8px; margin-left: 0.4rem; }
-.loading-wrap { text-align: center; padding: 2rem; color: var(--texto-light); font-size: 0.85rem; }
+.card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.4rem; }
 
-@media (max-width: 700px) {
-  .estado-botones { flex-wrap: wrap; }
-  .resumen-grid { grid-template-columns: repeat(2, 1fr); }
-}
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th { text-align: left; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--texto-light); padding: 0.6rem; background: var(--gris); border-bottom: 1.5px solid var(--borde); }
+td { padding: 0.6rem; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+
+.estado-opciones { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.estado-btn { border: 1.5px solid var(--borde); background: white; padding: 0.35rem 0.7rem; border-radius: 7px; font-size: 0.74rem; font-weight: 700; cursor: pointer; font-family: inherit; color: var(--texto-mid); }
+.estado-btn.sel-Presente { background: var(--verde-light); color: var(--verde); border-color: var(--verde); }
+.estado-btn.sel-Ausente { background: var(--rojo-light); color: var(--rojo); border-color: var(--rojo); }
+.estado-btn.sel-Tarde { background: var(--naranja-light); color: var(--naranja); border-color: var(--naranja); }
+.estado-btn.sel-Excusa { background: var(--morado-light); color: var(--morado); border-color: var(--morado); }
+
+.input-obs { width: 100%; padding: 0.4rem 0.5rem; border: 1.3px solid var(--borde); border-radius: 6px; font-family: inherit; font-size: 0.76rem; }
+
+.footer-acciones { display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem; }
+.contador-final { font-size: 0.82rem; color: var(--texto-light); }
+.mensaje-guardado { font-size: 0.8rem; padding: 0.6rem 0.9rem; border-radius: 8px; margin-top: 0.9rem; display: none; }
+.mensaje-guardado.visible { display: block; }
+.mensaje-guardado.ok { background: var(--verde-light); color: var(--verde); }
+.mensaje-guardado.warn { background: var(--rojo-light); color: var(--rojo); }
+
+.resumen-num { font-family: 'Instrument Serif', serif; }
+.chip-porcentaje { font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 8px; }
+.chip-alto { background: var(--verde-light); color: var(--verde); }
+.chip-medio { background: var(--naranja-light); color: var(--naranja); }
+.chip-bajo { background: var(--rojo-light); color: var(--rojo); }
 </style>
 </head>
 <body>
@@ -86,15 +86,16 @@ tr:last-child td { border-bottom: none; }
 </header>
 
 <main class="main">
-  <p class="titulo">Seguimiento de Asistencia</p>
+  <p class="titulo">Asistencia</p>
+  <p class="sub">Registra la asistencia diaria por grado y consulta el resumen mensual por estudiante.</p>
 
-  <div class="tabs-vista">
-    <button class="tab-vista-btn activo" data-vista="registrar">Registrar del día</button>
-    <button class="tab-vista-btn" data-vista="resumen">Resumen por estudiante</button>
+  <div class="tabs">
+    <button class="tab-btn activo" id="tabRegistro">Registro diario</button>
+    <button class="tab-btn" id="tabResumen">Resumen mensual</button>
   </div>
 
-  <!-- REGISTRAR -->
-  <div class="vista-panel activo" id="vista-registrar">
+  <!-- ── Vista: registro diario ── -->
+  <div id="vistaRegistro">
     <div class="filtros-box">
       <div class="filtro-field">
         <label>Grado / Grupo</label>
@@ -102,41 +103,44 @@ tr:last-child td { border-bottom: none; }
       </div>
       <div class="filtro-field">
         <label>Fecha</label>
-        <input type="date" id="selFecha"/>
+        <input type="date" id="inputFecha"/>
       </div>
+      <button class="btn-secundario" id="btnTodosPresentes" disabled>✓ Marcar todos presentes</button>
+      <button class="btn-primario" id="btnGuardarAsistencia" disabled>Guardar asistencia</button>
     </div>
 
-    <div class="aviso" id="avisoVacio">Selecciona un grado/grupo para tomar asistencia.</div>
+    <div class="aviso" id="avisoVacioRegistro">Selecciona un grado y una fecha para registrar la asistencia.</div>
 
-    <div class="tabla-wrap" id="tablaWrap">
+    <div class="card" id="cardRegistro" style="display:none">
       <table>
-        <thead>
-          <tr><th>Estudiante</th><th>Asistencia</th><th>Observación (opcional)</th></tr>
-        </thead>
-        <tbody id="cuerpoTabla"></tbody>
+        <thead><tr><th>Estudiante</th><th>Estado</th><th>Observación</th></tr></thead>
+        <tbody id="cuerpoRegistro"></tbody>
       </table>
-    </div>
-
-    <div class="footer-acciones" id="footerAcciones" style="display:none">
-      <span class="contador" id="contadorGuardadas"></span>
-      <button class="btn-primario" id="btnGuardarTodas">Guardar asistencia</button>
+      <div class="footer-acciones">
+        <span class="contador-final" id="contadorRegistro"></span>
+      </div>
+      <div class="mensaje-guardado" id="mensajeGuardado"></div>
     </div>
   </div>
 
-  <!-- RESUMEN -->
-  <div class="vista-panel" id="vista-resumen">
+  <!-- ── Vista: resumen mensual ── -->
+  <div id="vistaResumen" style="display:none">
     <div class="filtros-box">
       <div class="filtro-field">
         <label>Grado / Grupo</label>
         <select id="selGradoResumen"><option value="">Selecciona...</option></select>
       </div>
+      <div class="filtro-field">
+        <label>Mes</label>
+        <input type="month" id="inputMes"/>
+      </div>
     </div>
-    <div class="aviso" id="avisoResumenVacio">Selecciona un grado/grupo para ver el resumen de asistencia de sus estudiantes.</div>
-    <div class="tabla-wrap" id="tablaResumenWrap">
+
+    <div class="aviso" id="avisoVacioResumen">Selecciona un grado y un mes para ver el resumen.</div>
+
+    <div class="card" id="cardResumen" style="display:none">
       <table>
-        <thead>
-          <tr><th>Estudiante</th><th>Presentes</th><th>Ausencias</th><th>Tarde</th><th>Excusas</th><th>% Asistencia</th></tr>
-        </thead>
+        <thead><tr><th>Estudiante</th><th>Presente</th><th>Ausente</th><th>Tarde</th><th>Excusa</th><th>Días registrados</th><th>% Asistencia</th></tr></thead>
         <tbody id="cuerpoResumen"></tbody>
       </table>
     </div>
@@ -144,11 +148,13 @@ tr:last-child td { border-bottom: none; }
 </main>
 
 <script type="module">
-  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, setDoc, collection, getDocs, query, where } from './firebase.js';
+  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, setDoc, getDocs, collection, query, where } from './firebase.js';
+
+  const ESTADOS = ['Presente', 'Ausente', 'Tarde', 'Excusa'];
 
   let institucionId = null;
   let estudiantesCache = [];
-  let asistenciaActual = {}; // key: estudianteId -> {estado, observacion}
+  let registroActual = {}; // estudianteId -> { estado, observacion }
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) { window.location.href = 'index.html'; return; }
@@ -159,44 +165,50 @@ tr:last-child td { border-bottom: none; }
     const estSnap = await getDocs(query(collection(db, 'estudiantes'), where('institucionId', '==', institucionId)));
     estSnap.forEach(d => estudiantesCache.push({ id: d.id, ...d.data() }));
 
-    llenarSelectsGrados();
-
-    const hoy = new Date().toISOString().split('T')[0];
-    document.getElementById('selFecha').value = hoy;
-  });
-
-  function llenarSelectsGrados() {
     const grados = [...new Set(estudiantesCache.map(e => e.grado).filter(Boolean))].sort();
-    const opciones = '<option value="">Selecciona...</option>' + grados.map(g => `<option value="${g}">${g}</option>`).join('');
-    document.getElementById('selGrado').innerHTML = opciones;
-    document.getElementById('selGradoResumen').innerHTML = opciones;
-  }
+    ['selGrado', 'selGradoResumen'].forEach(id => {
+      const sel = document.getElementById(id);
+      grados.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g; opt.textContent = g;
+        sel.appendChild(opt);
+      });
+    });
+
+    const hoy = new Date();
+    document.getElementById('inputFecha').value = hoy.toISOString().slice(0, 10);
+    document.getElementById('inputMes').value = hoy.toISOString().slice(0, 7);
+  });
 
   // ── Tabs ──
-  document.querySelectorAll('.tab-vista-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-vista-btn').forEach(b => b.classList.remove('activo'));
-      document.querySelectorAll('.vista-panel').forEach(p => p.classList.remove('activo'));
-      btn.classList.add('activo');
-      document.getElementById(`vista-${btn.dataset.vista}`).classList.add('activo');
-    });
-  });
+  document.getElementById('tabRegistro').addEventListener('click', () => cambiarTab('registro'));
+  document.getElementById('tabResumen').addEventListener('click', () => cambiarTab('resumen'));
 
-  // ================= REGISTRAR =================
-  document.getElementById('selGrado').addEventListener('change', cargarAsistenciaDelDia);
-  document.getElementById('selFecha').addEventListener('change', cargarAsistenciaDelDia);
+  function cambiarTab(tab) {
+    document.getElementById('tabRegistro').classList.toggle('activo', tab === 'registro');
+    document.getElementById('tabResumen').classList.toggle('activo', tab === 'resumen');
+    document.getElementById('vistaRegistro').style.display = tab === 'registro' ? 'block' : 'none';
+    document.getElementById('vistaResumen').style.display = tab === 'resumen' ? 'block' : 'none';
+  }
 
-  async function cargarAsistenciaDelDia() {
+  // ── Registro diario ──
+  document.getElementById('selGrado').addEventListener('change', cargarRegistro);
+  document.getElementById('inputFecha').addEventListener('change', cargarRegistro);
+
+  function idAsistencia(grado, fecha) {
+    return `${institucionId}__${grado}__${fecha}`;
+  }
+
+  async function cargarRegistro() {
     const grado = document.getElementById('selGrado').value;
-    const fecha = document.getElementById('selFecha').value;
-    const aviso = document.getElementById('avisoVacio');
-    const tablaWrap = document.getElementById('tablaWrap');
-    const footer = document.getElementById('footerAcciones');
+    const fecha = document.getElementById('inputFecha').value;
+    document.getElementById('mensajeGuardado').classList.remove('visible');
 
     if (!grado || !fecha) {
-      aviso.style.display = 'block';
-      tablaWrap.classList.remove('visible');
-      footer.style.display = 'none';
+      document.getElementById('avisoVacioRegistro').style.display = 'block';
+      document.getElementById('cardRegistro').style.display = 'none';
+      document.getElementById('btnTodosPresentes').disabled = true;
+      document.getElementById('btnGuardarAsistencia').disabled = true;
       return;
     }
 
@@ -205,154 +217,167 @@ tr:last-child td { border-bottom: none; }
       .sort((a, b) => (a.apellidos || '').localeCompare(b.apellidos || ''));
 
     if (estudiantesDelGrado.length === 0) {
-      aviso.textContent = 'No hay estudiantes registrados en este grado/grupo todavía.';
-      aviso.style.display = 'block';
-      tablaWrap.classList.remove('visible');
-      footer.style.display = 'none';
+      document.getElementById('avisoVacioRegistro').textContent = 'Este grado todavía no tiene estudiantes registrados.';
+      document.getElementById('avisoVacioRegistro').style.display = 'block';
+      document.getElementById('cardRegistro').style.display = 'none';
       return;
     }
 
-    aviso.style.display = 'none';
-    tablaWrap.classList.add('visible');
-    footer.style.display = 'flex';
-
-    asistenciaActual = {};
-    for (const est of estudiantesDelGrado) {
-      const asisId = `${est.id}_${fecha}`;
-      try {
-        const asisSnap = await getDoc(doc(db, 'asistencia', asisId));
-        if (asisSnap.exists()) {
-          asistenciaActual[est.id] = { estado: asisSnap.data().estado, observacion: asisSnap.data().observacion || '' };
-        }
-      } catch (e) { /* no existe todavía */ }
+    const asisSnap = await getDoc(doc(db, 'asistencia', idAsistencia(grado, fecha)));
+    registroActual = {};
+    if (asisSnap.exists()) {
+      registroActual = asisSnap.data().registros || {};
     }
+    estudiantesDelGrado.forEach(e => {
+      if (!registroActual[e.id]) registroActual[e.id] = { estado: 'Presente', observacion: '' };
+    });
 
-    renderTablaAsistencia(estudiantesDelGrado);
+    document.getElementById('avisoVacioRegistro').style.display = 'none';
+    document.getElementById('cardRegistro').style.display = 'block';
+    document.getElementById('btnTodosPresentes').disabled = false;
+    document.getElementById('btnGuardarAsistencia').disabled = false;
+
+    renderRegistro(estudiantesDelGrado);
   }
 
-  function renderTablaAsistencia(estudiantesDelGrado) {
-    const cuerpo = document.getElementById('cuerpoTabla');
-    cuerpo.innerHTML = estudiantesDelGrado.map(est => {
-      const actual = asistenciaActual[est.id] || { estado: 'presente', observacion: '' };
-      const estados = [
-        { key: 'presente', label: 'Presente' },
-        { key: 'ausente', label: 'Ausente' },
-        { key: 'tarde', label: 'Tarde' },
-        { key: 'excusa', label: 'Excusa' },
-      ];
-      const botones = estados.map(e => `
-        <button type="button" class="estado-btn sel-${e.key} ${actual.estado === e.key ? 'activo' : ''}" id="btn-${est.id}-${e.key}" onclick="marcarEstado('${est.id}','${e.key}')">${e.label}</button>
-      `).join('');
-
+  function renderRegistro(estudiantesDelGrado) {
+    const cuerpo = document.getElementById('cuerpoRegistro');
+    cuerpo.innerHTML = estudiantesDelGrado.map(e => {
+      const r = registroActual[e.id] || { estado: 'Presente', observacion: '' };
       return `
         <tr>
-          <td><b>${est.apellidos}</b> ${est.nombres}</td>
-          <td><div class="estado-botones">${botones}</div></td>
-          <td><input type="text" style="width:100%;padding:0.4rem 0.5rem;border:1.5px solid var(--borde);border-radius:6px;font-family:inherit;font-size:0.8rem" id="obs-${est.id}" value="${actual.observacion}" placeholder="Ej: cita médica"/></td>
-        </tr>
-      `;
+          <td><b>${e.apellidos} ${e.nombres}</b></td>
+          <td>
+            <div class="estado-opciones">
+              ${ESTADOS.map(est => `<button type="button" class="estado-btn ${r.estado === est ? 'sel-' + est : ''}" onclick="marcarEstado('${e.id}','${est}')">${est}</button>`).join('')}
+            </div>
+          </td>
+          <td><input type="text" class="input-obs" placeholder="Opcional" value="${r.observacion || ''}" onchange="cambiarObs('${e.id}', this.value)"/></td>
+        </tr>`;
     }).join('');
-    actualizarContadorAsistencia(estudiantesDelGrado.length);
+    actualizarContador();
   }
 
-  window.marcarEstado = function(estudianteId, estadoKey) {
-    if (!asistenciaActual[estudianteId]) asistenciaActual[estudianteId] = { estado: 'presente', observacion: '' };
-    asistenciaActual[estudianteId].estado = estadoKey;
-    ['presente','ausente','tarde','excusa'].forEach(k => {
-      const btn = document.getElementById(`btn-${estudianteId}-${k}`);
-      if (btn) btn.classList.toggle('activo', k === estadoKey);
-    });
+  window.marcarEstado = function(estudianteId, estado) {
+    if (!registroActual[estudianteId]) registroActual[estudianteId] = { estado: 'Presente', observacion: '' };
+    registroActual[estudianteId].estado = estado;
+    const grado = document.getElementById('selGrado').value;
+    const estudiantesDelGrado = estudiantesCache.filter(e => e.grado === grado).sort((a, b) => (a.apellidos || '').localeCompare(b.apellidos || ''));
+    renderRegistro(estudiantesDelGrado);
   };
 
-  function actualizarContadorAsistencia(total) {
-    document.getElementById('contadorGuardadas').textContent = `${total} estudiantes en este grado`;
+  window.cambiarObs = function(estudianteId, valor) {
+    if (!registroActual[estudianteId]) registroActual[estudianteId] = { estado: 'Presente', observacion: '' };
+    registroActual[estudianteId].observacion = valor;
+  };
+
+  function actualizarContador() {
+    const total = Object.keys(registroActual).length;
+    const ausentes = Object.values(registroActual).filter(r => r.estado === 'Ausente').length;
+    document.getElementById('contadorRegistro').textContent = `${total} estudiante(s) — ${ausentes} ausente(s)`;
   }
 
-  document.getElementById('btnGuardarTodas').addEventListener('click', async () => {
+  document.getElementById('btnTodosPresentes').addEventListener('click', () => {
+    Object.keys(registroActual).forEach(id => { registroActual[id].estado = 'Presente'; });
     const grado = document.getElementById('selGrado').value;
-    const fecha = document.getElementById('selFecha').value;
-    const btn = document.getElementById('btnGuardarTodas');
-    btn.disabled = true; btn.textContent = 'Guardando...';
-
-    const estudiantesDelGrado = estudiantesCache.filter(e => e.grado === grado);
-    let guardadas = 0;
-
-    for (const est of estudiantesDelGrado) {
-      const estado = (asistenciaActual[est.id] && asistenciaActual[est.id].estado) || 'presente';
-      const obsInput = document.getElementById(`obs-${est.id}`);
-      const observacion = obsInput ? obsInput.value.trim() : '';
-      const asisId = `${est.id}_${fecha}`;
-      try {
-        await setDoc(doc(db, 'asistencia', asisId), {
-          institucionId,
-          estudianteId: est.id,
-          grado,
-          fecha,
-          estado,
-          observacion,
-          registradoPor: auth.currentUser.uid,
-        });
-        guardadas++;
-      } catch (err) { console.error(err); }
-    }
-
-    btn.disabled = false; btn.textContent = 'Guardar asistencia';
-    alert(`✓ Asistencia guardada para ${guardadas} estudiantes.`);
+    const estudiantesDelGrado = estudiantesCache.filter(e => e.grado === grado).sort((a, b) => (a.apellidos || '').localeCompare(b.apellidos || ''));
+    renderRegistro(estudiantesDelGrado);
   });
 
-  // ================= RESUMEN =================
+  document.getElementById('btnGuardarAsistencia').addEventListener('click', async () => {
+    const grado = document.getElementById('selGrado').value;
+    const fecha = document.getElementById('inputFecha').value;
+    if (!grado || !fecha) return;
+
+    const btn = document.getElementById('btnGuardarAsistencia');
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+    const msg = document.getElementById('mensajeGuardado');
+
+    try {
+      await setDoc(doc(db, 'asistencia', idAsistencia(grado, fecha)), {
+        institucionId,
+        grado,
+        fecha,
+        registros: registroActual,
+        registradoPor: auth.currentUser.uid,
+      });
+      msg.className = 'mensaje-guardado ok visible';
+      msg.textContent = '✓ Asistencia guardada correctamente.';
+    } catch (err) {
+      console.error(err);
+      msg.className = 'mensaje-guardado warn visible';
+      msg.textContent = `No se pudo guardar: ${err.code || ''} ${err.message || 'Error desconocido'}`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Guardar asistencia';
+    }
+  });
+
+  // ── Resumen mensual ──
   document.getElementById('selGradoResumen').addEventListener('change', cargarResumen);
+  document.getElementById('inputMes').addEventListener('change', cargarResumen);
 
   async function cargarResumen() {
     const grado = document.getElementById('selGradoResumen').value;
-    const aviso = document.getElementById('avisoResumenVacio');
-    const wrap = document.getElementById('tablaResumenWrap');
-
-    if (!grado) { aviso.style.display = 'block'; wrap.classList.remove('visible'); return; }
+    const mes = document.getElementById('inputMes').value; // "YYYY-MM"
+    if (!grado || !mes) {
+      document.getElementById('avisoVacioResumen').style.display = 'block';
+      document.getElementById('cardResumen').style.display = 'none';
+      return;
+    }
 
     const estudiantesDelGrado = estudiantesCache
       .filter(e => e.grado === grado)
       .sort((a, b) => (a.apellidos || '').localeCompare(b.apellidos || ''));
 
     if (estudiantesDelGrado.length === 0) {
-      aviso.textContent = 'No hay estudiantes en este grado/grupo.';
-      aviso.style.display = 'block';
-      wrap.classList.remove('visible');
+      document.getElementById('avisoVacioResumen').textContent = 'Este grado todavía no tiene estudiantes registrados.';
+      document.getElementById('avisoVacioResumen').style.display = 'block';
+      document.getElementById('cardResumen').style.display = 'none';
       return;
     }
 
-    aviso.style.display = 'none';
-    wrap.classList.add('visible');
-    const cuerpo = document.getElementById('cuerpoResumen');
-    cuerpo.innerHTML = `<tr><td colspan="6" class="loading-wrap">Cargando...</td></tr>`;
+    const asisSnap = await getDocs(query(collection(db, 'asistencia'), where('institucionId', '==', institucionId), where('grado', '==', grado)));
+    const conteos = {}; // estudianteId -> { Presente, Ausente, Tarde, Excusa, total }
+    estudiantesDelGrado.forEach(e => { conteos[e.id] = { Presente: 0, Ausente: 0, Tarde: 0, Excusa: 0, total: 0 }; });
 
-    const filas = [];
-    for (const est of estudiantesDelGrado) {
-      const q = query(collection(db, 'asistencia'), where('estudianteId', '==', est.id));
-      const snap = await getDocs(q);
-      let presente = 0, ausente = 0, tarde = 0, excusa = 0;
-      snap.forEach(d => {
-        const e = d.data().estado;
-        if (e === 'presente') presente++;
-        else if (e === 'ausente') ausente++;
-        else if (e === 'tarde') tarde++;
-        else if (e === 'excusa') excusa++;
+    asisSnap.forEach(d => {
+      const data = d.data();
+      if (!data.fecha || !data.fecha.startsWith(mes)) return;
+      const registros = data.registros || {};
+      Object.entries(registros).forEach(([estId, r]) => {
+        if (!conteos[estId]) return;
+        if (ESTADOS.includes(r.estado)) {
+          conteos[estId][r.estado]++;
+          conteos[estId].total++;
+        }
       });
-      const total = presente + ausente + tarde + excusa;
-      const porcentaje = total > 0 ? Math.round(((presente + tarde) / total) * 100) : 100;
-      filas.push({ est, presente, ausente, tarde, excusa, porcentaje });
-    }
+    });
 
-    cuerpo.innerHTML = filas.map(f => `
-      <tr>
-        <td><b>${f.est.apellidos}</b> ${f.est.nombres}</td>
-        <td>${f.presente}</td>
-        <td>${f.ausente}${f.ausente >= 3 ? '<span class="chip-alerta">⚠ Revisar</span>' : ''}</td>
-        <td>${f.tarde}</td>
-        <td>${f.excusa}</td>
-        <td><b>${f.porcentaje}%</b></td>
-      </tr>
-    `).join('');
+    document.getElementById('avisoVacioResumen').style.display = 'none';
+    document.getElementById('cardResumen').style.display = 'block';
+
+    const cuerpo = document.getElementById('cuerpoResumen');
+    cuerpo.innerHTML = estudiantesDelGrado.map(e => {
+      const c = conteos[e.id];
+      const pct = c.total > 0 ? Math.round((c.Presente / c.total) * 100) : null;
+      let claseChip = 'chip-alto';
+      if (pct !== null) {
+        if (pct < 80) claseChip = 'chip-bajo';
+        else if (pct < 90) claseChip = 'chip-medio';
+      }
+      return `
+        <tr>
+          <td><b>${e.apellidos} ${e.nombres}</b></td>
+          <td>${c.Presente}</td>
+          <td>${c.Ausente}</td>
+          <td>${c.Tarde}</td>
+          <td>${c.Excusa}</td>
+          <td>${c.total}</td>
+          <td>${pct !== null ? `<span class="chip-porcentaje ${claseChip}">${pct}%</span>` : '—'}</td>
+        </tr>`;
+    }).join('');
   }
 
   document.getElementById('btnSalir').addEventListener('click', async () => {
