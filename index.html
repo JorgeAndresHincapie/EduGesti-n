@@ -1,789 +1,355 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Súper Héroes del Agua — Vereda Guayabal</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Caveat:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduGestión — Ingreso</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
 <style>
-:root{
---papel:#EFE7D6;
---papel-osc:#E2D5B4;
---papel-mas-osc:#D8C89C;
---tinta:#22331F;
---tinta-suave:#4B5B41;
---agua:#2C6B8C;
---agua-clara:#6FAFC4;
---guadua:#B4863C;
---sello:#A23F2E;
---musgo:#4F6B47;
---blanco:#FBF8F0;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
+  --verde: #1A7A5E; --verde-light: #E8F5F0;
+  --naranja: #C05621;
+  --gris: #F4F6F9; --borde: #DDE3EC;
+  --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
+  --blanco: #FFFFFF; --rojo: #C53030; --rojo-light: #FFF5F5;
 }
-*{box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{
-margin:0;
-background:var(--papel);
-color:var(--tinta);
-font-family:'Work Sans',sans-serif;
-background-image:
-radial-gradient(circle at 20% 10%, rgba(180,134,60,.06), transparent 40%),
-radial-gradient(circle at 80% 60%, rgba(44,107,140,.05), transparent 45%);
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: linear-gradient(135deg, var(--azul-light) 0%, var(--gris) 100%);
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem;
+  color: var(--texto);
 }
-h1,h2,h3{font-family:'Fraunces',serif;margin:0;}
-.mano{font-family:'Caveat',cursive;}
-a{color:var(--agua);}
-img{max-width:100%;display:block;}
-.wrap{max-width:1080px;margin:0 auto;padding:0 1.4rem;}
-
-/* ---- nav ---- */
-.brujula{
-position:sticky;top:0;z-index:50;
-background:rgba(239,231,214,.94);
-backdrop-filter:blur(4px);
-border-bottom:1.5px dashed var(--papel-mas-osc);
+.card {
+  background: var(--blanco);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(26,79,138,0.12);
+  width: 100%; max-width: 460px;
+  padding: 2.2rem;
 }
-.brujula-in{max-width:1080px;margin:0 auto;padding:.6rem 1.4rem;
-display:flex;gap:1.1rem;align-items:center;overflow-x:auto;white-space:nowrap;}
-.brujula-marca{font-family:'Fraunces',serif;font-weight:700;font-size:1rem;color:var(--musgo);margin-right:.4rem;flex-shrink:0;}
-.brujula a{font-size:.78rem;font-weight:600;color:var(--tinta-suave);text-decoration:none;letter-spacing:.02em;flex-shrink:0;}
-.brujula a:hover{color:var(--sello);}
-
-/* ---- hero ---- */
-.hero{position:relative;overflow:hidden;padding:3.6rem 0 2.6rem;}
-.hero-in{max-width:1080px;margin:0 auto;padding:0 1.4rem;display:grid;grid-template-columns:1.05fr .95fr;gap:2.4rem;align-items:center;}
-@media(max-width:820px){.hero-in{grid-template-columns:1fr;}}
-.eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--musgo);margin-bottom:.9rem;}
-.eyebrow::before{content:'';width:22px;height:1.5px;background:var(--musgo);}
-.hero h1{font-size:3rem;line-height:1.02;letter-spacing:-.01em;color:var(--tinta);}
-.hero h1 em{font-style:italic;color:var(--agua);font-weight:500;}
-.hero p.lead{font-size:1.02rem;line-height:1.55;color:var(--tinta-suave);margin-top:1.1rem;max-width:38rem;}
-.hero-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.4rem;}
-.tag{font-size:.72rem;font-weight:600;color:var(--tinta-suave);border:1.3px solid var(--papel-mas-osc);padding:.3rem .7rem;border-radius:20px;background:var(--blanco);}
-.foto-polaroid{
-background:var(--blanco);padding:.6rem .6rem 2.4rem;
-box-shadow:0 10px 26px rgba(34,51,31,.18), 0 2px 6px rgba(34,51,31,.1);
-transform:rotate(-2deg);
-position:relative;
+.logo-wrap { text-align: center; margin-bottom: 1.5rem; }
+.logo-icon {
+  width: 52px; height: 52px; background: var(--azul); border-radius: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 0.8rem;
 }
-.foto-polaroid img{width:100%;height:340px;object-fit:cover;}
-.foto-polaroid .cap{position:absolute;bottom:.7rem;left:.9rem;right:.9rem;font-family:'Caveat',cursive;font-size:1.15rem;color:var(--tinta-suave);}
-.cinta{position:absolute;width:70px;height:26px;background:rgba(255,246,214,.75);border:1px solid rgba(0,0,0,.05);box-shadow:0 2px 4px rgba(0,0,0,.12);}
-.cinta.a{top:-12px;left:24px;transform:rotate(-6deg);}
+.logo-icon svg { width: 28px; height: 28px; color: white; }
+.logo-title { font-family: 'Instrument Serif', serif; font-size: 1.7rem; color: var(--texto); }
+.logo-sub { font-size: 0.8rem; color: var(--texto-light); margin-top: 0.2rem; }
 
-/* ---- section shell ---- */
-section{padding:3.4rem 0;position:relative;}
-.divisor{height:26px;background:
-repeating-linear-gradient(90deg,var(--papel-mas-osc) 0 10px, transparent 10px 20px);
-opacity:.55;}
-.kicker{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;}
-.kicker .num{font-family:'Caveat',cursive;font-size:1.5rem;color:var(--sello);font-weight:700;}
-.kicker .linea{flex:1;height:1.4px;background:repeating-linear-gradient(90deg,var(--papel-mas-osc) 0 6px, transparent 6px 11px);}
-h2.tit{font-size:2rem;letter-spacing:-.01em;margin-bottom:.5rem;}
-p.intro-txt{color:var(--tinta-suave);max-width:44rem;line-height:1.6;font-size:.98rem;}
-
-/* ---- mutualismo ---- */
-.mutual-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.6rem;margin-top:2rem;}
-@media(max-width:760px){.mutual-grid{grid-template-columns:1fr;}}
-.mutual-card{background:var(--blanco);border:1.5px solid var(--papel-mas-osc);border-radius:4px;padding:1.5rem;}
-
-/* ---- estratos del bosque de galería ---- */
-.estratos-lista{display:flex;flex-direction:column;gap:1.4rem;margin-top:1.8rem;}
-.estrato-card{display:flex;gap:1.2rem;background:var(--blanco);border:1.5px solid var(--papel-mas-osc);border-radius:6px;padding:1.3rem;box-shadow:0 6px 18px rgba(34,51,31,.08);}
-.estrato-num{flex-shrink:0;width:38px;height:38px;border-radius:50%;background:var(--musgo);color:white;font-family:'Fraunces',serif;font-weight:700;font-size:1.2rem;display:flex;align-items:center;justify-content:center;}
-.estrato-txt{flex:1.4;min-width:220px;}
-.estrato-txt h3{font-family:'Fraunces',serif;color:var(--tinta);font-size:1.15rem;margin-bottom:.4rem;}
-.estrato-desc{font-size:.88rem;color:var(--tinta-suave);line-height:1.6;}
-.estrato-fotos{flex:1;display:flex;flex-wrap:wrap;gap:.5rem;align-content:flex-start;min-width:180px;}
-.estrato-fotos img{width:calc(50% - .25rem);height:90px;object-fit:cover;border-radius:4px;box-shadow:0 3px 8px rgba(0,0,0,.12);}
-@media(max-width:700px){.estrato-card{flex-direction:column;}.estrato-fotos img{width:calc(33% - .34rem);height:75px;}}
-.mutual-card h3{font-size:1.2rem;color:var(--musgo);margin-bottom:.7rem;}
-.mutual-card ul{margin:0;padding-left:1.1rem;color:var(--tinta-suave);font-size:.92rem;line-height:1.65;}
-.mutual-card li{margin-bottom:.3rem;}
-.mutual-photo-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2rem;}
-@media(max-width:700px){.mutual-photo-row{grid-template-columns:1fr;}}
-.foto-chica{background:var(--blanco);padding:.5rem .5rem 1.7rem;box-shadow:0 6px 16px rgba(34,51,31,.14);}
-.foto-chica img{height:190px;object-fit:cover;width:100%;}
-.foto-chica .cap{font-family:'Caveat',cursive;font-size:1.05rem;color:var(--tinta-suave);margin-top:.5rem;text-align:center;}
-.foto-chica:nth-child(1){transform:rotate(-2deg);}
-.foto-chica:nth-child(2){transform:rotate(1.5deg);}
-.foto-chica:nth-child(3){transform:rotate(-1deg);}
-
-/* ---- mapa ---- */
-#mapa-real{height:420px;border-radius:6px;border:2px solid var(--blanco);box-shadow:0 10px 30px rgba(34,51,31,.18);}
-.mapa-nota{font-size:.82rem;color:var(--tinta-suave);margin-top:.8rem;font-style:italic;}
-
-/* ---- bitacora profesor ---- */
-.voz-card{
-background:var(--blanco);border:1.5px solid var(--papel-mas-osc);border-radius:4px;
-padding:1.4rem;margin-bottom:1.3rem;display:grid;grid-template-columns:220px 1fr;gap:1.3rem;
+.tabs { display: flex; gap: 0.4rem; background: var(--gris); border-radius: 10px; padding: 0.3rem; margin-bottom: 1.5rem; }
+.tab-btn {
+  flex: 1; padding: 0.55rem; border: none; background: none; border-radius: 8px;
+  font-family: inherit; font-size: 0.82rem; font-weight: 600; color: var(--texto-light);
+  cursor: pointer; transition: all 0.15s;
 }
-@media(max-width:700px){.voz-card{grid-template-columns:1fr;}}
-.voz-foto{width:100%;height:170px;object-fit:cover;border-radius:3px;}
-.voz-num{font-family:'Fraunces',serif;font-size:2.6rem;color:var(--papel-mas-osc);line-height:1;position:absolute;top:1rem;right:1.2rem;}
-.voz-card{position:relative;}
-.voz-titulo{font-family:'Fraunces',serif;font-size:1.3rem;color:var(--agua);margin-bottom:.5rem;padding-right:2.5rem;}
-.voz-card audio{width:100%;margin:.7rem 0;height:36px;}
-.voz-toggle{background:none;border:1.3px solid var(--musgo);color:var(--musgo);font-size:.76rem;font-weight:700;padding:.35rem .8rem;border-radius:20px;cursor:pointer;font-family:'Work Sans',sans-serif;}
-.voz-toggle:hover{background:var(--musgo);color:white;}
-.voz-transcripcion{display:none;margin-top:.8rem;padding-top:.8rem;border-top:1.3px dashed var(--papel-mas-osc);font-size:.9rem;line-height:1.6;color:var(--tinta-suave);}
-.voz-transcripcion.show{display:block;}
+.tab-btn.activo { background: var(--blanco); color: var(--azul); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
 
-.video-galeria{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.6rem;}
-@media(max-width:760px){.video-galeria{grid-template-columns:1fr;}}
-.video-galeria video{width:100%;border-radius:4px;background:#000;box-shadow:0 6px 16px rgba(34,51,31,.16);}
-.video-cap{font-family:'Caveat',cursive;color:var(--tinta-suave);font-size:1rem;margin-top:.4rem;text-align:center;}
+.panel { display: none; }
+.panel.activo { display: block; }
 
-/* ---- aves ---- */
-.aves-destacadas{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin:1.8rem 0 2.4rem;}
-@media(max-width:760px){.aves-destacadas{grid-template-columns:1fr;}}
-.ave-destacada{background:var(--blanco);border-radius:4px;overflow:hidden;box-shadow:0 8px 20px rgba(34,51,31,.15);}
-.ave-destacada img{height:210px;object-fit:cover;width:100%;}
-.ave-destacada .info{padding:.8rem .9rem;}
-.ave-destacada .nombre{font-weight:700;font-size:.94rem;}
-.ave-destacada .cientifico{font-style:italic;color:var(--tinta-suave);font-size:.8rem;}
+.field { margin-bottom: 1rem; }
+.field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--texto-mid); margin-bottom: 0.35rem; }
+.field input, .field select {
+  width: 100%; padding: 0.65rem 0.8rem; border: 1.5px solid var(--borde); border-radius: 9px;
+  font-family: inherit; font-size: 0.85rem; color: var(--texto);
+}
+.field input:focus, .field select:focus { outline: none; border-color: var(--azul); }
+.field-row { display: flex; gap: 0.7rem; }
+.field-row .field { flex: 1; }
 
-.lista-aves{columns:2;column-gap:2rem;margin-top:1rem;}
-@media(max-width:700px){.lista-aves{columns:1;}}
-.ave-item{break-inside:avoid;display:flex;justify-content:space-between;gap:.6rem;padding:.5rem 0;border-bottom:1px dashed var(--papel-mas-osc);font-size:.86rem;}
-.ave-item .cn{font-weight:600;}
-.ave-item .cc{font-style:italic;color:var(--tinta-suave);text-align:right;flex-shrink:0;}
-.badge-e{display:inline-block;background:var(--sello);color:white;font-size:.62rem;font-weight:700;padding:.05rem .35rem;border-radius:8px;margin-left:.3rem;vertical-align:middle;}
+.btn {
+  width: 100%; padding: 0.75rem; border: none; border-radius: 10px;
+  font-family: inherit; font-weight: 700; font-size: 0.88rem; cursor: pointer;
+  margin-top: 0.4rem; transition: background 0.15s;
+}
+.btn-primario { background: var(--azul); color: white; }
+.btn-primario:hover { background: var(--azul-dark); }
+.btn-primario:disabled { opacity: 0.6; cursor: default; }
 
-/* ---- fauna extra ---- */
-.fauna-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:1.8rem;}
-@media(max-width:760px){.fauna-grid{grid-template-columns:1fr;}}
-.fauna-card{background:var(--blanco);border-radius:4px;overflow:hidden;box-shadow:0 6px 16px rgba(34,51,31,.13);}
-.fauna-card img{height:170px;object-fit:cover;width:100%;}
-.fauna-card p{padding:.7rem .8rem;font-size:.85rem;color:var(--tinta-suave);margin:0;line-height:1.5;}
+.msg { display: none; font-size: 0.8rem; padding: 0.6rem 0.8rem; border-radius: 8px; margin-bottom: 0.8rem; }
+.msg.visible { display: block; }
+.msg-ok { background: var(--verde-light); color: var(--verde); }
+.msg-err { background: var(--rojo-light); color: var(--rojo); }
 
-/* ---- cuaderno gallery (masonry-ish) ---- */
-.cuaderno{columns:3;column-gap:1rem;margin-top:1.8rem;}
-@media(max-width:900px){.cuaderno{columns:2;}}
-@media(max-width:560px){.cuaderno{columns:1;}}
-.cuaderno figure{margin:0 0 1rem;break-inside:avoid;background:var(--blanco);padding:.45rem .45rem 1.5rem;box-shadow:0 6px 14px rgba(34,51,31,.13);}
-.cuaderno figure:nth-child(3n+1){transform:rotate(-1.4deg);}
-.cuaderno figure:nth-child(3n+2){transform:rotate(1deg);}
-.cuaderno figure:nth-child(3n){transform:rotate(-.6deg);}
-.cuaderno img{width:100%;object-fit:cover;}
-.cuaderno figcaption{font-family:'Caveat',cursive;font-size:1.05rem;color:var(--tinta-suave);text-align:center;margin-top:.5rem;}
+.escala-box {
+  border: 1.5px solid var(--borde); border-radius: 10px; padding: 1rem;
+  margin: 0.5rem 0 1.2rem;
+}
+.escala-titulo { font-size: 0.8rem; font-weight: 700; color: var(--texto); margin-bottom: 0.3rem; }
+.escala-hint { font-size: 0.72rem; color: var(--texto-light); margin-bottom: 0.8rem; }
+.escala-nivel { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; }
+.escala-nivel input[type="text"] { flex: 1.4; padding: 0.4rem 0.5rem; font-size: 0.78rem; border: 1.3px solid var(--borde); border-radius: 6px; }
+.escala-nivel input[type="number"] { flex: 0.8; padding: 0.4rem 0.5rem; font-size: 0.78rem; border: 1.3px solid var(--borde); border-radius: 6px; }
+.escala-nivel span.guion { color: var(--texto-light); font-size: 0.78rem; }
+.escala-nivel .btn-quitar { background: none; border: none; color: var(--rojo); cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 0.2rem 0.4rem; }
+.btn-agregar-nivel {
+  background: var(--gris); border: 1.3px dashed var(--borde); border-radius: 7px;
+  padding: 0.4rem 0.7rem; font-size: 0.75rem; font-weight: 600; color: var(--texto-mid);
+  cursor: pointer; font-family: inherit;
+}
+.escala-tipo-select { margin-bottom: 0.8rem; }
 
-/* ---- carteleras ---- */
-.corcho{background:#C9B27C;border-radius:6px;padding:2rem 1.6rem;margin-top:1.8rem;
-box-shadow:inset 0 0 40px rgba(0,0,0,.18);
-display:grid;grid-template-columns:repeat(4,1fr);gap:1.6rem;}
-@media(max-width:900px){.corcho{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:520px){.corcho{grid-template-columns:1fr;}}
-.chincheta{width:12px;height:12px;border-radius:50%;background:var(--sello);position:absolute;top:8px;left:50%;transform:translateX(-50%);box-shadow:0 2px 3px rgba(0,0,0,.4);}
-.cartel{position:relative;background:white;padding:.5rem;box-shadow:0 8px 18px rgba(0,0,0,.25);}
-.cartel:nth-child(odd){transform:rotate(-2deg);}
-.cartel:nth-child(even){transform:rotate(2deg);}
-.cartel img{width:100%;height:220px;object-fit:cover;object-position:top;}
-
-/* ---- maqueta ---- */
-.ruta-maqueta{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-top:1.6rem;padding:1.1rem;background:var(--blanco);border:1.5px solid var(--papel-mas-osc);border-radius:6px;}
-.ruta-item{font-size:.74rem;font-weight:600;color:var(--tinta-suave);text-align:center;line-height:1.3;min-width:64px;}
-.ruta-item small{font-weight:400;font-style:italic;font-size:.68rem;}
-.ruta-num{display:block;width:24px;height:24px;line-height:24px;border-radius:50%;background:var(--agua-clara);color:white;font-family:'Fraunces',serif;font-weight:700;margin:0 auto .3rem;}
-.ruta-item.ruta-sensor .ruta-num{background:var(--sello);}
-.ruta-item.ruta-sensor{color:var(--sello);}
-.ruta-flecha{color:var(--papel-mas-osc);font-size:1rem;flex-shrink:0;}
-@media(max-width:700px){.ruta-maqueta{justify-content:center;}.ruta-flecha{display:none;}}
-
-.maqueta-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.8rem;margin-top:2rem;align-items:start;}
-@media(max-width:820px){.maqueta-grid{grid-template-columns:1fr;}}
-.maqueta-panel{background:var(--blanco);border:1.5px solid var(--papel-mas-osc);border-radius:6px;padding:1.6rem;box-shadow:0 10px 26px rgba(34,51,31,.14);}
-.maqueta-estado{display:flex;align-items:center;gap:.6rem;margin-bottom:1.2rem;}
-.maqueta-punto{width:11px;height:11px;border-radius:50%;background:#B7462E;flex-shrink:0;}
-.maqueta-punto.on{background:#3E7D4C;box-shadow:0 0 0 4px rgba(62,125,76,.18);}
-.maqueta-estado-txt{font-size:.82rem;font-weight:600;color:var(--tinta-suave);}
-.maqueta-btn{background:var(--agua);color:white;border:none;font-weight:700;font-size:.88rem;padding:.7rem 1.3rem;border-radius:24px;cursor:pointer;font-family:'Work Sans',sans-serif;transition:background .15s;}
-.maqueta-btn:hover{background:#234f65;}
-.maqueta-btn:disabled{background:var(--papel-mas-osc);color:var(--tinta-suave);cursor:default;}
-.maqueta-btn-demo{background:none;border:1.3px solid var(--musgo);color:var(--musgo);font-weight:700;font-size:.8rem;padding:.55rem 1.1rem;border-radius:24px;cursor:pointer;font-family:'Work Sans',sans-serif;margin-left:.6rem;}
-.maqueta-btn-demo:hover{background:var(--musgo);color:white;}
-.medidor-wrap{margin-top:1.6rem;text-align:center;}
-.medidor-num{font-family:'Fraunces',serif;font-size:3.2rem;color:var(--tinta);line-height:1;}
-.medidor-num span{font-size:1.1rem;color:var(--tinta-suave);font-weight:500;}
-.medidor-cal{font-family:'Caveat',cursive;font-size:1.6rem;margin-top:.3rem;color:var(--musgo);}
-.medidor-barra{height:16px;border-radius:10px;margin-top:1.3rem;background:linear-gradient(90deg,#3E7D4C 0%,#3E7D4C 25%,#C9A227 25%,#C9A227 50%,#D07A2E 50%,#D07A2E 75%,#B7462E 75%,#B7462E 100%);position:relative;}
-.medidor-aguja{position:absolute;top:-6px;width:4px;height:28px;background:var(--tinta);border-radius:2px;left:0%;transition:left .6s ease;}
-.medidor-aguja::after{content:'';position:absolute;top:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:6px solid var(--tinta);}
-.medidor-escala{display:flex;justify-content:space-between;font-size:.68rem;color:var(--tinta-suave);margin-top:.4rem;}
-.maqueta-lista{margin:0;padding-left:1.2rem;color:var(--tinta-suave);font-size:.9rem;line-height:1.7;}
-.maqueta-lista b{color:var(--tinta);}
-.maqueta-foto{background:var(--blanco);padding:.6rem .6rem 1.8rem;box-shadow:0 10px 24px rgba(34,51,31,.16);transform:rotate(1.3deg);}
-.maqueta-foto img{width:100%;height:230px;object-fit:cover;}
-.maqueta-foto .cap{font-family:'Caveat',cursive;font-size:1.1rem;color:var(--tinta-suave);text-align:center;margin-top:.5rem;}
-.maqueta-nota{font-size:.78rem;color:var(--tinta-suave);margin-top:1rem;font-style:italic;}
-
-/* ---- footer ---- */
-footer{background:var(--tinta);color:var(--papel);padding:2.6rem 0 2rem;margin-top:1rem;}
-footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1.5rem;align-items:flex-start;}
-footer h3{font-family:'Fraunces',serif;color:var(--blanco);font-size:1.3rem;}
-footer p{color:#B9C4B3;font-size:.85rem;line-height:1.6;max-width:26rem;}
-footer .sello-final{font-family:'Caveat',cursive;font-size:1.3rem;color:#D8C89C;}
-
-.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
-:focus-visible{outline:3px solid var(--sello);outline-offset:2px;}
+.link-sm { text-align: center; margin-top: 1rem; font-size: 0.78rem; color: var(--texto-light); }
+.link-sm a { color: var(--azul); text-decoration: none; font-weight: 600; }
 </style>
 </head>
 <body>
 
-<nav class="brujula">
-<div class="brujula-in">
-<span class="brujula-marca">🧭 Guayabal</span>
-<a href="#mutualismo">El bosque y el agua</a>
-<a href="#mapa">El recorrido</a>
-<a href="#voces">Voz de la vereda</a>
-<a href="#maqueta">La maqueta</a>
-<a href="#estratos">Los 5 pisos del bosque</a>
-<a href="#aves">Las aves</a>
-<a href="#fauna">Otros habitantes</a>
-<a href="#cuaderno">Cuaderno de campo</a>
-<a href="#carteleras">Día del Agua</a>
-</div>
-</nav>
+<div class="card">
+  <div class="logo-wrap">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/>
+        <path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>
+      </svg>
+    </div>
+    <p class="logo-title">EduGestión</p>
+    <p class="logo-sub">Administración educativa — formal y no formal</p>
+  </div>
 
-<header class="hero">
-<div class="hero-in">
-<div>
-<div class="eyebrow">Club Defensores del Agua · Vereda Guayabal, Chinchiná</div>
-<h1>Súper Héroes<br>del <em>Agua</em></h1>
-<p class="lead">Un cuaderno de campo hecho por los estudiantes de la I.E. Eduardo Gómez Arrubla: caminamos la cuenca, escuchamos a quienes la cuidan desde hace generaciones, y registramos cada nacimiento, cada ave y cada quebrada que le da vida a la vereda.</p>
-<div class="hero-tags">
-<span class="tag">📍 Vereda Guayabal</span>
-<span class="tag">💧 Microcuenca Guayabal · La Pradera</span>
-<span class="tag">🏆 Concurso departamental 2026</span>
-</div>
-</div>
-<div class="foto-polaroid">
-<div class="cinta a"></div>
-<img src="assets/img/hero-grupo.jpg" alt="Grupo del Club Defensores del Agua reunido en un nacimiento de agua junto a un habitante de la vereda">
-<div class="cap">todo el equipo, en el nacimiento de la quebrada</div>
-</div>
-</div>
-</header>
+  <div class="tabs">
+    <button class="tab-btn activo" id="tabLogin" onclick="cambiarTab('login')">Iniciar sesión</button>
+    <button class="tab-btn" id="tabCrear" onclick="cambiarTab('crear')">Crear institución</button>
+  </div>
 
-<div class="divisor"></div>
+  <!-- PANEL LOGIN -->
+  <div class="panel activo" id="panelLogin">
+    <div class="msg msg-ok" id="loginMsgOk"><span id="loginMsgOkTexto"></span></div>
+    <div class="msg msg-err" id="loginMsgErr"><span id="loginMsgErrTexto"></span></div>
+    <form id="formLogin">
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="loginEmail" required/>
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="loginPassword" required/>
+      </div>
+      <button type="submit" class="btn btn-primario" id="btnLogin">Ingresar</button>
+    </form>
+    <p class="link-sm"><a href="#" onclick="recuperarPassword();return false;">¿Olvidaste tu contraseña?</a></p>
+  </div>
 
-<section id="mutualismo">
-<div class="wrap">
-<div class="kicker"><span class="num">Cuaderno, pág. 1</span><span class="linea"></span></div>
-<h2 class="tit">El bosque y el agua se cuidan mutuamente</h2>
-<p class="intro-txt">Los bosques protegen el caudal y la limpieza de las quebradas, pero al mismo tiempo el agua de las quebradas alimenta y sostiene la vida del bosque. Es un pacto de ayuda mutua en la naturaleza — y las aves son la prueba viva de ese pacto.</p>
+  <!-- PANEL CREAR INSTITUCIÓN -->
+  <div class="panel" id="panelCrear">
+    <div class="msg msg-ok" id="crearMsgOk"><span id="crearMsgOkTexto"></span></div>
+    <div class="msg msg-err" id="crearMsgErr"><span id="crearMsgErrTexto"></span></div>
+    <form id="formCrear">
+      <div class="field">
+        <label>Nombre de la institución</label>
+        <input type="text" id="ciNombreInst" required/>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>NIT o documento</label>
+          <input type="text" id="ciNit" required/>
+        </div>
+        <div class="field">
+          <label>Tipo de institución</label>
+          <select id="ciTipo">
+            <option value="formal">Educación formal (colegio)</option>
+            <option value="no_formal">Educación no formal (formación para el trabajo)</option>
+          </select>
+        </div>
+      </div>
 
-<div class="mutual-grid">
-<div class="mutual-card">
-<h3>🌳 Cómo el bosque ayuda a la quebrada</h3>
-<ul>
-<li><b>Filtra el agua:</b> las raíces retienen la tierra y dejan que la lluvia baje limpia hacia el cauce.</li>
-<li><b>Evita la erosión:</b> frena la fuerza del agua para que no arrastre lodo ni cause derrumbes.</li>
-<li><b>Regula el caudal:</b> mantiene el agua fluyendo en sequía y evita inundaciones repentinas.</li>
-<li><b>Da sombra:</b> los árboles tapan el sol directo y evitan que el agua se seque rápido.</li>
-</ul>
-</div>
-<div class="mutual-card">
-<h3>💧 Cómo la quebrada ayuda al bosque</h3>
-<ul>
-<li><b>Riega la tierra</b> de todo el valle donde crece la vegetación.</li>
-<li><b>Alimenta las raíces</b> con la humedad constante que los árboles necesitan.</li>
-<li><b>Da agua vital</b> a los animales del lugar.</li>
-<li><b>Conecta la vida:</b> es el camino que usan animales y semillas para repoblar el bosque.</li>
-</ul>
-</div>
-</div>
+      <div class="field">
+        <label>Tu nombre completo (administrador)</label>
+        <input type="text" id="ciNombreAdmin" required/>
+      </div>
+      <div class="field">
+        <label>Tu correo electrónico</label>
+        <input type="email" id="ciEmailAdmin" required/>
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="ciPasswordAdmin" minlength="6" required/>
+      </div>
 
-<div class="mutual-grid" style="margin-top:1.2rem;">
-<div class="mutual-card">
-<h3>🐦 Lo que la quebrada le da a las aves</h3>
-<ul>
-<li><b>Agua y baño:</b> beben y limpian sus plumas allí.</li>
-<li><b>Comida:</b> en el agua y en la orilla hay insectos y plantas que comen.</li>
-<li><b>Casa y ruta:</b> los árboles de la orilla son su hogar y su camino de vuelo.</li>
-</ul>
-</div>
-<div class="mutual-card">
-<h3>🌱 Lo que las aves le dan al bosque</h3>
-<ul>
-<li><b>Siembran plantas:</b> comen frutos y botan las semillas — así nacen más árboles que protegen el agua.</li>
-<li><b>Controlan insectos:</b> comen muchos bichos y mantienen el equilibrio natural.</li>
-<li><b>Nutren el suelo:</b> sus excrementos dan nutrientes a las plantas de la zona.</li>
-</ul>
-</div>
-</div>
+      <div class="escala-box">
+        <p class="escala-titulo">Escala de calificación</p>
+        <p class="escala-hint">Precargada con el estilo Decreto 1290 (Colombia). Ajusta los nombres y rangos según tu institución.</p>
+        <div class="escala-tipo-select">
+          <select id="ciEscalaTipo" onchange="toggleEscalaNiveles()">
+            <option value="cualitativa_cuantitativa">Cualitativa + Numérica (Decreto 1290)</option>
+            <option value="numerica_simple">Solo numérica</option>
+          </select>
+        </div>
+        <div id="ciNivelesWrap"></div>
+        <button type="button" class="btn-agregar-nivel" onclick="agregarNivel()">+ Agregar nivel</button>
+      </div>
 
-<div class="mutual-photo-row">
-<div class="foto-chica"><img src="assets/img/nacimiento.jpg" alt="Nacimiento de agua entre musgo"><div class="cap">un nacimiento, escondido entre el musgo</div></div>
-<div class="foto-chica"><img src="assets/img/guadual.jpg" alt="Guadual de la cuenca"><div class="cap">el guadual que protege la ladera</div></div>
-<div class="foto-chica"><img src="assets/img/panorama.jpg" alt="Panorámica de la montaña con café y bosque"><div class="cap">café, bosque y agua, vecinos de siempre</div></div>
-</div>
+      <button type="submit" class="btn btn-primario" id="btnCrearInst">Crear institución y comenzar</button>
+    </form>
+  </div>
 
-<p class="intro-txt" style="margin-top:1.6rem;">La institución educativa tiene sedes en varias veredas — Guayabal, San Andrés, La Pradera, Altochuscal — y cada una tiene su propia microcuenca. Entre las plantas nativas que atraen aves están los guaduales, quiches, yarumos y guayacanes, conviviendo con los cultivos de la región: café y pasto estrella.</p>
-</div>
-</section>
-
-<div class="divisor"></div>
-
-<section id="mapa">
-<div class="wrap">
-<div class="kicker"><span class="num">Cuaderno, pág. 2</span><span class="linea"></span></div>
-<h2 class="tit">El recorrido</h2>
-<p class="intro-txt">Caminamos desde la vereda hasta los nacimientos de agua, pasando por la escuela y llegando a la cuenca de La Pradera. Estos son los puntos que ya tenemos georreferenciados con exactitud:</p>
-<div id="mapa-real"></div>
-<p class="mapa-nota">Mapa con OpenStreetMap · toca cada punto para ver el nombre. Aún faltan por confirmar las coordenadas exactas de "Alto la Pradera" y "Acueducto la Pradera".</p>
-</div>
-</section>
-
-<div class="divisor"></div>
-
-<section id="voces">
-<div class="wrap">
-<div class="kicker"><span class="num">Cuaderno, pág. 3</span><span class="linea"></span></div>
-<h2 class="tit">La voz de la vereda</h2>
-<p class="intro-txt">En el camino nos encontramos con uno de los habitantes de la vereda, que lleva toda la vida entre estas montañas. Nos explicó, planta por planta y quebrada por quebrada, cosas que ningún libro cuenta igual. Aquí están sus explicaciones, grabadas tal como las contó.</p>
-
-<div style="margin-top:2rem;">
-
-<div class="voz-card">
-<span class="voz-num">1</span>
-<img class="voz-foto" onerror="this.style.display='none'" src="assets/img/semilla-carbonero.jpg" alt="Semilla del árbol Carbonero en la palma de una mano">
-<div>
-<div class="voz-titulo">El Carbonero y las semillas viajeras</div>
-<audio controls onerror="this.style.display=\'none\'" src="assets/audio/carbonero.mp4"></audio>
-<button class="voz-toggle" onclick="toggleT(this)">Leer lo que cuenta</button>
-<div class="voz-transcripcion">Nos mostró el fruto del árbol Carbonero: una vaina con semillitas que comen las aves, especialmente las loras. Las aves se comen el mucílago de adentro, pero no digieren la semilla — la sueltan intacta donde caiga su popó, casi siempre en sitios húmedos. Así, sin saberlo, siembran nuevos carboneros por toda la cuenca.</div>
-</div>
+  <p class="link-sm" id="footerHint" style="margin-top:1.4rem">¿Ya tienes una cuenta de una institución? Pídele al administrador que te cree el usuario.</p>
 </div>
 
-<div class="voz-card">
-<span class="voz-num">2</span>
-<img class="voz-foto" onerror="this.style.display='none'" src="assets/img/nido-pichones.jpg" alt="Nido con pichones de ave">
-<div>
-<div class="voz-titulo">Por qué el popó de las aves es distinto</div>
-<audio controls onerror="this.style.display=\'none\'" src="assets/audio/popo-aves.mp4"></audio>
-<button class="voz-toggle" onclick="toggleT(this)">Leer lo que cuenta</button>
-<div class="voz-transcripcion">Nos preguntó: ¿cuáles son los 3 estados de la materia? Sólido, líquido y gaseoso — pero el excremento de las aves no es ninguno de esos. Es un cuarto estado, llamado coloidal, porque ahí va junta la orina (ácido úrico) y las heces. A diferencia de nosotros, las aves no separan ambos sistemas.</div>
-</div>
-</div>
+<script type="module">
+  import { auth, db, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, createUserWithEmailAndPassword, doc, setDoc, getDoc, serverTimestamp, collection, addDoc } from './firebase.js';
 
-<div class="voz-card">
-<span class="voz-num">3</span>
-<img class="voz-foto" onerror="this.style.display='none'" src="assets/img/guadual.jpg" alt="Vegetación de la cuenca donde crece el Anturio">
-<div>
-<div class="voz-titulo">La verdadera flor del Anturio</div>
-<audio controls onerror="this.style.display=\'none\'" src="assets/audio/anturio-flor.mp4"></audio>
-<button class="voz-toggle" onclick="toggleT(this)">Leer lo que cuenta</button>
-<div class="voz-transcripcion">Nos corrigió un mito: lo que vemos rojo o verde en el Anturio no es la flor, es una hoja modificada. La flor de verdad son los puntitos blancos que salen en la parte de arriba. Todas las hojas de las plantas son verdes por la clorofila — lo que cambia de color es otra cosa.</div>
-</div>
-</div>
+  window.cambiarTab = function(tab) {
+    document.getElementById('tabLogin').classList.toggle('activo', tab === 'login');
+    document.getElementById('tabCrear').classList.toggle('activo', tab === 'crear');
+    document.getElementById('panelLogin').classList.toggle('activo', tab === 'login');
+    document.getElementById('panelCrear').classList.toggle('activo', tab === 'crear');
+  };
 
-<div class="voz-card">
-<span class="voz-num">4</span>
-<img class="voz-foto" onerror="this.style.display='none'" src="assets/img/nacimiento.jpg" alt="Vegetación del sotobosque de la cuenca">
-<div>
-<div class="voz-titulo">Comida de monte: el fruto del Anturio</div>
-<audio controls onerror="this.style.display=\'none\'" src="assets/audio/anturio-fruto.mp4"></audio>
-<button class="voz-toggle" onclick="toggleT(this)">Leer lo que cuenta</button>
-<div class="voz-transcripcion">Nos mostró que el fruto del Anturio también se puede comer en caso de necesidad, y nos señaló otra hoja enroscada como un caracol que igual sirve de alimento si se sabe preparar bien. Su conclusión: "en el monte uno no se muere de hambre".</div>
-</div>
-</div>
+  // ── Niveles de escala por defecto: Decreto 1290 ──
+  const NIVELES_DEFAULT_1290 = [
+    { nombre: 'Bajo', min: 1.0, max: 2.9 },
+    { nombre: 'Básico', min: 3.0, max: 3.9 },
+    { nombre: 'Alto', min: 4.0, max: 4.5 },
+    { nombre: 'Superior', min: 4.6, max: 5.0 },
+  ];
+  const NIVELES_DEFAULT_NUMERICA = [
+    { nombre: 'Aprobado', min: 3.0, max: 5.0 },
+    { nombre: 'Reprobado', min: 0.0, max: 2.9 },
+  ];
 
-<div class="voz-card">
-<span class="voz-num">5</span>
-<img class="voz-foto" onerror="this.style.display='none'" src="assets/img/tuberia-guadua.jpg" alt="Tubería de guadua llevando agua a un tanque azul">
-<div>
-<div class="voz-titulo">El acueducto comunitario de Guayabal</div>
-<audio controls onerror="this.style.display=\'none\'" src="assets/audio/acueducto.mp4"></audio>
-<button class="voz-toggle" onclick="toggleT(this)">Leer lo que cuenta</button>
-<div class="voz-transcripcion">Nos explicó cómo funciona el acueducto: el agua pasa por filtros y sale limpia hacia la vereda y hacia La Pradera. El tanque de captación es viejo — cuenta la historia que viene de por ahí de 1960 — y aguantó sin daños el terremoto. El caudal cambia mucho entre sequía e invierno, porque son varias las vertientes que se juntan antes de llegar a la finca.</div>
-</div>
-</div>
+  function renderNiveles(niveles) {
+    const wrap = document.getElementById('ciNivelesWrap');
+    wrap.innerHTML = '';
+    niveles.forEach((n, i) => {
+      const row = document.createElement('div');
+      row.className = 'escala-nivel';
+      row.innerHTML = `
+        <input type="text" value="${n.nombre}" data-campo="nombre" data-idx="${i}" placeholder="Nombre del nivel"/>
+        <input type="number" step="0.1" value="${n.min}" data-campo="min" data-idx="${i}" placeholder="Min"/>
+        <span class="guion">–</span>
+        <input type="number" step="0.1" value="${n.max}" data-campo="max" data-idx="${i}" placeholder="Max"/>
+        <button type="button" class="btn-quitar" onclick="quitarNivel(${i})">&times;</button>
+      `;
+      wrap.appendChild(row);
+    });
+  }
 
-</div>
+  let nivelesActuales = JSON.parse(JSON.stringify(NIVELES_DEFAULT_1290));
+  renderNiveles(nivelesActuales);
 
-<h3 style="font-family:'Fraunces',serif;color:var(--musgo);margin-top:2.2rem;margin-bottom:.4rem;">Así se vivió el recorrido</h3>
-<p class="intro-txt">Estos videos son del mismo momento en que se grabaron los audios de arriba.</p>
-<div class="video-galeria">
-<video controls src="assets/video/campo1.mp4" preload="metadata"></video>
-<video controls src="assets/video/campo2.mp4" preload="metadata"></video>
-<video controls src="assets/video/campo3.mp4" preload="metadata"></video>
-<video controls src="assets/video/campo4.mp4" preload="metadata"></video>
-</div>
-</div>
-</section>
+  window.toggleEscalaNiveles = function() {
+    const tipo = document.getElementById('ciEscalaTipo').value;
+    nivelesActuales = tipo === 'numerica_simple'
+      ? JSON.parse(JSON.stringify(NIVELES_DEFAULT_NUMERICA))
+      : JSON.parse(JSON.stringify(NIVELES_DEFAULT_1290));
+    renderNiveles(nivelesActuales);
+  };
 
-<div class="divisor"></div>
+  window.agregarNivel = function() {
+    leerNivelesDesdeDOM();
+    nivelesActuales.push({ nombre: '', min: 0, max: 0 });
+    renderNiveles(nivelesActuales);
+  };
+  window.quitarNivel = function(idx) {
+    leerNivelesDesdeDOM();
+    nivelesActuales.splice(idx, 1);
+    renderNiveles(nivelesActuales);
+  };
+  function leerNivelesDesdeDOM() {
+    const inputs = document.querySelectorAll('#ciNivelesWrap input');
+    inputs.forEach(inp => {
+      const idx = parseInt(inp.dataset.idx, 10);
+      const campo = inp.dataset.campo;
+      if (!nivelesActuales[idx]) return;
+      nivelesActuales[idx][campo] = campo === 'nombre' ? inp.value : parseFloat(inp.value);
+    });
+  }
 
-<section id="maqueta">
-<div class="wrap">
-<div class="kicker"><span class="num">Cuaderno, pág. 8</span><span class="linea"></span></div>
-<h2 class="tit">La maqueta: la cuenca en miniatura</h2>
-<p class="intro-txt">Construimos una maqueta física de la cuenca: el agua recorre 8 estaciones, desde el nacimiento en la alta montaña hasta la desembocadura junto al colegio, pasando por quebradas, zonas de reforestación, de cultivos y la zona comunitaria. En ese último punto está sumergida la sonda de un sensor real de calidad del agua (TDS), conectado a un Arduino — ahí se mide el efecto acumulado de todo lo que el agua atravesó en su camino. Conecta la maqueta por USB y mira el dato en vivo, tal como lo verá el jurado el día del concurso.</p>
+  // ── LOGIN ──
+  document.getElementById('formLogin').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnLogin');
+    const msgOk = document.getElementById('loginMsgOk'), msgErr = document.getElementById('loginMsgErr');
+    msgOk.classList.remove('visible'); msgErr.classList.remove('visible');
+    btn.disabled = true; btn.textContent = 'Ingresando...';
+    try {
+      await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value.trim(), document.getElementById('loginPassword').value);
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      let m = 'No se pudo iniciar sesión. Verifica tus datos.';
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') m = 'Correo o contraseña incorrectos.';
+      else if (err.code === 'auth/user-not-found') m = 'No existe una cuenta con ese correo.';
+      msgErr.querySelector('#loginMsgErrTexto').textContent = m;
+      msgErr.classList.add('visible');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Ingresar';
+    }
+  });
 
-<div class="ruta-maqueta">
-<div class="ruta-item"><span class="ruta-num">1</span>Nacimiento<br><small>alta montaña</small></div>
-<div class="ruta-flecha">→</div>
-<div class="ruta-item"><span class="ruta-num">2</span>Quebrada A</div>
-<div class="ruta-flecha">→</div>
-<div class="ruta-item"><span class="ruta-num">3</span>Quebrada B</div>
-<div class="ruta-flecha">→</div>
-<div class="ruta-item"><span class="ruta-num">4</span>Reforestación</div>
-<div class="ruta-flecha">→</div>
-<div class="ruta-item"><span class="ruta-num">5</span>Cultivos</div>
-<div class="ruta-flecha">→</div>
-<div class="ruta-item"><span class="ruta-num">6</span>Zona comunitaria</div>
-<div class="ruta-flecha">→</div>
-<div class="ruta-item"><span class="ruta-num">7</span>Quebrada C</div>
-<div class="ruta-flecha">→</div>
-<div class="ruta-item ruta-sensor"><span class="ruta-num">8</span>Colegio<br><small>💧 sensor aquí</small></div>
-</div>
+  window.recuperarPassword = async function() {
+    const email = document.getElementById('loginEmail').value.trim();
+    if (!email) { alert('Escribe tu correo en el campo de arriba primero.'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert('Te enviamos un correo para restablecer tu contraseña.');
+    } catch (err) {
+      alert('No se pudo enviar el correo. Verifica que esté bien escrito.');
+    }
+  };
 
-<div class="maqueta-grid">
-<div class="maqueta-panel">
-<div class="maqueta-estado">
-<span class="maqueta-punto" id="maq-punto"></span>
-<span class="maqueta-estado-txt" id="maq-estado-txt">Maqueta no conectada</span>
-</div>
-<button class="maqueta-btn" id="maq-conectar" onclick="conectarMaqueta()">🔌 Conectar con la maqueta</button>
-<button class="maqueta-btn-demo" id="maq-demo" onclick="toggleDemo()">▶ Ver demo</button>
+  // ── CREAR INSTITUCIÓN ──
+  document.getElementById('formCrear').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    leerNivelesDesdeDOM();
+    const btn = document.getElementById('btnCrearInst');
+    const msgOk = document.getElementById('crearMsgOk'), msgErr = document.getElementById('crearMsgErr');
+    msgOk.classList.remove('visible'); msgErr.classList.remove('visible');
+    btn.disabled = true; btn.textContent = 'Creando...';
 
-<div class="medidor-wrap">
-<div class="medidor-num" id="maq-valor">— <span>ppm TDS</span></div>
-<div class="medidor-cal" id="maq-calidad">esperando lectura...</div>
-<div class="medidor-barra"><div class="medidor-aguja" id="maq-aguja"></div></div>
-<div class="medidor-escala"><span>Excelente</span><span>Buena</span><span>Regular</span><span>Mala</span></div>
-</div>
-<p class="maqueta-nota">El botón "Conectar" usa el puerto USB del Arduino directamente desde el navegador (Chrome/Edge). El botón "Ver demo" simula lecturas para practicar la presentación sin tener la maqueta a la mano.</p>
-</div>
+    const nombreInst = document.getElementById('ciNombreInst').value.trim();
+    const nit = document.getElementById('ciNit').value.trim();
+    const tipo = document.getElementById('ciTipo').value;
+    const nombreAdmin = document.getElementById('ciNombreAdmin').value.trim();
+    const emailAdmin = document.getElementById('ciEmailAdmin').value.trim();
+    const passwordAdmin = document.getElementById('ciPasswordAdmin').value;
+    const escalaTipo = document.getElementById('ciEscalaTipo').value;
 
-<div>
-<ul class="maqueta-lista">
-<li><b>Sensor:</b> TDS Meter V1.0, mide sólidos disueltos totales en partes por millón (ppm).</li>
-<li><b>Cerebro:</b> Arduino Nano (ATmega328P), conectado por cable USB-C.</li>
-<li><b>Pantalla propia:</b> LCD 16x2 con módulo I2C, muestra el valor en vivo directo en la maqueta.</li>
-<li><b>Ubicación del sensor:</b> sumergido en el depósito de agua del punto 8 (Colegio/desembocadura), el punto final del recorrido.</li>
-<li><b>Armado:</b> la maqueta física se construyó en la Vereda Guayabal; el Arduino y el sensor se ensamblaron aparte y se unieron por el cable de la sonda, que sale por un canal en la base.</li>
-<li><b>Lectura:</b> 0–300 ppm es agua de excelente calidad; a partir de 900 ppm ya no es apta para consumo.</li>
-</ul>
-</div>
-</div>
-</div>
-</section>
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, emailAdmin, passwordAdmin);
+      const uid = cred.user.uid;
 
-<div class="divisor"></div>
+      const instRef = await addDoc(collection(db, 'instituciones'), {
+        nombre: nombreInst,
+        nit,
+        tipo,
+        escalaCalificacion: { tipo: escalaTipo, niveles: nivelesActuales },
+        creadoPor: uid,
+        fechaCreacion: serverTimestamp(),
+      });
 
-<section id="estratos">
-<div class="wrap">
-<div class="kicker"><span class="num">Cuaderno, pág. 3</span><span class="linea"></span></div>
-<h2 class="tit">Los 5 pisos del bosque de galería</h2>
-<p class="intro-txt">Un bosque de galería (o de ribera) es la franja de árboles y arbustos que crece pegada a las orillas de la quebrada. Se llama "galería" porque las copas se juntan arriba y forman un túnel verde sobre el agua. Cada piso —desde el suelo hasta las copas más altas— tiene su propia humedad, su propia luz, y sus propias aves guardianas.</p>
+      await setDoc(doc(db, 'usuarios', uid), {
+        nombre: nombreAdmin,
+        email: emailAdmin,
+        rol: 'admin',
+        institucionId: instRef.id,
+        fechaCreacion: serverTimestamp(),
+      });
 
-<div class="estratos-lista">
+      msgOk.querySelector('#crearMsgOkTexto').textContent = '✓ Institución creada. Ingresando...';
+      msgOk.classList.add('visible');
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+    } catch (err) {
+      let m = 'No se pudo crear la institución. Intenta de nuevo.';
+      if (err.code === 'auth/email-already-in-use') m = 'Ese correo ya está registrado. Ve a "Iniciar sesión".';
+      else if (err.code === 'auth/weak-password') m = 'La contraseña es muy débil (mínimo 6 caracteres).';
+      msgErr.querySelector('#crearMsgErrTexto').textContent = m;
+      msgErr.classList.add('visible');
+      console.error(err);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Crear institución y comenzar';
+    }
+  });
 
-<div class="estrato-card">
-<div class="estrato-num">1</div>
-<div class="estrato-txt">
-<h3>El cauce y la ronda hídrica</h3>
-<p class="estrato-desc">Por donde corre el agua; la orilla recibe humedad todo el tiempo. Aquí viven la <b>garza bueyera</b>, el <b>gallinazo</b> y las mirlas, que remueven el lodo buscando insectos y ayudan a controlar plagas y dispersar semillas.</p>
-</div>
-<div class="estrato-fotos">
-<img src="assets/img/cauce-1.jpg" alt="Cauce de la quebrada">
-<img src="assets/img/garza-bueyera.jpg" alt="Garza bueyera">
-<img src="assets/img/gallinazo-vuelo.jpg" alt="Gallinazo en vuelo">
-</div>
-</div>
-
-<div class="estrato-card">
-<div class="estrato-num">2</div>
-<div class="estrato-txt">
-<h3>Estrato herbáceo o rastrojera</h3>
-<p class="estrato-desc">Plantas bajas, menores a 1 metro, sin tallo leñoso: pastos, helechos, musgos. Aquí el <b>turpial dorsidorado</b> y las tangaras buscan insectos y frutos, llevando semillas del bosque maduro hacia zonas de rastrojo y ayudando a que la vegetación se recupere.</p>
-</div>
-<div class="estrato-fotos">
-<img src="assets/img/herbaceo-1.jpg" alt="Estrato herbáceo">
-<img src="assets/img/turpial-dorsidorado.jpg" alt="Turpial dorsidorado">
-</div>
-</div>
-
-<div class="estrato-card">
-<div class="estrato-num">3</div>
-<div class="estrato-txt">
-<h3>El sotobosque</h3>
-<p class="estrato-desc">Arbustos de 1 a 12 metros, como guamos, en penumbra y suelo húmedo. Refugio de mamíferos pequeños e insectos. El <b>carpintero habado</b> y la <b>tangara dorada</b> inspeccionan troncos oscuros buscando artrópodos y dispersan semillas de arbustos de orilla.</p>
-</div>
-<div class="estrato-fotos">
-<img src="assets/img/sotobosque-1.jpg" alt="Sotobosque">
-<img src="assets/img/carpintero-habado.jpg" alt="Carpintero habado">
-<img src="assets/img/tangara-dorada.jpg" alt="Tangara dorada">
-</div>
-</div>
-
-<div class="estrato-card">
-<div class="estrato-num">4</div>
-<div class="estrato-txt">
-<h3>El dosel o techo verde</h3>
-<p class="estrato-desc">Ramas y hojas de árboles grandes (15-45 m) como yarumos y guaduales, que tapan el sol y forman el túnel verde. Aquí viven más especies que en ningún otro piso: el <b>azulejo</b>, la <b>eufonia ventriamarilla</b> y el <b>bienteveo</b> cazan insectos al vuelo y reducen el golpe directo de la lluvia sobre el suelo.</p>
-</div>
-<div class="estrato-fotos">
-<img src="assets/img/dosel-1.jpg" alt="Dosel del bosque">
-<img src="assets/img/azulejo.jpg" alt="Azulejo">
-<img src="assets/img/eufonia-ventriamarilla.jpg" alt="Eufonia ventriamarilla">
-</div>
-</div>
-
-<div class="estrato-card">
-<div class="estrato-num">5</div>
-<div class="estrato-txt">
-<h3>El suelo forestal</h3>
-<p class="estrato-desc">Hojarasca, tierra y raíces que agarran el suelo. Llega menos del 2% de la luz solar. Aquí la <b>tortolita rojiza</b> y la <b>paloma montaraz</b> rebuscan lombrices e insectos entre la hojarasca, ayudando a que el agua de lluvia se filtre hacia los nacimientos.</p>
-</div>
-<div class="estrato-fotos">
-<img src="assets/img/suelo-forestal-1.jpg" alt="Suelo forestal con hojarasca">
-<img src="assets/img/tortolita-rojiza.jpg" alt="Tortolita rojiza">
-<img src="assets/img/paloma-montaraz.jpg" alt="Paloma montaraz">
-</div>
-</div>
-
-</div>
-<p class="intro-txt" style="margin-top:1.6rem;">Las aves protegen las quebradas manteniendo la salud de toda la cuenca: el dosel frena el impacto de la lluvia, el sotobosque y la rastrojera retienen el talud con sus raíces, y el suelo forestal absorbe el agua. Al dispersar semillas y controlar insectos, las aves aseguran la densidad de esta vegetación que alimenta y filtra el caudal.</p>
-</div>
-</section>
-
-<div class="divisor"></div>
-
-<section id="aves">
-<div class="wrap">
-<div class="kicker"><span class="num">Cuaderno, pág. 4</span><span class="linea"></span></div>
-<h2 class="tit">Guardianas y guardianes del cielo</h2>
-<p class="intro-txt">Las aves que registramos en la microcuenca de Guayabal, con las que nos cruzamos en el camino y las que ya están documentadas para esta cuenca. La <span class="badge-e" style="position:static;">E</span> marca las especies endémicas de Colombia.</p>
-
-<div class="aves-destacadas">
-<div class="ave-destacada">
-<img src="assets/img/nido1.jpg" alt="Nido colgante tejido en una rama">
-<div class="info"><div class="nombre">Nido tejido, con pichones adentro</div><div class="cientifico">encontrado en el recorrido</div></div>
-</div>
-<div class="ave-destacada">
-<img src="assets/img/ave-amarilla.jpg" alt="Ave amarilla posada en una rama">
-<div class="info"><div class="nombre">Turpial montañero</div><div class="cientifico">Icterus chrysater</div></div>
-</div>
-<div class="ave-destacada">
-<img src="assets/img/ave-rapaz.jpg" alt="Ave rapaz joven posada en una rama seca">
-<div class="info"><div class="nombre">Gavilán caminero (juvenil)</div><div class="cientifico">Rupornis magnirostris</div></div>
-</div>
-</div>
-
-<h3 style="font-family:'Fraunces',serif;color:var(--musgo);margin-bottom:.3rem;">Lista completa de aves de la cuenca</h3>
-<div class="lista-aves">
-<div class="ave-item"><span class="cn">Gallito de roca</span><span class="cc">Rupicola peruvianus</span></div>
-<div class="ave-item"><span class="cn">Pato de torrentes</span><span class="cc">Merganetta armata</span></div>
-<div class="ave-item"><span class="cn">Carriquí de montaña</span><span class="cc">Cyanocorax yncas</span></div>
-<div class="ave-item"><span class="cn">Cóndor de los Andes</span><span class="cc">Vultur gryphus</span></div>
-<div class="ave-item"><span class="cn">Barranquero</span><span class="cc">Momotus aequatorialis</span></div>
-<div class="ave-item"><span class="cn">Turpial montañero</span><span class="cc">Icterus chrysater</span></div>
-<div class="ave-item"><span class="cn">Dacnis turquesa<span class="badge-e">E</span></span><span class="cc">Dacnis hartlaubi</span></div>
-<div class="ave-item"><span class="cn">Águila crestada</span><span class="cc">Spizaetus isidori</span></div>
-<div class="ave-item"><span class="cn">Colibrí nuquiblanco</span><span class="cc">Florisuga mellivora</span></div>
-<div class="ave-item"><span class="cn">Piranga roja</span><span class="cc">Piranga rubra</span></div>
-<div class="ave-item"><span class="cn">Reinita cerúlea</span><span class="cc">Setophaga cerulea</span></div>
-<div class="ave-item"><span class="cn">Copetón</span><span class="cc">Zonotrichia capensis</span></div>
-<div class="ave-item"><span class="cn">Reinita del Canadá</span><span class="cc">Cardellina canadensis</span></div>
-<div class="ave-item"><span class="cn">Búho orejudo</span><span class="cc">Asio stygius</span></div>
-<div class="ave-item"><span class="cn">Gavilán caminero</span><span class="cc">Rupornis magnirostris</span></div>
-<div class="ave-item"><span class="cn">Carpintero payaso</span><span class="cc">Melanerpes formicivorus</span></div>
-<div class="ave-item"><span class="cn">Clarinero primavera</span><span class="cc">Anisognathus somptuosus</span></div>
-<div class="ave-item"><span class="cn">Reinita gargantinaranja</span><span class="cc">Setophaga fusca</span></div>
-<div class="ave-item"><span class="cn">Trogón enmascarado</span><span class="cc">Trogon personatus</span></div>
-<div class="ave-item"><span class="cn">Tucancito esmeralda</span><span class="cc">Aulacorhynchus prasinus</span></div>
-<div class="ave-item"><span class="cn">Azulejo común</span><span class="cc">Thraupis episcopus</span></div>
-<div class="ave-item"><span class="cn">Reinita alidorada</span><span class="cc">Vermivora chrysoptera</span></div>
-<div class="ave-item"><span class="cn">Zumbador ventriblanco</span><span class="cc">Chaetocercus mulsant</span></div>
-<div class="ave-item"><span class="cn">Tángara rastrojera<span class="badge-e">E</span></span><span class="cc">Stilpnia vitriolina</span></div>
-<div class="ave-item"><span class="cn">Canario amarillo</span><span class="cc">Sicalis flaveola</span></div>
-<div class="ave-item"><span class="cn">Semillero ventriamarillo</span><span class="cc">Sporophila nigricollis</span></div>
-<div class="ave-item"><span class="cn">Tangara real<span class="badge-e">E</span></span><span class="cc">Stilpnia cyanicollis</span></div>
-<div class="ave-item"><span class="cn">Tangara de palmera</span><span class="cc">Thraupis palmarum</span></div>
-<div class="ave-item"><span class="cn">Bienteveo común<span class="badge-e">E</span></span><span class="cc">Pitangus sulphuratus</span></div>
-<div class="ave-item"><span class="cn">Mosquero negro</span><span class="cc">Sayornis nigricans</span></div>
-<div class="ave-item"><span class="cn">Sirirí</span><span class="cc">Tyrannus melancholicus</span></div>
-<div class="ave-item"><span class="cn">Chillón común</span><span class="cc">Colibri coruscans</span></div>
-<div class="ave-item"><span class="cn">Cucarachero común</span><span class="cc">Troglodytes aedon</span></div>
-<div class="ave-item"><span class="cn">El platanero<span class="badge-e">E</span></span><span class="cc">Coereba flaveola</span></div>
-<div class="ave-item"><span class="cn">Carpintero habado</span><span class="cc">Melanerpes rubricapillus</span></div>
-<div class="ave-item"><span class="cn">Cotorrita de anteojos<span class="badge-e">E</span></span><span class="cc">Forpus conspicillatus</span></div>
-<div class="ave-item"><span class="cn">Loro cabeciazul</span><span class="cc">Pionus menstruus</span></div>
-</div>
-</div>
-</section>
-
-<div class="divisor"></div>
-
-<section id="fauna">
-<div class="wrap">
-<div class="kicker"><span class="num">Cuaderno, pág. 5</span><span class="linea"></span></div>
-<h2 class="tit">Otros habitantes del camino</h2>
-<p class="intro-txt">No todo lo que encontramos vuela. En el recorrido también nos cruzamos con estos vecinos de la cuenca:</p>
-<div class="fauna-grid">
-<div class="fauna-card"><img onerror="this.closest('.fauna-card').style.display='none'" src="assets/img/paca.jpg" alt="Mamífero tipo tinajo entre la maleza"><p>Un mamífero, parecido a un tinajo, escondido entre la maleza junto al camino.</p></div>
-<div class="fauna-card"><img onerror="this.closest('.fauna-card').style.display='none'" src="assets/img/cangrejo.jpg" alt="Cangrejo de río en el sendero"><p>Un cangrejo de río, señal de que el agua cercana está sana.</p></div>
-<div class="fauna-card"><img onerror="this.closest('.fauna-card').style.display='none'" src="assets/img/grupo-semilla.jpg" alt="Estudiantes examinando un milpiés en la mano"><p>Un milpiés que encontramos y examinamos con cuidado antes de dejarlo ir.</p></div>
-</div>
-</div>
-</section>
-
-<div class="divisor"></div>
-
-<section id="cuaderno">
-<div class="wrap">
-<div class="kicker"><span class="num">Cuaderno, pág. 6</span><span class="linea"></span></div>
-<h2 class="tit">Cuaderno de campo</h2>
-<p class="intro-txt">Fotos del recorrido: la salida, el camino, la gente de la vereda y los compañeros de curso avistando aves con binoculares.</p>
-<div class="cuaderno">
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/grupo-casa.jpg" alt="Grupo escuchando a un habitante de la vereda"><figcaption>escuchando a un vecino de la vereda</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/tanque-antiguo.jpg" alt="Tanque antiguo de captación de agua"><figcaption>el tanque de captación, viejo pero firme</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/binoculares-porton.jpg" alt="Grupo de estudiantes con binoculares en un portón"><figcaption>listos para avistar aves</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/grupo-camino.jpg" alt="Grupo caminando entre bananeras"><figcaption>camino entre platanales</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/ganado.jpg" alt="Ganado pastando en la ladera"><figcaption>las fincas ganaderas de la vereda</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/binoculares-muro.jpg" alt="Estudiantes sentados en un muro con binoculares"><figcaption>avistamiento desde el muro</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/grupo-arbol.jpg" alt="Grupo caminando por un sendero en la montaña"><figcaption>el sendero sigue subiendo</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/profesor-semilla.jpg" alt="Habitante de la vereda mostrando una semilla"><figcaption>nos enseña una semilla más</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/tanque-antiguo2.jpg" alt="Vista del tanque antiguo entre la vegetación"><figcaption>escondido entre la maleza</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/casa-azul-vecino.jpg" alt="Grupo del club reunido frente a una casa azul, hablando con un vecino de la vereda"><figcaption>otra vez donde el vecino, casa azul de por medio</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/casa-azul-vecino2.jpg" alt="Grupo del club escuchando explicaciones junto a la reja roja de una casa"><figcaption>todos atentos, junto a la reja roja</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/sendero-guadua.jpg" alt="Grupo caminando por un sendero de tierra entre guaduales"><figcaption>el camino se angosta entre guaduas</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/sendero-empinado.jpg" alt="Grupo subiendo un sendero empinado de montaña"><figcaption>subiendo, sin quejarnos</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/guia-ruana-roja.jpg" alt="Habitante de la vereda con sombrero y ruana roja conversando con el grupo en el sendero"><figcaption>otro vecino se unió al recorrido</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/guia-ruana-roja2.jpg" alt="Habitante de la vereda con ruana roja de pie junto al grupo en el bosque"><figcaption>su ruana roja, bandera del camino</figcaption></figure>
-<figure><img onerror="this.closest('figure').style.display='none'" src="assets/img/sendero-helechos.jpg" alt="Grupo caminando entre helechos gigantes en el bosque"><figcaption>los helechos casi nos tapan</figcaption></figure>
-</div>
-</div>
-</section>
-
-<div class="divisor"></div>
-
-<section id="carteleras">
-<div class="wrap">
-<div class="kicker"><span class="num">Cuaderno, pág. 7</span><span class="linea"></span></div>
-<h2 class="tit">22 de marzo: Día Mundial del Agua</h2>
-<p class="intro-txt">Tema 2026: "Agua y Género". Estas son las carteleras que hicimos a mano para reflexionar sobre por qué el acceso al agua no es igual para todas las personas.</p>
-<div class="corcho">
-<div class="cartel"><div class="chincheta"></div><img src="assets/img/cartel-laura-camila.jpg" alt="Cartelera Día Mundial del Agua, por Laura y Camila"></div>
-<div class="cartel"><div class="chincheta"></div><img src="assets/img/cartel-manuela.jpg" alt="Cartelera Día Mundial del Agua, por Manuela Acosta"></div>
-<div class="cartel"><div class="chincheta"></div><img src="assets/img/cartel-tierra.jpg" alt="Cartelera Día Mundial del Agua con dibujo de la Tierra"></div>
-<div class="cartel"><div class="chincheta"></div><img src="assets/img/cartel-dana.jpg" alt="Cartelera Día Mundial del Agua, gotas de vida gotas de esperanza"></div>
-</div>
-</div>
-</section>
-
-<footer>
-<div class="wrap">
-<div>
-<h3>Súper Héroes del Agua</h3>
-<p>Club Defensores del Agua · Vereda Guayabal, Chinchiná, Caldas.<br>
-Institución Educativa Eduardo Gómez Arrubla.<br>
-Con la colaboración de la profesora Luz Elena y de un habitante de la vereda que compartió su conocimiento del territorio.</p>
-</div>
-<div class="sello-final">hecho con las botas puestas en el barro 🥾💧</div>
-</div>
-</footer>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script>
-function toggleT(btn){
-const t = btn.nextElementSibling;
-t.classList.toggle('show');
-btn.textContent = t.classList.contains('show') ? 'Ocultar' : 'Leer lo que cuenta';
-}
-
-const map = L.map('mapa-real').setView([4.9540, -75.6065], 13);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-attribution:'&copy; OpenStreetMap',
-maxZoom: 18
-}).addTo(map);
-
-const puntos = [
-{lat:4.9611415, lng:-75.6104324, nombre:'Vereda Guayabal', desc:'Punto de referencia de la vereda'},
-{lat:4.9577802, lng:-75.6134295, nombre:'I.E. Eduardo Gómez Arrubla', desc:'Sede educativa de la Vereda Guayabal'},
-{lat:4.9456779, lng:-75.6004798, nombre:'Nacimiento cuenca La Pradera', desc:'Punto donde nace la quebrada de La Pradera'},
-];
-
-puntos.forEach(p=>{
-L.marker([p.lat,p.lng]).addTo(map).bindPopup(`<b>${p.nombre}</b><br>${p.desc}`);
-});
-
-/* ---- maqueta: sensor TDS en vivo (Web Serial) + modo demo ---- */
-let maqPuerto = null;
-let maqLector = null;
-let demoInterval = null;
-
-function calidadDeAgua(ppm){
-if(ppm <= 300) return {texto:'Excelente calidad de agua', pos:12.5};
-if(ppm <= 600) return {texto:'Buena calidad de agua', pos:37.5};
-if(ppm <= 900) return {texto:'Calidad regular', pos:62.5};
-return {texto:'Calidad mala, no apta para consumo', pos:87.5};
-}
-
-function mostrarLectura(ppm){
-const c = calidadDeAgua(ppm);
-document.getElementById('maq-valor').innerHTML = Math.round(ppm) + ' <span>ppm TDS</span>';
-document.getElementById('maq-calidad').textContent = c.texto;
-document.getElementById('maq-aguja').style.left = c.pos + '%';
-}
-
-async function conectarMaqueta(){
-if(!('serial' in navigator)){
-alert('Este navegador no soporta conexión USB directa. Usa Chrome o Edge en computador.');
-return;
-}
-try{
-if(demoInterval) toggleDemo();
-maqPuerto = await navigator.serial.requestPort();
-await maqPuerto.open({baudRate:9600});
-document.getElementById('maq-punto').classList.add('on');
-document.getElementById('maq-estado-txt').textContent = 'Maqueta conectada — leyendo en vivo';
-document.getElementById('maq-conectar').textContent = '✅ Conectada';
-document.getElementById('maq-conectar').disabled = true;
-
-const decoder = new TextDecoderStream();
-maqPuerto.readable.pipeTo(decoder.writable);
-maqLector = decoder.readable.getReader();
-let buffer = '';
-while(true){
-const {value, done} = await maqLector.read();
-if(done) break;
-buffer += value;
-let lineas = buffer.split('\n');
-buffer = lineas.pop();
-for(const linea of lineas){
-const n = parseFloat(linea.trim());
-if(!isNaN(n)) mostrarLectura(n);
-}
-}
-}catch(err){
-document.getElementById('maq-estado-txt').textContent = 'No se pudo conectar: ' + err.message;
-}
-}
-
-function toggleDemo(){
-const btn = document.getElementById('maq-demo');
-if(demoInterval){
-clearInterval(demoInterval);
-demoInterval = null;
-btn.textContent = '▶ Ver demo';
-document.getElementById('maq-estado-txt').textContent = 'Maqueta no conectada';
-document.getElementById('maq-punto').classList.remove('on');
-return;
-}
-btn.textContent = '⏸ Detener demo';
-document.getElementById('maq-punto').classList.add('on');
-document.getElementById('maq-estado-txt').textContent = 'Modo demo (valores simulados)';
-demoInterval = setInterval(()=>{
-const ppm = 150 + Math.random()*1000;
-mostrarLectura(ppm);
-}, 1800);
-}
+  onAuthStateChanged(auth, (user) => {
+    if (user && window.location.pathname.endsWith('index.html')) {
+      // Ya hay sesión activa; se podría redirigir automáticamente si se desea.
+    }
+  });
 </script>
 </body>
 </html>
