@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>EduGestión — Carga Académica</title>
+<title>EduGestión — Carga académica</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
   --verde: #1A7A5E; --verde-light: #E8F5F0;
   --naranja: #C05621; --naranja-light: #FFF3EB;
+  --rojo: #C53030; --rojo-light: #FFF5F5;
   --gris: #F4F6F9; --borde: #DDE3EC;
   --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
   --blanco: #FFFFFF;
@@ -26,27 +28,71 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
 
 .main { max-width: 950px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
 .titulo { font-family: 'Instrument Serif', serif; font-size: 1.8rem; margin-bottom: 0.4rem; }
-.subtitulo { font-size: 0.85rem; color: var(--texto-light); margin-bottom: 1.6rem; }
+.sub { font-size: 0.85rem; color: var(--texto-light); margin-bottom: 1.6rem; line-height: 1.5; }
 
-.resumen-top { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
-.resumen-card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.1rem; }
-.resumen-num { font-size: 1.6rem; font-weight: 700; }
-.resumen-label { font-size: 0.74rem; color: var(--texto-light); }
+.card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.3rem; }
+.card-titulo { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.6rem; }
 
-.docente-card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 14px; padding: 1.4rem 1.6rem; margin-bottom: 1.1rem; }
-.docente-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
-.docente-nombre { font-family: 'Instrument Serif', serif; font-size: 1.2rem; }
-.docente-horas { background: var(--azul-light); color: var(--azul); font-size: 0.78rem; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 20px; }
-.docente-horas.alto { background: var(--naranja-light); color: var(--naranja); }
+.info-box { background: var(--azul-light); color: var(--azul); border-radius: 10px; padding: 0.9rem 1.1rem; font-size: 0.8rem; line-height: 1.6; margin-bottom: 1rem; }
+.info-box code { background: rgba(26,79,138,0.1); padding: 0.1rem 0.35rem; border-radius: 4px; font-weight: 600; }
 
-table { width: 100%; border-collapse: collapse; }
-th { text-align: left; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; color: var(--texto-light); padding: 0.5rem 0.6rem; border-bottom: 1.5px solid var(--borde); }
-td { padding: 0.5rem 0.6rem; font-size: 0.82rem; border-bottom: 1px solid var(--borde); }
-tr:last-child td { border-bottom: none; }
-.chip { display: inline-block; background: var(--verde-light); color: var(--verde); font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.55rem; border-radius: 8px; }
+.btn-descargar { background: var(--gris); border: 1.3px dashed var(--borde); color: var(--texto-mid); padding: 0.55rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
+.btn-descargar:hover { background: var(--azul-light); color: var(--azul); border-color: var(--azul); }
 
-.aviso { text-align: center; padding: 3rem 1.5rem; color: var(--texto-light); font-size: 0.88rem; background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; }
-.loading-wrap { text-align: center; padding: 2rem; color: var(--texto-light); font-size: 0.85rem; }
+.dropzone { border: 2px dashed var(--borde); border-radius: 12px; padding: 2.2rem; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.dropzone:hover, .dropzone.arrastrando { border-color: var(--azul); background: var(--azul-light); }
+.dropzone p { font-size: 0.85rem; color: var(--texto-mid); }
+.dropzone .nombre-archivo { font-weight: 700; color: var(--azul); margin-top: 0.4rem; }
+input[type="file"] { display: none; }
+
+.docentes-disp { font-size: 0.78rem; color: var(--texto-light); margin-top: 0.5rem; line-height: 1.6; }
+.docentes-disp b { color: var(--texto-mid); }
+
+.resumen-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; margin: 1rem 0 1.3rem; }
+.resumen-item { text-align: center; padding: 0.9rem; border-radius: 10px; }
+.resumen-num { font-family: 'Instrument Serif', serif; font-size: 1.6rem; }
+.resumen-label { font-size: 0.7rem; color: var(--texto-light); margin-top: 0.15rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.ri-total { background: var(--gris); }
+.ri-validos { background: var(--verde-light); }
+.ri-duplicados { background: var(--naranja-light); }
+.ri-errores { background: var(--rojo-light); }
+.ri-total .resumen-num { color: var(--texto); }
+.ri-validos .resumen-num { color: var(--verde); }
+.ri-duplicados .resumen-num { color: var(--naranja); }
+.ri-errores .resumen-num { color: var(--rojo); }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+th { text-align: left; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--texto-light); padding: 0.6rem 0.6rem; background: var(--gris); border-bottom: 1.5px solid var(--borde); position: sticky; top: 0; }
+td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--borde); vertical-align: top; }
+.tabla-scroll { max-height: 420px; overflow-y: auto; border: 1.5px solid var(--borde); border-radius: 10px; }
+.fila-error { background: var(--rojo-light); }
+.fila-duplicado { background: var(--naranja-light); }
+.fila-advertencia { background: var(--naranja-light); }
+.estado-chip { font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 8px; display: inline-block; }
+.chip-ok { background: var(--verde-light); color: var(--verde); }
+.chip-error { background: var(--rojo-light); color: var(--rojo); }
+.chip-duplicado { background: var(--naranja-light); color: var(--naranja); }
+.chip-advertencia { background: var(--naranja-light); color: var(--naranja); }
+.detalle-error { font-size: 0.72rem; color: var(--rojo); margin-top: 0.15rem; }
+.detalle-advertencia { font-size: 0.72rem; color: var(--naranja); margin-top: 0.15rem; }
+.chip-creado { background: var(--verde-light); color: var(--verde); }
+.chip-fallido { background: var(--rojo-light); color: var(--rojo); }
+
+.footer-acciones { display: flex; justify-content: space-between; align-items: center; margin-top: 1.3rem; }
+.btn-primario { background: var(--azul); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 9px; font-weight: 700; font-size: 0.88rem; cursor: pointer; font-family: inherit; }
+.btn-primario:hover { background: var(--azul-dark); }
+.btn-primario:disabled { opacity: 0.5; cursor: default; }
+.contador-final { font-size: 0.82rem; color: var(--texto-light); }
+
+.progreso-wrap { margin-top: 1rem; display: none; }
+.progreso-wrap.visible { display: block; }
+.barra-bg { background: var(--gris); border-radius: 8px; height: 10px; overflow: hidden; }
+.barra-fill { background: var(--verde); height: 100%; width: 0%; transition: width 0.15s; }
+.progreso-texto { font-size: 0.8rem; color: var(--texto-mid); margin-top: 0.5rem; text-align: center; }
+
+.resultado-final { margin-top: 1rem; padding: 1rem 1.2rem; border-radius: 10px; font-size: 0.85rem; display: none; }
+.resultado-final.visible { display: block; }
+.resultado-final.ok { background: var(--verde-light); color: var(--verde); }
 </style>
 </head>
 <body>
@@ -54,99 +100,312 @@ tr:last-child td { border-bottom: none; }
 <header class="topbar">
   <div class="topbar-left">
     <a href="dashboard.html" class="topbar-back">← Panel</a>
-    <span class="topbar-brand">Carga Académica</span>
+    <span class="topbar-brand">Carga académica</span>
   </div>
   <button class="btn-salir" id="btnSalir">Salir</button>
 </header>
 
 <main class="main">
-  <p class="titulo">Carga Académica por Docente</p>
-  <p class="subtitulo">Qué materias y grupos tiene asignado cada docente, con sus horas semanales totales.</p>
+  <p class="titulo">Carga académica masiva</p>
+  <p class="sub">Sube un archivo con tus asignaturas por grado y el docente asignado a cada una — se crean todas de una sola vez.</p>
 
-  <div class="resumen-top" id="resumenTop"></div>
+  <div class="card">
+    <p class="card-titulo">1. Formato del archivo</p>
+    <div class="info-box">
+      Columnas esperadas: <code>Asignatura</code>, <code>Grado</code> (déjalo vacío si aplica a todos los grados), <code>Docente</code> (nombre, opcional), <code>Intensidad</code> (horas semanales, opcional). Se aceptan archivos <code>.csv</code>, <code>.xlsx</code> o <code>.xls</code>.
+    </div>
+    <button class="btn-descargar" id="btnDescargarPlantilla">⬇ Descargar plantilla CSV de ejemplo</button>
+    <div class="docentes-disp" id="docentesDisp"></div>
+  </div>
 
-  <div id="contenedorDocentes"><p class="loading-wrap">Cargando...</p></div>
+  <div class="card">
+    <p class="card-titulo">2. Sube tu archivo</p>
+    <div class="dropzone" id="dropzone">
+      <p>Arrastra tu archivo aquí, o haz clic para seleccionarlo</p>
+      <p class="nombre-archivo" id="nombreArchivo"></p>
+      <input type="file" id="inputArchivo" accept=".csv,.xlsx,.xls"/>
+    </div>
+  </div>
+
+  <div id="cardResumen" class="card" style="display:none">
+    <p class="card-titulo">3. Revisión antes de crear</p>
+    <div class="resumen-grid">
+      <div class="resumen-item ri-total"><div class="resumen-num" id="numTotal">0</div><div class="resumen-label">Filas leídas</div></div>
+      <div class="resumen-item ri-validos"><div class="resumen-num" id="numValidos">0</div><div class="resumen-label">Listas para crear</div></div>
+      <div class="resumen-item ri-duplicados"><div class="resumen-num" id="numDuplicados">0</div><div class="resumen-label">Ya existentes</div></div>
+      <div class="resumen-item ri-errores"><div class="resumen-num" id="numErrores">0</div><div class="resumen-label">Con errores</div></div>
+    </div>
+
+    <div class="tabla-scroll">
+      <table>
+        <thead>
+          <tr><th>Fila</th><th>Asignatura</th><th>Grado</th><th>Docente</th><th>Intensidad</th><th>Estado</th></tr>
+        </thead>
+        <tbody id="cuerpoRevision"></tbody>
+      </table>
+    </div>
+
+    <div class="footer-acciones">
+      <span class="contador-final" id="contadorFinal">0 asignaturas listas para crear</span>
+      <button class="btn-primario" id="btnConfirmarCarga" disabled>Crear asignaturas válidas</button>
+    </div>
+
+    <div class="progreso-wrap" id="progresoWrap">
+      <div class="barra-bg"><div class="barra-fill" id="barraFill"></div></div>
+      <p class="progreso-texto" id="progresoTexto">0 / 0</p>
+    </div>
+
+    <div class="resultado-final" id="resultadoFinal"></div>
+  </div>
 </main>
 
 <script type="module">
-  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, collection, getDocs, query, where } from './firebase.js';
+  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, addDoc, getDocs, collection, query, where, serverTimestamp } from './firebase.js';
+
+  let institucionId = null;
+  let asignaturasExistentes = new Set(); // "nombre|grado"
+  let nombresDocentesRegistrados = new Map(); // normalizado -> nombre real
+  let filasProcesadas = [];
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) { window.location.href = 'index.html'; return; }
     const usuarioSnap = await getDoc(doc(db, 'usuarios', user.uid));
     if (!usuarioSnap.exists()) { window.location.href = 'index.html'; return; }
-    const institucionId = usuarioSnap.data().institucionId;
+    const usuarioActual = usuarioSnap.data();
+    if (usuarioActual.rol !== 'admin') { window.location.href = 'dashboard.html'; return; }
+    institucionId = usuarioActual.institucionId;
 
-    const asigSnap = await getDocs(query(collection(db, 'asignaturas'), where('institucionId', '==', institucionId)));
-    const asignaturas = [];
-    asigSnap.forEach(d => asignaturas.push({ id: d.id, ...d.data() }));
-
-    renderVista(asignaturas);
-  });
-
-  function renderVista(asignaturas) {
-    const conDocente = asignaturas.filter(a => a.docente && a.docente.trim() !== '');
-    const sinDocente = asignaturas.filter(a => !a.docente || a.docente.trim() === '');
-
-    const porDocente = {};
-    conDocente.forEach(a => {
-      const nombre = a.docente.trim();
-      if (!porDocente[nombre]) porDocente[nombre] = [];
-      porDocente[nombre].push(a);
+    const [asigSnap, docSnap] = await Promise.all([
+      getDocs(query(collection(db, 'asignaturas'), where('institucionId', '==', institucionId))),
+      getDocs(query(collection(db, 'usuarios'), where('institucionId', '==', institucionId), where('rol', '==', 'docente'))),
+    ]);
+    asigSnap.forEach(d => {
+      const a = d.data();
+      asignaturasExistentes.add(`${(a.nombre || '').trim().toLowerCase()}|${(a.grado || '').trim().toLowerCase()}`);
     });
 
-    const nombresDocentes = Object.keys(porDocente).sort();
-    const totalHoras = conDocente.reduce((sum, a) => sum + (a.intensidad || 0), 0);
+    const nombresDocentes = [];
+    docSnap.forEach(d => {
+      const nombre = (d.data().nombre || '').trim();
+      if (nombre) {
+        nombresDocentesRegistrados.set(normalizarTexto(nombre), nombre);
+        nombresDocentes.push(nombre);
+      }
+    });
 
-    document.getElementById('resumenTop').innerHTML = `
-      <div class="resumen-card"><div class="resumen-num">${nombresDocentes.length}</div><div class="resumen-label">Docentes con carga asignada</div></div>
-      <div class="resumen-card"><div class="resumen-num">${conDocente.length}</div><div class="resumen-label">Materias con docente</div></div>
-      <div class="resumen-card"><div class="resumen-num">${sinDocente.length}</div><div class="resumen-label">Materias sin docente asignar</div></div>
-    `;
-
-    const cont = document.getElementById('contenedorDocentes');
-
-    if (nombresDocentes.length === 0) {
-      cont.innerHTML = '<div class="aviso">Todavía no hay materias con un docente asignado. Ve a Asignaturas y llena el campo "Docente" en cada una.</div>';
-      return;
+    const dispDiv = document.getElementById('docentesDisp');
+    if (nombresDocentes.length > 0) {
+      dispDiv.innerHTML = `<b>Docentes registrados en tu institución</b> (escribe el nombre igual para que se enlace bien): ${nombresDocentes.join(', ')}`;
+    } else {
+      dispDiv.innerHTML = `Todavía no tienes docentes registrados — puedes dejar la columna "Docente" vacía y asignarla después desde la página de Asignaturas.`;
     }
+  });
 
-    cont.innerHTML = nombresDocentes.map(nombre => {
-      const materias = porDocente[nombre].sort((a, b) => (a.grado || '').localeCompare(b.grado || ''));
-      const horasTotales = materias.reduce((sum, m) => sum + (m.intensidad || 0), 0);
-      const filas = materias.map(m => `
-        <tr>
-          <td>${m.nombre}</td>
-          <td><span class="chip">${m.grado || 'Todos los grados'}</span></td>
-          <td>${m.intensidad != null && m.intensidad !== '' ? m.intensidad + ' h/sem' : '—'}</td>
-        </tr>
-      `).join('');
+  function normalizarTexto(s) {
+    return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  // ── Plantilla descargable ──
+  document.getElementById('btnDescargarPlantilla').addEventListener('click', () => {
+    const contenido = 'Asignatura,Grado,Docente,Intensidad\n' +
+      'Matemáticas,Primero A,Laura Martínez,5\n' +
+      'Matemáticas,Segundo A,Laura Martínez,5\n' +
+      'Educación física,,Carlos Gómez,2\n';
+    const blob = new Blob(['\uFEFF' + contenido], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'plantilla_carga_academica.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // ── Drag & drop / selección de archivo ──
+  const dropzone = document.getElementById('dropzone');
+  const inputArchivo = document.getElementById('inputArchivo');
+  dropzone.addEventListener('click', () => inputArchivo.click());
+  dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('arrastrando'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('arrastrando'));
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('arrastrando');
+    if (e.dataTransfer.files.length > 0) procesarArchivo(e.dataTransfer.files[0]);
+  });
+  inputArchivo.addEventListener('change', () => {
+    if (inputArchivo.files.length > 0) procesarArchivo(inputArchivo.files[0]);
+  });
+
+  function normalizarEncabezado(s) {
+    return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+  }
+
+  const MAPA_ENCABEZADOS = {
+    'asignatura': 'asignatura', 'materia': 'asignatura', 'nombreasignatura': 'asignatura',
+    'grado': 'grado', 'gradogrupo': 'grado', 'curso': 'grado',
+    'docente': 'docente', 'profesor': 'docente', 'nombredocente': 'docente',
+    'intensidad': 'intensidad', 'intensidadhoraria': 'intensidad', 'horas': 'intensidad', 'horassemanales': 'intensidad',
+  };
+
+  function procesarArchivo(archivo) {
+    document.getElementById('nombreArchivo').textContent = archivo.name;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const primeraHoja = wb.Sheets[wb.SheetNames[0]];
+        const filas = XLSX.utils.sheet_to_json(primeraHoja, { defval: '' });
+        validarYMostrar(filas);
+      } catch (err) {
+        alert('No se pudo leer el archivo. Verifica que sea un .csv, .xlsx o .xls válido.');
+        console.error(err);
+      }
+    };
+    reader.readAsArrayBuffer(archivo);
+  }
+
+  function validarYMostrar(filasCrudas) {
+    const vistosEnArchivo = new Set();
+
+    filasProcesadas = filasCrudas.map((filaCruda, idx) => {
+      const fila = {};
+      Object.keys(filaCruda).forEach(k => {
+        const clave = MAPA_ENCABEZADOS[normalizarEncabezado(k)];
+        if (clave) fila[clave] = filaCruda[k];
+      });
+
+      const asignatura = (fila.asignatura || '').toString().trim();
+      const grado = (fila.grado || '').toString().trim();
+      const docenteArchivo = (fila.docente || '').toString().trim();
+      const intensidadRaw = (fila.intensidad || '').toString().trim();
+
+      const errores = [];
+      if (!asignatura) errores.push('Falta el nombre de la asignatura');
+
+      let intensidad = null;
+      if (intensidadRaw) {
+        const n = parseInt(intensidadRaw, 10);
+        if (isNaN(n) || n < 0) errores.push('Intensidad debe ser un número');
+        else intensidad = n;
+      }
+
+      const advertencias = [];
+      let docenteFinal = docenteArchivo;
+      if (docenteArchivo) {
+        const match = nombresDocentesRegistrados.get(normalizarTexto(docenteArchivo));
+        if (match) {
+          docenteFinal = match; // usa la capitalización oficial registrada
+        } else {
+          advertencias.push(`"${docenteArchivo}" no coincide con ningún docente registrado — se guardará como texto`);
+        }
+      }
+
+      const claveUnica = `${asignatura.toLowerCase()}|${grado.toLowerCase()}`;
+      let esDuplicado = false;
+      if (asignatura) {
+        if (asignaturasExistentes.has(claveUnica)) esDuplicado = true;
+        else if (vistosEnArchivo.has(claveUnica)) esDuplicado = true;
+        else vistosEnArchivo.add(claveUnica);
+      }
+
+      let estado = 'ok';
+      if (errores.length > 0) estado = 'error';
+      else if (esDuplicado) estado = 'duplicado';
+      else if (advertencias.length > 0) estado = 'advertencia';
+
+      return { fila: idx + 2, asignatura, grado, docente: docenteFinal, intensidad, errores, advertencias, estado };
+    });
+
+    renderRevision();
+  }
+
+  function renderRevision() {
+    document.getElementById('cardResumen').style.display = 'block';
+    const total = filasProcesadas.length;
+    const validos = filasProcesadas.filter(f => f.estado === 'ok' || f.estado === 'advertencia').length;
+    const duplicados = filasProcesadas.filter(f => f.estado === 'duplicado').length;
+    const errores = filasProcesadas.filter(f => f.estado === 'error').length;
+
+    document.getElementById('numTotal').textContent = total;
+    document.getElementById('numValidos').textContent = validos;
+    document.getElementById('numDuplicados').textContent = duplicados;
+    document.getElementById('numErrores').textContent = errores;
+
+    const cuerpo = document.getElementById('cuerpoRevision');
+    cuerpo.innerHTML = filasProcesadas.map(f => {
+      const claseFila = f.estado === 'error' ? 'fila-error' : f.estado === 'duplicado' ? 'fila-duplicado' : f.estado === 'advertencia' ? 'fila-advertencia' : '';
+      const chip = f.estado === 'ok'
+        ? '<span class="estado-chip chip-ok">✓ Lista</span>'
+        : f.estado === 'duplicado'
+          ? '<span class="estado-chip chip-duplicado">Ya existe</span>'
+          : f.estado === 'advertencia'
+            ? '<span class="estado-chip chip-advertencia">Se creará (revisar docente)</span>'
+            : '<span class="estado-chip chip-error">Error</span>';
+      let detalle = '';
+      if (f.errores.length > 0) detalle = `<div class="detalle-error">${f.errores.join('; ')}</div>`;
+      else if (f.estado === 'duplicado') detalle = '<div class="detalle-error" style="color:var(--naranja)">Misma asignatura + grado ya registrada</div>';
+      else if (f.advertencias.length > 0) detalle = `<div class="detalle-advertencia">${f.advertencias.join('; ')}</div>`;
       return `
-        <div class="docente-card">
-          <div class="docente-header">
-            <p class="docente-nombre">${nombre}</p>
-            <span class="docente-horas ${horasTotales > 22 ? 'alto' : ''}">${horasTotales} horas/semana</span>
-          </div>
-          <table>
-            <thead><tr><th>Materia</th><th>Grado/Grupo</th><th>Intensidad</th></tr></thead>
-            <tbody>${filas}</tbody>
-          </table>
-        </div>
-      `;
+        <tr class="${claseFila}" id="fila-${f.fila}">
+          <td>${f.fila}</td>
+          <td>${f.asignatura || '—'}</td>
+          <td>${f.grado || '<span style="color:var(--texto-light)">Todos</span>'}</td>
+          <td>${f.docente || '<span style="color:var(--texto-light)">Sin asignar</span>'}</td>
+          <td>${f.intensidad != null ? f.intensidad : '—'}</td>
+          <td class="celda-estado">${chip}${detalle}</td>
+        </tr>`;
     }).join('');
 
-    if (sinDocente.length > 0) {
-      cont.innerHTML += `
-        <div class="docente-card" style="border-color:var(--naranja);background:var(--naranja-light)">
-          <p class="docente-nombre" style="color:var(--naranja);font-size:1rem">⚠ Materias sin docente asignar</p>
-          <table>
-            <thead><tr><th>Materia</th><th>Grado/Grupo</th></tr></thead>
-            <tbody>${sinDocente.map(a => `<tr><td>${a.nombre}</td><td><span class="chip">${a.grado || 'Todos los grados'}</span></td></tr>`).join('')}</tbody>
-          </table>
-        </div>
-      `;
-    }
+    document.getElementById('contadorFinal').textContent = `${validos} asignatura(s) listas para crear${duplicados > 0 ? ` — ${duplicados} ya existente(s) se omitirán` : ''}${errores > 0 ? ` — ${errores} con errores se omitirán` : ''}`;
+    document.getElementById('btnConfirmarCarga').disabled = validos === 0;
+    document.getElementById('resultadoFinal').classList.remove('visible');
   }
+
+  document.getElementById('btnConfirmarCarga').addEventListener('click', async () => {
+    const validos = filasProcesadas.filter(f => f.estado === 'ok' || f.estado === 'advertencia');
+    if (validos.length === 0) return;
+
+    const btn = document.getElementById('btnConfirmarCarga');
+    const wrap = document.getElementById('progresoWrap');
+    const fill = document.getElementById('barraFill');
+    const texto = document.getElementById('progresoTexto');
+    btn.disabled = true;
+    wrap.classList.add('visible');
+
+    let creados = 0, fallidos = 0;
+    for (let i = 0; i < validos.length; i++) {
+      const f = validos[i];
+      const celdaEstado = document.querySelector(`#fila-${f.fila} .celda-estado`);
+      try {
+        await addDoc(collection(db, 'asignaturas'), {
+          institucionId,
+          nombre: f.asignatura,
+          grado: f.grado,
+          docente: f.docente || '',
+          intensidad: f.intensidad,
+          creadoPor: auth.currentUser.uid,
+          fechaCreacion: serverTimestamp(),
+        });
+        creados++;
+        if (celdaEstado) celdaEstado.innerHTML = '<span class="estado-chip chip-creado">✓ Creada</span>';
+      } catch (err) {
+        console.error('Error creando asignatura', f.asignatura, err);
+        fallidos++;
+        if (celdaEstado) celdaEstado.innerHTML = '<span class="estado-chip chip-fallido">✗ Falló</span>';
+      }
+
+      const pct = Math.round(((i + 1) / validos.length) * 100);
+      fill.style.width = pct + '%';
+      texto.textContent = `${i + 1} / ${validos.length}`;
+    }
+
+    const resultado = document.getElementById('resultadoFinal');
+    resultado.classList.add('visible', 'ok');
+    resultado.textContent = fallidos === 0
+      ? `✓ Se crearon ${creados} asignaturas correctamente.`
+      : `Se crearon ${creados} asignaturas, pero ${fallidos} fallaron. Revisa el detalle en la tabla e intenta de nuevo con esos casos.`;
+    btn.disabled = false;
+    btn.textContent = 'Crear asignaturas válidas';
+  });
 
   document.getElementById('btnSalir').addEventListener('click', async () => {
     await signOut(auth);
