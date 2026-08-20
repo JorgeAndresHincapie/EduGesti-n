@@ -32,9 +32,12 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
 .filtro-field { flex: 1; min-width: 200px; }
 .filtro-field label { display: block; font-size: 0.74rem; font-weight: 700; color: var(--texto-mid); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.03em; }
 .filtro-field select { width: 100%; padding: 0.6rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.85rem; background: white; }
-.btn-imprimir { background: var(--verde); color: white; border: none; padding: 0.65rem 1.2rem; border-radius: 9px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; }
+.btn-imprimir { background: var(--verde); color: white; border: none; padding: 0.65rem 1.2rem; border-radius: 9px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; white-space: nowrap; }
 .btn-imprimir:hover { background: #145F49; }
 .btn-imprimir:disabled { opacity: 0.5; cursor: default; }
+.btn-grado { background: var(--azul); color: white; border: none; padding: 0.65rem 1.2rem; border-radius: 9px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.btn-grado:hover { background: var(--azul-dark); }
+.btn-grado:disabled { opacity: 0.5; cursor: default; }
 
 .aviso { text-align: center; padding: 3rem 1.5rem; color: var(--texto-light); font-size: 0.88rem; background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; }
 
@@ -72,11 +75,18 @@ td:first-child { text-align: left; font-weight: 600; }
 
 .loading-wrap { text-align: center; padding: 2rem; color: var(--texto-light); font-size: 0.85rem; }
 
+.progreso-masivo { background: var(--azul-light); border-radius: 10px; padding: 0.9rem 1.1rem; margin-bottom: 1.3rem; font-size: 0.82rem; color: var(--azul); display: none; }
+.progreso-masivo.visible { display: block; }
+
+.boletin-pagina { page-break-after: always; margin-bottom: 2rem; }
+.boletin-pagina:last-child { page-break-after: auto; margin-bottom: 0; }
+
 @media print {
-  .topbar, .filtros-box, .btn-imprimir { display: none !important; }
+  .topbar, .filtros-box, .btn-imprimir, .progreso-masivo { display: none !important; }
   body { background: white; }
   .main { padding: 0; max-width: 100%; }
   .boletin-doc { border: none; padding: 0; }
+  .boletin-pagina { margin-bottom: 0; }
 }
 </style>
 </head>
@@ -103,52 +113,19 @@ td:first-child { text-align: left; font-weight: 600; }
       <select id="selEstudiante"><option value="">Selecciona un grado primero</option></select>
     </div>
     <button class="btn-imprimir" id="btnImprimir" disabled>Imprimir / Guardar PDF</button>
+    <button class="btn-grado" id="btnGenerarGrado" disabled>Generar boletines de todo el grado</button>
   </div>
 
-  <div class="aviso" id="avisoVacio">Selecciona un grado/grupo y un estudiante para ver su boletín.</div>
+  <div class="progreso-masivo" id="progresoMasivo"></div>
+
+  <div class="aviso" id="avisoVacio">Selecciona un grado/grupo y un estudiante para ver su boletín, o usa "Generar boletines de todo el grado" para producirlos todos de una vez.</div>
 
   <div class="boletin-box" id="boletinBox">
-    <div class="boletin-doc" id="boletinDoc">
-      <div class="boletin-header">
-        <div>
-          <p class="boletin-inst" id="bInstitucion">—</p>
-          <p class="boletin-inst-sub" id="bInstitucionSub">Informe académico</p>
-        </div>
-        <p class="boletin-titulo-doc">Boletín de<br/>calificaciones</p>
-      </div>
+    <div class="boletin-doc" id="boletinDoc"></div>
+  </div>
 
-      <div class="est-info">
-        <div><span>Estudiante</span><b id="bNombreEstudiante">—</b></div>
-        <div><span>Documento</span><b id="bDocumento">—</b></div>
-        <div><span>Grado / Grupo</span><b id="bGrado">—</b></div>
-        <div><span>Año</span><b id="bAnio">2026</b></div>
-      </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Asignatura</th>
-            <th>P1</th>
-            <th>P2</th>
-            <th>P3</th>
-            <th>P4</th>
-            <th>Promedio</th>
-            <th>Nivel</th>
-          </tr>
-        </thead>
-        <tbody id="cuerpoBoletin">
-          <tr><td colspan="7" class="loading-wrap">Cargando...</td></tr>
-        </tbody>
-      </table>
-
-      <div class="resumen-final">
-        <span class="resumen-label">Promedio general del año</span>
-        <span class="resumen-valor" id="promedioGeneral">—</span>
-      </div>
-
-      <p class="logros-titulo">Logros y observaciones</p>
-      <div id="cuerpoLogros"><p class="sin-logros">Cargando...</p></div>
-    </div>
+  <div class="boletin-box" id="boletinesMultiBox">
+    <div id="contenedorMultiples"></div>
   </div>
 </main>
 
@@ -173,7 +150,6 @@ td:first-child { text-align: left; font-weight: 600; }
       const inst = instSnap.data();
       institucionNombre = inst.nombre;
       escalaCalificacion = inst.escalaCalificacion;
-      document.getElementById('bInstitucion').textContent = inst.nombre;
     }
 
     const [estSnap, asigSnap] = await Promise.all([
@@ -195,8 +171,10 @@ td:first-child { text-align: left; font-weight: 600; }
   document.getElementById('selGrado').addEventListener('change', () => {
     const grado = document.getElementById('selGrado').value;
     const selEst = document.getElementById('selEstudiante');
+    const btnGrado = document.getElementById('btnGenerarGrado');
     if (!grado) {
       selEst.innerHTML = '<option value="">Selecciona un grado primero</option>';
+      btnGrado.disabled = true;
       ocultarBoletin();
       return;
     }
@@ -205,9 +183,11 @@ td:first-child { text-align: left; font-weight: 600; }
       .sort((a, b) => (a.apellidos || '').localeCompare(b.apellidos || ''));
     if (estudiantesDelGrado.length === 0) {
       selEst.innerHTML = '<option value="">No hay estudiantes en este grado</option>';
+      btnGrado.disabled = true;
     } else {
       selEst.innerHTML = '<option value="">Selecciona...</option>' +
         estudiantesDelGrado.map(e => `<option value="${e.id}">${e.apellidos} ${e.nombres}</option>`).join('');
+      btnGrado.disabled = false;
     }
     ocultarBoletin();
   });
@@ -217,7 +197,9 @@ td:first-child { text-align: left; font-weight: 600; }
   function ocultarBoletin() {
     document.getElementById('avisoVacio').style.display = 'block';
     document.getElementById('boletinBox').classList.remove('visible');
+    document.getElementById('boletinesMultiBox').classList.remove('visible');
     document.getElementById('btnImprimir').disabled = true;
+    document.getElementById('progresoMasivo').classList.remove('visible');
   }
 
   function nivelDeNota(valor) {
@@ -237,27 +219,13 @@ td:first-child { text-align: left; font-weight: 600; }
     return mapa[nombre] || { bg: 'var(--gris)', c: 'var(--texto-mid)' };
   }
 
-  async function cargarBoletin() {
-    const grado = document.getElementById('selGrado').value;
-    const estudianteId = document.getElementById('selEstudiante').value;
-    if (!grado || !estudianteId) { ocultarBoletin(); return; }
-
-    const estudiante = estudiantesCache.find(e => e.id === estudianteId);
-    if (!estudiante) { ocultarBoletin(); return; }
-
-    document.getElementById('avisoVacio').style.display = 'none';
-    document.getElementById('boletinBox').classList.add('visible');
-    document.getElementById('btnImprimir').disabled = false;
-
-    document.getElementById('bNombreEstudiante').textContent = `${estudiante.apellidos} ${estudiante.nombres}`;
-    document.getElementById('bDocumento').textContent = `${estudiante.tipoDoc || ''} ${estudiante.documento || ''}`;
-    document.getElementById('bGrado').textContent = estudiante.grado;
-
+  // ── Construye los datos de un boletín para un estudiante (compartido entre modo individual y masivo) ──
+  async function obtenerDatosBoletin(estudiante, grado) {
     const asignaturasDelGrado = asignaturasCache
       .filter(a => !a.grado || a.grado === grado)
       .sort((a, b) => a.nombre.localeCompare(b.nombre));
 
-    const notasSnap = await getDocs(query(collection(db, 'notas'), where('estudianteId', '==', estudianteId)));
+    const notasSnap = await getDocs(query(collection(db, 'notas'), where('estudianteId', '==', estudiante.id)));
     const notasPorAsignatura = {};
     notasSnap.forEach(d => {
       const n = d.data();
@@ -267,64 +235,155 @@ td:first-child { text-align: left; font-weight: 600; }
       if (n.logro) notasPorAsignatura[n.asignaturaId].logros[n.periodo] = n.logro;
     });
 
-    const cuerpo = document.getElementById('cuerpoBoletin');
-    if (asignaturasDelGrado.length === 0) {
-      cuerpo.innerHTML = `<tr><td colspan="7" class="loading-wrap">Este grado todavía no tiene asignaturas cargadas.</td></tr>`;
-      document.getElementById('promedioGeneral').textContent = '—';
-      return;
-    }
-
     let sumaPromedios = 0;
     let cantidadConNota = 0;
-
-    cuerpo.innerHTML = asignaturasDelGrado.map(asig => {
+    const filasAsignaturas = asignaturasDelGrado.map(asig => {
       const notas = notasPorAsignatura[asig.id] || {};
       const p1 = notas[1], p2 = notas[2], p3 = notas[3], p4 = notas[4];
       const valores = [p1, p2, p3, p4].filter(v => v !== undefined && v !== null);
       const promedio = valores.length > 0 ? (valores.reduce((a, b) => a + b, 0) / valores.length) : null;
       const nivel = promedio !== null ? nivelDeNota(promedio) : null;
-
       if (promedio !== null) { sumaPromedios += promedio; cantidadConNota++; }
-
-      const celda = (v) => v !== undefined && v !== null ? v.toFixed(1) : '<span class="sin-nota">—</span>';
-      const nivelHtml = nivel
-        ? `<span class="nivel-chip" style="background:${colorNivel(nivel.nombre).bg};color:${colorNivel(nivel.nombre).c}">${nivel.nombre}</span>`
-        : '<span class="sin-nota">—</span>';
-
-      return `
-        <tr>
-          <td>${asig.nombre}</td>
-          <td>${celda(p1)}</td>
-          <td>${celda(p2)}</td>
-          <td>${celda(p3)}</td>
-          <td>${celda(p4)}</td>
-          <td><b>${promedio !== null ? promedio.toFixed(1) : '—'}</b></td>
-          <td>${nivelHtml}</td>
-        </tr>
-      `;
-    }).join('');
+      return { nombre: asig.nombre, p1, p2, p3, p4, promedio, nivel };
+    });
 
     const promedioGeneral = cantidadConNota > 0 ? (sumaPromedios / cantidadConNota) : null;
-    document.getElementById('promedioGeneral').textContent = promedioGeneral !== null ? promedioGeneral.toFixed(2) : 'Sin notas registradas';
 
-    // ── Logros y observaciones ──
-    const cuerpoLogros = document.getElementById('cuerpoLogros');
     const asignaturasConLogro = asignaturasDelGrado.filter(asig => {
       const logros = (notasPorAsignatura[asig.id] || {}).logros || {};
       return Object.keys(logros).length > 0;
+    }).map(asig => {
+      const logros = (notasPorAsignatura[asig.id] || {}).logros || {};
+      const periodos = Object.keys(logros).sort();
+      return { nombre: asig.nombre, periodos: periodos.map(p => ({ periodo: p, texto: logros[p] })) };
     });
 
-    if (asignaturasConLogro.length === 0) {
-      cuerpoLogros.innerHTML = '<p class="sin-logros">Todavía no hay logros u observaciones registrados para este estudiante.</p>';
-    } else {
-      cuerpoLogros.innerHTML = asignaturasConLogro.map(asig => {
-        const logros = (notasPorAsignatura[asig.id] || {}).logros || {};
-        const periodosConTexto = Object.keys(logros).sort();
-        const textoLogros = periodosConTexto.map(p => `<p class="logro-periodo-txt"><b>Periodo ${p}:</b> ${logros[p]}</p>`).join('');
-        return `<div class="logro-item"><p class="logro-materia">${asig.nombre}</p>${textoLogros}</div>`;
-      }).join('');
-    }
+    return { estudiante, grado, filasAsignaturas, promedioGeneral, asignaturasConLogro };
   }
+
+  function renderBoletinHTML(datos) {
+    const { estudiante, grado, filasAsignaturas, promedioGeneral, asignaturasConLogro } = datos;
+
+    const celda = (v) => v !== undefined && v !== null ? v.toFixed(1) : '<span class="sin-nota">—</span>';
+
+    const filasHtml = filasAsignaturas.length > 0
+      ? filasAsignaturas.map(f => {
+          const nivelHtml = f.nivel
+            ? `<span class="nivel-chip" style="background:${colorNivel(f.nivel.nombre).bg};color:${colorNivel(f.nivel.nombre).c}">${f.nivel.nombre}</span>`
+            : '<span class="sin-nota">—</span>';
+          return `
+            <tr>
+              <td>${f.nombre}</td>
+              <td>${celda(f.p1)}</td>
+              <td>${celda(f.p2)}</td>
+              <td>${celda(f.p3)}</td>
+              <td>${celda(f.p4)}</td>
+              <td><b>${f.promedio !== null ? f.promedio.toFixed(1) : '—'}</b></td>
+              <td>${nivelHtml}</td>
+            </tr>`;
+        }).join('')
+      : `<tr><td colspan="7" class="loading-wrap">Este grado todavía no tiene asignaturas cargadas.</td></tr>`;
+
+    const logrosHtml = asignaturasConLogro.length === 0
+      ? '<p class="sin-logros">Todavía no hay logros u observaciones registrados para este estudiante.</p>'
+      : asignaturasConLogro.map(asig => {
+          const textoLogros = asig.periodos.map(p => `<p class="logro-periodo-txt"><b>Periodo ${p.periodo}:</b> ${p.texto}</p>`).join('');
+          return `<div class="logro-item"><p class="logro-materia">${asig.nombre}</p>${textoLogros}</div>`;
+        }).join('');
+
+    return `
+      <div class="boletin-header">
+        <div>
+          <p class="boletin-inst">${institucionNombre || '—'}</p>
+          <p class="boletin-inst-sub">Informe académico</p>
+        </div>
+        <p class="boletin-titulo-doc">Boletín de<br/>calificaciones</p>
+      </div>
+
+      <div class="est-info">
+        <div><span>Estudiante</span><b>${estudiante.apellidos} ${estudiante.nombres}</b></div>
+        <div><span>Documento</span><b>${estudiante.tipoDoc || ''} ${estudiante.documento || ''}</b></div>
+        <div><span>Grado / Grupo</span><b>${grado}</b></div>
+        <div><span>Año</span><b>2026</b></div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Asignatura</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>Promedio</th><th>Nivel</th>
+          </tr>
+        </thead>
+        <tbody>${filasHtml}</tbody>
+      </table>
+
+      <div class="resumen-final">
+        <span class="resumen-label">Promedio general del año</span>
+        <span class="resumen-valor">${promedioGeneral !== null ? promedioGeneral.toFixed(2) : 'Sin notas registradas'}</span>
+      </div>
+
+      <p class="logros-titulo">Logros y observaciones</p>
+      <div>${logrosHtml}</div>
+    `;
+  }
+
+  async function cargarBoletin() {
+    const grado = document.getElementById('selGrado').value;
+    const estudianteId = document.getElementById('selEstudiante').value;
+    if (!grado || !estudianteId) { ocultarBoletin(); return; }
+
+    const estudiante = estudiantesCache.find(e => e.id === estudianteId);
+    if (!estudiante) { ocultarBoletin(); return; }
+
+    document.getElementById('avisoVacio').style.display = 'none';
+    document.getElementById('boletinesMultiBox').classList.remove('visible');
+    document.getElementById('boletinBox').classList.add('visible');
+    document.getElementById('btnImprimir').disabled = false;
+
+    document.getElementById('boletinDoc').innerHTML = `<tr><td colspan="7" class="loading-wrap">Cargando...</td></tr>`;
+    const datos = await obtenerDatosBoletin(estudiante, grado);
+    document.getElementById('boletinDoc').innerHTML = renderBoletinHTML(datos);
+  }
+
+  document.getElementById('btnGenerarGrado').addEventListener('click', async () => {
+    const grado = document.getElementById('selGrado').value;
+    if (!grado) return;
+
+    const estudiantesDelGrado = estudiantesCache
+      .filter(e => e.grado === grado)
+      .sort((a, b) => (a.apellidos || '').localeCompare(b.apellidos || ''));
+
+    if (estudiantesDelGrado.length === 0) return;
+
+    document.getElementById('avisoVacio').style.display = 'none';
+    document.getElementById('boletinBox').classList.remove('visible');
+    document.getElementById('boletinesMultiBox').classList.remove('visible');
+    document.getElementById('btnImprimir').disabled = true;
+
+    const btnGrado = document.getElementById('btnGenerarGrado');
+    const progreso = document.getElementById('progresoMasivo');
+    btnGrado.disabled = true;
+    progreso.classList.add('visible');
+    progreso.textContent = `Generando boletines... 0 / ${estudiantesDelGrado.length}`;
+
+    const contenedor = document.getElementById('contenedorMultiples');
+    contenedor.innerHTML = '';
+
+    let listos = 0;
+    for (const est of estudiantesDelGrado) {
+      const datos = await obtenerDatosBoletin(est, grado);
+      const wrap = document.createElement('div');
+      wrap.className = 'boletin-doc boletin-pagina';
+      wrap.innerHTML = renderBoletinHTML(datos);
+      contenedor.appendChild(wrap);
+      listos++;
+      progreso.textContent = `Generando boletines... ${listos} / ${estudiantesDelGrado.length}`;
+    }
+
+    progreso.textContent = `✓ Se generaron ${listos} boletines de ${grado}. Da clic en "Imprimir / Guardar PDF" para exportarlos todos juntos (uno por página).`;
+    document.getElementById('boletinesMultiBox').classList.add('visible');
+    document.getElementById('btnImprimir').disabled = false;
+    btnGrado.disabled = false;
+  });
 
   document.getElementById('btnImprimir').addEventListener('click', () => window.print());
 
