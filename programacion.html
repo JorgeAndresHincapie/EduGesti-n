@@ -3,13 +3,15 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>EduGestión — Programación Curricular</title>
+<title>EduGestión — Programación curricular</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
+  --morado: #553C9A; --morado-light: #F0EBFF;
   --verde: #1A7A5E; --verde-light: #E8F5F0;
+  --naranja: #C05621; --naranja-light: #FFF3EB;
   --gris: #F4F6F9; --borde: #DDE3EC;
   --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
   --blanco: #FFFFFF; --rojo: #C53030; --rojo-light: #FFF5F5;
@@ -23,49 +25,60 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
 .topbar-brand { font-size: 1.0rem; font-weight: 700; color: white; }
 .btn-salir { background: rgba(255,255,255,0.12); color: white; border: none; padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
 
-.main { max-width: 850px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
-.titulo { font-family: 'Instrument Serif', serif; font-size: 1.8rem; margin-bottom: 1.5rem; }
+.main { max-width: 1000px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
+.header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem; }
+.titulo { font-family: 'Instrument Serif', serif; font-size: 1.8rem; }
+.sub { font-size: 0.85rem; color: var(--texto-light); margin-bottom: 1.4rem; line-height: 1.5; }
+.btn-primario { background: var(--azul); color: white; border: none; padding: 0.65rem 1.2rem; border-radius: 9px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; }
+.btn-primario:hover { background: var(--azul-dark); }
 
-.filtros-box { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.3rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
+.filtros-box { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.1rem 1.3rem; margin-bottom: 1.3rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
 .filtro-field { flex: 1; min-width: 160px; }
-.filtro-field label { display: block; font-size: 0.74rem; font-weight: 700; color: var(--texto-mid); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.03em; }
-.filtro-field select { width: 100%; padding: 0.6rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.85rem; background: white; }
+.filtro-field label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--texto-mid); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.filtro-field select, .filtro-field input { width: 100%; padding: 0.55rem 0.65rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.82rem; background: white; }
 
-.aviso { text-align: center; padding: 3rem 1.5rem; color: var(--texto-light); font-size: 0.88rem; background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; }
+.lista-vacia { text-align: center; padding: 3rem 1rem; color: var(--texto-light); font-size: 0.85rem; background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; }
 
-.card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 14px; padding: 1.8rem; display: none; }
-.card.visible { display: block; }
-.card-titulo { font-family: 'Instrument Serif', serif; font-size: 1.2rem; margin-bottom: 1.3rem; }
+.doc-card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.2rem 1.3rem; margin-bottom: 0.9rem; }
+.doc-card-header { display: flex; justify-content: space-between; align-items: start; gap: 1rem; margin-bottom: 0.5rem; }
+.doc-titulo { font-size: 0.95rem; font-weight: 700; }
+.doc-tipo-chip { font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 10px; white-space: nowrap; }
+.tipo-Programación { background: var(--azul-light); color: var(--azul); }
+.tipo-Evaluación { background: var(--naranja-light); color: var(--naranja); }
+.tipo-Plan { background: var(--morado-light); color: var(--morado); }
+.tipo-Otro { background: var(--gris); color: var(--texto-mid); }
+.doc-meta { font-size: 0.76rem; color: var(--texto-light); margin-bottom: 0.6rem; display: flex; gap: 0.9rem; flex-wrap: wrap; }
+.doc-meta span b { color: var(--texto-mid); }
+.doc-contenido { font-size: 0.83rem; color: var(--texto-mid); white-space: pre-wrap; line-height: 1.5; margin-bottom: 0.6rem; }
+.doc-enlace { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; color: var(--azul); text-decoration: none; font-weight: 600; margin-bottom: 0.6rem; }
+.doc-enlace:hover { text-decoration: underline; }
+.doc-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 0.6rem; border-top: 1px solid var(--borde); }
+.doc-autor { font-size: 0.74rem; color: var(--texto-light); }
+.acciones-doc { display: flex; gap: 0.4rem; }
+.btn-icon { background: none; border: none; cursor: pointer; color: var(--texto-light); padding: 0.3rem; border-radius: 6px; }
+.btn-icon:hover { background: var(--gris); color: var(--texto); }
+.btn-icon.danger:hover { color: var(--rojo); background: var(--rojo-light); }
+.btn-icon svg { width: 16px; height: 16px; }
 
-.field { margin-bottom: 1.2rem; }
-.field label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--texto-mid); margin-bottom: 0.4rem; }
-.field-hint { display: block; font-size: 0.72rem; color: var(--texto-light); margin-top: 0.3rem; }
-.field textarea { width: 100%; padding: 0.7rem 0.8rem; border: 1.5px solid var(--borde); border-radius: 9px; font-family: inherit; font-size: 0.85rem; resize: vertical; min-height: 100px; }
-.field input[type="url"] { width: 100%; padding: 0.6rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.85rem; }
-.field textarea:focus, .field input:focus { outline: none; border-color: var(--azul); }
-
-.enlaces-lista { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
-.enlace-fila { display: flex; gap: 0.5rem; }
-.enlace-fila input[type="text"] { flex: 1; padding: 0.55rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.82rem; }
-.enlace-fila input[type="url"] { flex: 1.4; padding: 0.55rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.82rem; }
-.btn-quitar-enlace { background: var(--rojo-light); color: var(--rojo); border: none; border-radius: 7px; padding: 0 0.7rem; cursor: pointer; font-weight: 700; }
-.btn-agregar-enlace { background: var(--gris); border: 1.3px dashed var(--borde); color: var(--texto-mid); padding: 0.5rem 0.9rem; border-radius: 8px; font-weight: 600; font-size: 0.78rem; cursor: pointer; font-family: inherit; margin-top: 0.4rem; }
-.btn-agregar-enlace:hover { background: var(--azul-light); color: var(--azul); border-color: var(--azul); }
-
-.btn-guardar { width: 100%; background: var(--azul); color: white; border: none; padding: 0.8rem; border-radius: 10px; font-weight: 700; font-size: 0.9rem; cursor: pointer; font-family: inherit; margin-top: 0.5rem; }
-.btn-guardar:hover { background: var(--azul-dark); }
-.btn-guardar:disabled { opacity: 0.6; cursor: default; }
-
-.msg { display: none; font-size: 0.82rem; padding: 0.7rem 0.9rem; border-radius: 9px; margin-top: 1rem; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(20,25,35,0.55); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; overflow-y: auto; }
+.modal-box { background: var(--blanco); border-radius: 14px; width: 100%; max-width: 520px; padding: 1.6rem; margin: auto; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
+.modal-header h2 { font-family: 'Instrument Serif', serif; font-size: 1.3rem; }
+.modal-close { background: none; border: none; font-size: 1.6rem; color: var(--texto-light); cursor: pointer; }
+.field { margin-bottom: 1rem; }
+.field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--texto-mid); margin-bottom: 0.35rem; }
+.field input, .field select, .field textarea { width: 100%; padding: 0.6rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.85rem; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--azul); }
+.field textarea { resize: vertical; min-height: 90px; }
+.field-row { display: flex; gap: 0.8rem; }
+.field-row .field { flex: 1; }
+.field-hint { display: block; font-size: 0.7rem; color: var(--texto-light); margin-top: 0.3rem; }
+.btn-guardar { width: 100%; background: var(--azul); color: white; border: none; border-radius: 9px; font-weight: 700; font-size: 0.88rem; padding: 0.75rem; cursor: pointer; margin-top: 0.3rem; font-family: inherit; }
+.btn-guardar:disabled { opacity: 0.6; }
+.msg { display: none; font-size: 0.8rem; padding: 0.6rem 0.8rem; border-radius: 8px; margin-bottom: 0.8rem; }
 .msg.visible { display: block; }
-.msg-ok { background: var(--verde-light); color: var(--verde); }
 .msg-err { background: var(--rojo-light); color: var(--rojo); }
-
-.enlaces-existentes { margin-top: 1.5rem; }
-.enlaces-existentes-titulo { font-size: 0.8rem; font-weight: 700; color: var(--texto-mid); margin-bottom: 0.6rem; }
-.enlace-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: var(--gris); border-radius: 8px; margin-bottom: 0.4rem; font-size: 0.82rem; }
-.enlace-item a { color: var(--azul); text-decoration: none; font-weight: 600; }
-.enlace-item a:hover { text-decoration: underline; }
+.loading-wrap { text-align: center; padding: 2rem; color: var(--texto-light); font-size: 0.85rem; }
 </style>
 </head>
 <body>
@@ -73,199 +86,310 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
 <header class="topbar">
   <div class="topbar-left">
     <a href="dashboard.html" class="topbar-back">← Panel</a>
-    <span class="topbar-brand">Programación Curricular</span>
+    <span class="topbar-brand">Programación curricular</span>
   </div>
   <button class="btn-salir" id="btnSalir">Salir</button>
 </header>
 
 <main class="main">
-  <p class="titulo">Programación Curricular y Evaluaciones</p>
+  <div class="header-row">
+    <div>
+      <p class="titulo">Programación y evaluaciones</p>
+      <p class="sub" style="margin-bottom:0">Sube la planeación curricular, evaluaciones y planes de clase — con enlace, texto, o ambos.</p>
+    </div>
+    <button class="btn-primario" id="btnNuevo">+ Agregar documento</button>
+  </div>
 
   <div class="filtros-box">
     <div class="filtro-field">
-      <label>Grado / Grupo</label>
-      <select id="selGrado"><option value="">Selecciona...</option></select>
+      <label>Grado</label>
+      <select id="filtroGrado"><option value="">Todos</option></select>
     </div>
     <div class="filtro-field">
       <label>Asignatura</label>
-      <select id="selAsignatura"><option value="">Selecciona un grado primero</option></select>
+      <select id="filtroAsignatura"><option value="">Todas</option></select>
     </div>
     <div class="filtro-field">
-      <label>Periodo</label>
-      <select id="selPeriodo">
-        <option value="1">Periodo 1</option>
-        <option value="2">Periodo 2</option>
-        <option value="3">Periodo 3</option>
-        <option value="4">Periodo 4</option>
+      <label>Tipo</label>
+      <select id="filtroTipo">
+        <option value="">Todos</option>
+        <option value="Programación">Programación curricular</option>
+        <option value="Evaluación">Evaluación</option>
+        <option value="Plan">Plan de clase</option>
+        <option value="Otro">Otro</option>
       </select>
     </div>
   </div>
 
-  <div class="aviso" id="avisoVacio">Selecciona un grado/grupo y una asignatura para ver o cargar su programación.</div>
-
-  <div class="card" id="cardProgramacion">
-    <p class="card-titulo" id="cardTitulo">—</p>
-
-    <div class="field">
-      <label>Temas y contenidos a desarrollar</label>
-      <textarea id="fTemas" placeholder="Ej: Unidad 1 - Números naturales: lectura, escritura y comparación..."></textarea>
-      <span class="field-hint">Lo que se va a enseñar en este periodo, en esta materia y grado.</span>
-    </div>
-
-    <div class="field">
-      <label>Metodología / Actividades</label>
-      <textarea id="fMetodologia" placeholder="Ej: Trabajo en grupo, talleres prácticos, uso de material concreto..."></textarea>
-    </div>
-
-    <div class="field">
-      <label>Enlaces (evaluaciones, guías, material de apoyo)</label>
-      <span class="field-hint">Pega el link de Google Drive, Classroom, o donde tengas el documento — no se sube el archivo aquí, solo el enlace.</span>
-      <div class="enlaces-lista" id="enlacesLista"></div>
-      <button type="button" class="btn-agregar-enlace" id="btnAgregarEnlace">+ Agregar otro enlace</button>
-    </div>
-
-    <div class="msg" id="msgGuardado"><span></span></div>
-    <button class="btn-guardar" id="btnGuardar">Guardar programación</button>
+  <div id="listaDocumentos">
+    <div class="loading-wrap">Cargando...</div>
   </div>
 </main>
 
+<div id="modalDoc" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="modalTitulo">Agregar documento</h2>
+      <button class="modal-close" id="btnCerrarModal">&times;</button>
+    </div>
+    <form id="formDoc">
+      <input type="hidden" id="docId"/>
+      <div class="field">
+        <label>Título</label>
+        <input type="text" id="fTitulo" placeholder="Ej: Planeación primer periodo — Matemáticas" required/>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Tipo</label>
+          <select id="fTipo">
+            <option value="Programación">Programación curricular</option>
+            <option value="Evaluación">Evaluación</option>
+            <option value="Plan">Plan de clase</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Periodo</label>
+          <select id="fPeriodo">
+            <option value="">Todo el año</option>
+            <option value="1">Periodo 1</option>
+            <option value="2">Periodo 2</option>
+            <option value="3">Periodo 3</option>
+            <option value="4">Periodo 4</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Grado / Grupo</label>
+          <input type="text" id="fGrado" placeholder="Ej: 5° A, o vacío = todos"/>
+        </div>
+        <div class="field">
+          <label>Asignatura</label>
+          <input type="text" id="fAsignatura" placeholder="Ej: Matemáticas"/>
+        </div>
+      </div>
+      <div class="field">
+        <label>Enlace (opcional)</label>
+        <input type="url" id="fEnlace" placeholder="https://drive.google.com/..."/>
+        <span class="field-hint">Google Drive, OneDrive, o cualquier link donde esté el archivo.</span>
+      </div>
+      <div class="field">
+        <label>Contenido / notas (opcional)</label>
+        <textarea id="fContenido" placeholder="Puedes escribir la planeación, indicaciones o el temario directamente aquí."></textarea>
+      </div>
+      <div class="msg msg-err" id="msgErr"><span id="msgErrTexto"></span></div>
+      <button type="submit" class="btn-guardar" id="btnGuardar">Guardar</button>
+    </form>
+  </div>
+</div>
+
 <script type="module">
-  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, setDoc, collection, getDocs, query, where } from './firebase.js';
+  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, serverTimestamp } from './firebase.js';
 
   let institucionId = null;
-  let estudiantesCache = [];
-  let asignaturasCache = [];
+  let usuarioActual = null;
+  let uidActual = null;
+  let documentosCache = [];
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) { window.location.href = 'index.html'; return; }
     const usuarioSnap = await getDoc(doc(db, 'usuarios', user.uid));
     if (!usuarioSnap.exists()) { window.location.href = 'index.html'; return; }
-    institucionId = usuarioSnap.data().institucionId;
+    usuarioActual = usuarioSnap.data();
+    uidActual = user.uid;
+    institucionId = usuarioActual.institucionId;
 
-    const [estSnap, asigSnap] = await Promise.all([
-      getDocs(query(collection(db, 'estudiantes'), where('institucionId', '==', institucionId))),
-      getDocs(query(collection(db, 'asignaturas'), where('institucionId', '==', institucionId))),
-    ]);
-    estSnap.forEach(d => estudiantesCache.push({ id: d.id, ...d.data() }));
-    asigSnap.forEach(d => asignaturasCache.push({ id: d.id, ...d.data() }));
-
-    llenarSelectGrados();
+    await cargarFiltros();
+    await cargarDocumentos();
   });
 
-  function llenarSelectGrados() {
-    const grados = [...new Set(estudiantesCache.map(e => e.grado).filter(Boolean))].sort();
-    document.getElementById('selGrado').innerHTML = '<option value="">Selecciona...</option>' + grados.map(g => `<option value="${g}">${g}</option>`).join('');
+  async function cargarFiltros() {
+    const estSnap = await getDocs(query(collection(db, 'estudiantes'), where('institucionId', '==', institucionId)));
+    const grados = new Set();
+    estSnap.forEach(d => { const g = d.data().grado; if (g) grados.add(g); });
+    const selGrado = document.getElementById('filtroGrado');
+    [...grados].sort().forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g; opt.textContent = g;
+      selGrado.appendChild(opt);
+    });
+
+    const asigSnap = await getDocs(query(collection(db, 'asignaturas'), where('institucionId', '==', institucionId)));
+    const asignaturas = new Set();
+    asigSnap.forEach(d => { const n = d.data().nombre; if (n) asignaturas.add(n); });
+    const selAsig = document.getElementById('filtroAsignatura');
+    [...asignaturas].sort().forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a; opt.textContent = a;
+      selAsig.appendChild(opt);
+    });
+
+    ['filtroGrado', 'filtroAsignatura', 'filtroTipo'].forEach(id => {
+      document.getElementById(id).addEventListener('change', renderLista);
+    });
   }
 
-  document.getElementById('selGrado').addEventListener('change', () => {
-    const grado = document.getElementById('selGrado').value;
-    const selAsig = document.getElementById('selAsignatura');
-    if (!grado) {
-      selAsig.innerHTML = '<option value="">Selecciona un grado primero</option>';
-      ocultarCard();
+  async function cargarDocumentos() {
+    const q = query(collection(db, 'programacion'), where('institucionId', '==', institucionId));
+    const snap = await getDocs(q);
+    documentosCache = [];
+    snap.forEach(d => documentosCache.push({ id: d.id, ...d.data() }));
+    documentosCache.sort((a, b) => {
+      const ta = a.fechaCreacion && a.fechaCreacion.seconds ? a.fechaCreacion.seconds : 0;
+      const tb = b.fechaCreacion && b.fechaCreacion.seconds ? b.fechaCreacion.seconds : 0;
+      return tb - ta;
+    });
+    renderLista();
+  }
+
+  function renderLista() {
+    const g = document.getElementById('filtroGrado').value;
+    const a = document.getElementById('filtroAsignatura').value;
+    const t = document.getElementById('filtroTipo').value;
+
+    const filtrados = documentosCache.filter(doc => {
+      if (g && doc.grado && doc.grado !== g) return false;
+      if (a && doc.asignatura && doc.asignatura !== a) return false;
+      if (t && doc.tipo !== t) return false;
+      return true;
+    });
+
+    const cont = document.getElementById('listaDocumentos');
+    if (filtrados.length === 0) {
+      cont.innerHTML = '<div class="lista-vacia">No hay documentos que coincidan con estos filtros. Prueba "+ Agregar documento" para crear el primero.</div>';
       return;
     }
-    const asignaturasDelGrado = asignaturasCache.filter(a => !a.grado || a.grado === grado);
-    selAsig.innerHTML = asignaturasDelGrado.length === 0
-      ? '<option value="">No hay asignaturas para este grado</option>'
-      : '<option value="">Selecciona...</option>' + asignaturasDelGrado.map(a => `<option value="${a.id}">${a.nombre}</option>`).join('');
-    ocultarCard();
-  });
 
-  document.getElementById('selAsignatura').addEventListener('change', cargarProgramacion);
-  document.getElementById('selPeriodo').addEventListener('change', cargarProgramacion);
+    const NOMBRE_TIPO = { 'Programación': 'Programación curricular', 'Evaluación': 'Evaluación', 'Plan': 'Plan de clase', 'Otro': 'Otro' };
 
-  function ocultarCard() {
-    document.getElementById('avisoVacio').style.display = 'block';
-    document.getElementById('cardProgramacion').classList.remove('visible');
+    cont.innerHTML = filtrados.map(d => {
+      const puedeEditar = usuarioActual.rol === 'admin' || d.creadoPor === uidActual;
+      const fecha = d.fechaCreacion && d.fechaCreacion.seconds
+        ? new Date(d.fechaCreacion.seconds * 1000).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })
+        : '';
+      return `
+        <div class="doc-card">
+          <div class="doc-card-header">
+            <p class="doc-titulo">${d.titulo}</p>
+            <span class="doc-tipo-chip tipo-${d.tipo}">${NOMBRE_TIPO[d.tipo] || d.tipo}</span>
+          </div>
+          <div class="doc-meta">
+            <span><b>Grado:</b> ${d.grado || 'Todos'}</span>
+            <span><b>Asignatura:</b> ${d.asignatura || 'General'}</span>
+            <span><b>Periodo:</b> ${d.periodo ? 'Periodo ' + d.periodo : 'Todo el año'}</span>
+          </div>
+          ${d.enlace ? `<a class="doc-enlace" href="${d.enlace}" target="_blank" rel="noopener">🔗 Abrir enlace</a><br/>` : ''}
+          ${d.contenido ? `<p class="doc-contenido">${d.contenido}</p>` : ''}
+          <div class="doc-footer">
+            <span class="doc-autor">${d.creadoPorNombre || 'Sin autor'} · ${fecha}</span>
+            ${puedeEditar ? `
+              <div class="acciones-doc">
+                <button class="btn-icon" onclick="editarDocumento('${d.id}')" title="Editar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                </button>
+                <button class="btn-icon danger" onclick="eliminarDocumento('${d.id}')" title="Eliminar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
   }
 
-  let enlacesActuales = [];
+  const modal = document.getElementById('modalDoc');
+  const form = document.getElementById('formDoc');
+  const msgErr = document.getElementById('msgErr');
 
-  function renderEnlaces() {
-    const cont = document.getElementById('enlacesLista');
-    if (enlacesActuales.length === 0) enlacesActuales.push({ nombre: '', url: '' });
-    cont.innerHTML = enlacesActuales.map((en, i) => `
-      <div class="enlace-fila">
-        <input type="text" placeholder="Nombre (ej: Evaluación periodo 1)" value="${en.nombre}" oninput="actualizarEnlace(${i},'nombre',this.value)"/>
-        <input type="url" placeholder="https://..." value="${en.url}" oninput="actualizarEnlace(${i},'url',this.value)"/>
-        <button type="button" class="btn-quitar-enlace" onclick="quitarEnlace(${i})">&times;</button>
-      </div>
-    `).join('');
-  }
-
-  window.actualizarEnlace = function(i, campo, valor) { enlacesActuales[i][campo] = valor; };
-  window.quitarEnlace = function(i) { enlacesActuales.splice(i, 1); renderEnlaces(); };
-  document.getElementById('btnAgregarEnlace').addEventListener('click', () => { enlacesActuales.push({ nombre: '', url: '' }); renderEnlaces(); });
-
-  async function cargarProgramacion() {
-    const grado = document.getElementById('selGrado').value;
-    const asignaturaId = document.getElementById('selAsignatura').value;
-    const periodo = document.getElementById('selPeriodo').value;
-    if (!grado || !asignaturaId) { ocultarCard(); return; }
-
-    document.getElementById('avisoVacio').style.display = 'none';
-    document.getElementById('cardProgramacion').classList.add('visible');
-
-    const asignatura = asignaturasCache.find(a => a.id === asignaturaId);
-    document.getElementById('cardTitulo').textContent = `${asignatura.nombre} — ${grado} — Periodo ${periodo}`;
-
-    const progId = `${asignaturaId}_${grado}_${periodo}`.replace(/\s+/g, '-');
-    document.getElementById('msgGuardado').classList.remove('visible');
-
-    try {
-      const progSnap = await getDoc(doc(db, 'programacion', progId));
-      if (progSnap.exists()) {
-        const data = progSnap.data();
-        document.getElementById('fTemas').value = data.temas || '';
-        document.getElementById('fMetodologia').value = data.metodologia || '';
-        enlacesActuales = (data.enlaces && data.enlaces.length > 0) ? data.enlaces : [{ nombre: '', url: '' }];
-      } else {
-        document.getElementById('fTemas').value = '';
-        document.getElementById('fMetodologia').value = '';
-        enlacesActuales = [{ nombre: '', url: '' }];
-      }
-    } catch (e) {
-      document.getElementById('fTemas').value = '';
-      document.getElementById('fMetodologia').value = '';
-      enlacesActuales = [{ nombre: '', url: '' }];
+  function abrirModal(documento = null) {
+    form.reset();
+    msgErr.classList.remove('visible');
+    if (documento) {
+      document.getElementById('modalTitulo').textContent = 'Editar documento';
+      document.getElementById('docId').value = documento.id;
+      document.getElementById('fTitulo').value = documento.titulo || '';
+      document.getElementById('fTipo').value = documento.tipo || 'Programación';
+      document.getElementById('fPeriodo').value = documento.periodo || '';
+      document.getElementById('fGrado').value = documento.grado || '';
+      document.getElementById('fAsignatura').value = documento.asignatura || '';
+      document.getElementById('fEnlace').value = documento.enlace || '';
+      document.getElementById('fContenido').value = documento.contenido || '';
+    } else {
+      document.getElementById('modalTitulo').textContent = 'Agregar documento';
+      document.getElementById('docId').value = '';
     }
-    renderEnlaces();
+    modal.style.display = 'flex';
   }
 
-  document.getElementById('btnGuardar').addEventListener('click', async () => {
-    const grado = document.getElementById('selGrado').value;
-    const asignaturaId = document.getElementById('selAsignatura').value;
-    const periodo = document.getElementById('selPeriodo').value;
-    if (!grado || !asignaturaId) return;
+  document.getElementById('btnNuevo').addEventListener('click', () => abrirModal());
+  document.getElementById('btnCerrarModal').addEventListener('click', () => { modal.style.display = 'none'; });
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
 
+  window.editarDocumento = function(id) {
+    const d = documentosCache.find(x => x.id === id);
+    if (d) abrirModal(d);
+  };
+
+  window.eliminarDocumento = async function(id) {
+    if (!confirm('¿Seguro que quieres eliminar este documento?')) return;
+    try {
+      await deleteDoc(doc(db, 'programacion', id));
+      await cargarDocumentos();
+    } catch (err) {
+      alert('No se pudo eliminar. Intenta de nuevo.');
+      console.error(err);
+    }
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
     const btn = document.getElementById('btnGuardar');
-    btn.disabled = true; btn.textContent = 'Guardando...';
-    const msg = document.getElementById('msgGuardado');
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+    msgErr.classList.remove('visible');
 
-    const progId = `${asignaturaId}_${grado}_${periodo}`.replace(/\s+/g, '-');
-    const enlacesLimpios = enlacesActuales.filter(en => en.url && en.url.trim() !== '');
+    const titulo = document.getElementById('fTitulo').value.trim();
+    const enlace = document.getElementById('fEnlace').value.trim();
+    const contenido = document.getElementById('fContenido').value.trim();
+
+    if (!enlace && !contenido) {
+      msgErr.querySelector('#msgErrTexto').textContent = 'Agrega al menos un enlace o contenido escrito.';
+      msgErr.classList.add('visible');
+      btn.disabled = false;
+      btn.textContent = 'Guardar';
+      return;
+    }
+
+    const id = document.getElementById('docId').value;
+    const datos = {
+      institucionId,
+      titulo,
+      tipo: document.getElementById('fTipo').value,
+      periodo: document.getElementById('fPeriodo').value,
+      grado: document.getElementById('fGrado').value.trim(),
+      asignatura: document.getElementById('fAsignatura').value.trim(),
+      enlace,
+      contenido,
+    };
 
     try {
-      await setDoc(doc(db, 'programacion', progId), {
-        institucionId,
-        grado,
-        asignaturaId,
-        periodo: parseInt(periodo, 10),
-        temas: document.getElementById('fTemas').value.trim(),
-        metodologia: document.getElementById('fMetodologia').value.trim(),
-        enlaces: enlacesLimpios,
-        docenteId: auth.currentUser.uid,
-        fechaActualizacion: new Date().toISOString(),
-      });
-      msg.className = 'msg visible msg-ok';
-      msg.querySelector('span').textContent = '✓ Programación guardada correctamente.';
+      if (id) {
+        await updateDoc(doc(db, 'programacion', id), datos);
+      } else {
+        datos.creadoPor = uidActual;
+        datos.creadoPorNombre = usuarioActual.nombre || '';
+        datos.fechaCreacion = serverTimestamp();
+        await addDoc(collection(db, 'programacion'), datos);
+      }
+      modal.style.display = 'none';
+      await cargarDocumentos();
     } catch (err) {
-      msg.className = 'msg visible msg-err';
-      msg.querySelector('span').textContent = 'No se pudo guardar. Intenta de nuevo.';
+      msgErr.querySelector('#msgErrTexto').textContent = 'No se pudo guardar. Intenta de nuevo.';
+      msgErr.classList.add('visible');
       console.error(err);
     } finally {
-      btn.disabled = false; btn.textContent = 'Guardar programación';
+      btn.disabled = false;
+      btn.textContent = 'Guardar';
     }
   });
 
