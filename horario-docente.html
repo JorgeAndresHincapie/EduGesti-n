@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduGestión — Horario del docente</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
+  --verde: #1A7A5E; --verde-light: #E8F5F0;
+  --rojo: #C53030; --rojo-light: #FFF5F5;
+  --gris: #F4F6F9; --borde: #DDE3EC;
+  --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
+  --blanco: #FFFFFF;
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); color: var(--texto); min-height: 100vh; }
+
+.topbar { background: var(--azul); height: 58px; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.topbar-left { display: flex; align-items: center; gap: 0.9rem; }
+.topbar-back { color: white; text-decoration: none; font-size: 0.85rem; opacity: 0.85; }
+.topbar-back:hover { opacity: 1; }
+.topbar-brand { font-size: 1.0rem; font-weight: 700; color: white; }
+.btn-salir { background: rgba(255,255,255,0.12); color: white; border: none; padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+.main { max-width: 1000px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
+.titulo { font-family: 'Instrument Serif', serif; font-size: 1.8rem; margin-bottom: 0.4rem; }
+.sub { font-size: 0.85rem; color: var(--texto-light); margin-bottom: 1.6rem; line-height: 1.5; }
+
+.filtros-box { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.3rem; margin-bottom: 1.3rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
+.filtro-field { min-width: 220px; }
+.filtro-field label { display: block; font-size: 0.74rem; font-weight: 700; color: var(--texto-mid); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.filtro-field select { width: 100%; padding: 0.6rem 0.7rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.85rem; background: white; }
+.btn-imprimir { background: var(--verde); color: white; border: none; padding: 0.65rem 1.2rem; border-radius: 9px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; }
+.btn-imprimir:hover { background: #145F49; }
+.btn-imprimir:disabled { opacity: 0.5; cursor: default; }
+
+.aviso { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 2.5rem; text-align: center; color: var(--texto-light); font-size: 0.85rem; }
+
+.horario-doc { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 14px; padding: 1.8rem; display: none; }
+.horario-doc.visible { display: block; }
+.horario-header { display: flex; justify-content: space-between; align-items: start; padding-bottom: 1rem; border-bottom: 2px solid var(--texto); margin-bottom: 1.3rem; }
+.horario-inst { font-family: 'Instrument Serif', serif; font-size: 1.3rem; }
+.horario-inst-sub { font-size: 0.75rem; color: var(--texto-light); margin-top: 0.15rem; }
+.horario-titulo-doc { font-size: 0.8rem; font-weight: 700; color: var(--azul); text-align: right; }
+.docente-info { display: flex; gap: 2rem; margin-bottom: 1.3rem; flex-wrap: wrap; }
+.docente-info div span { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--texto-light); margin-bottom: 0.2rem; }
+.docente-info div b { font-size: 0.95rem; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+th { text-align: center; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--texto-light); padding: 0.6rem; background: var(--gris); border: 1px solid var(--borde); }
+td { padding: 0.5rem 0.4rem; border: 1px solid var(--borde); text-align: center; vertical-align: middle; }
+.celda-periodo { background: var(--gris); font-weight: 700; font-size: 0.72rem; color: var(--texto-mid); white-space: nowrap; }
+.celda-clase { background: var(--azul-light); border-radius: 6px; padding: 0.3rem; }
+.celda-clase .asig { font-weight: 700; color: var(--azul); display: block; }
+.celda-clase .grado { font-size: 0.7rem; color: var(--texto-mid); }
+.celda-libre { color: var(--texto-light); font-size: 0.75rem; }
+.celda-cruce { background: var(--rojo-light); border-radius: 6px; padding: 0.3rem; }
+.celda-cruce .asig { font-weight: 700; color: var(--rojo); display: block; font-size: 0.72rem; }
+
+.resumen-total { margin-top: 1.3rem; padding-top: 1rem; border-top: 1px solid var(--borde); font-size: 0.82rem; color: var(--texto-mid); }
+.aviso-cruce { background: var(--rojo-light); color: var(--rojo); border-radius: 8px; padding: 0.7rem 0.9rem; font-size: 0.78rem; margin-top: 0.8rem; }
+
+@media print {
+  .topbar, .filtros-box, .btn-imprimir { display: none !important; }
+  body { background: white; }
+  .main { padding: 0; max-width: 100%; }
+  .horario-doc { border: none; padding: 0; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="dashboard.html" class="topbar-back">← Panel</a>
+    <span class="topbar-brand">Horario del docente</span>
+  </div>
+  <button class="btn-salir" id="btnSalir">Salir</button>
+</header>
+
+<main class="main">
+  <p class="titulo">Horario definitivo del docente</p>
+  <p class="sub">Combina automáticamente los horarios ya guardados de todos los grados para mostrar la agenda semanal completa de un docente.</p>
+
+  <div class="filtros-box">
+    <div class="filtro-field" id="campoSelector" style="display:none">
+      <label>Docente</label>
+      <select id="selDocente"><option value="">Selecciona...</option></select>
+    </div>
+    <button class="btn-imprimir" id="btnImprimir" disabled>Imprimir / Guardar PDF</button>
+  </div>
+
+  <div class="aviso" id="avisoVacio">Selecciona un docente para ver su horario consolidado.</div>
+
+  <div class="horario-doc" id="horarioDoc">
+    <div class="horario-header">
+      <div>
+        <p class="horario-inst" id="hInstitucion">—</p>
+        <p class="horario-inst-sub">Horario semanal de clases</p>
+      </div>
+      <p class="horario-titulo-doc">Horario<br/>definitivo</p>
+    </div>
+
+    <div class="docente-info">
+      <div><span>Docente</span><b id="hDocente">—</b></div>
+      <div><span>Total horas semanales</span><b id="hTotalHoras">—</b></div>
+    </div>
+
+    <table>
+      <thead><tr id="filaEncabezado"></tr></thead>
+      <tbody id="cuerpoHorarioDocente"></tbody>
+    </table>
+
+    <div id="avisoCrucesDoc"></div>
+
+    <p class="resumen-total" id="resumenTexto"></p>
+  </div>
+</main>
+
+<script type="module">
+  import { auth, db, onAuthStateChanged, signOut, doc, getDoc, getDocs, collection, query, where } from './firebase.js';
+
+  const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+
+  let institucionId = null;
+  let institucionNombre = '';
+  let esAdmin = false;
+  let nombrePropio = '';
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'index.html'; return; }
+    const usuarioSnap = await getDoc(doc(db, 'usuarios', user.uid));
+    if (!usuarioSnap.exists()) { window.location.href = 'index.html'; return; }
+    const usuarioActual = usuarioSnap.data();
+    institucionId = usuarioActual.institucionId;
+    esAdmin = usuarioActual.rol === 'admin';
+
+    const instSnap = await getDoc(doc(db, 'instituciones', institucionId));
+    if (instSnap.exists()) institucionNombre = instSnap.data().nombre || '';
+
+    if (esAdmin) {
+      document.getElementById('campoSelector').style.display = 'block';
+      const docSnap = await getDocs(query(collection(db, 'usuarios'), where('institucionId', '==', institucionId), where('rol', '==', 'docente')));
+      const nombres = [];
+      docSnap.forEach(d => { const n = (d.data().nombre || '').trim(); if (n) nombres.push(n); });
+      nombres.sort();
+      const sel = document.getElementById('selDocente');
+      nombres.forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n; opt.textContent = n;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('change', () => cargarHorarioDocente(sel.value));
+    } else if (usuarioActual.rol === 'docente') {
+      nombrePropio = (usuarioActual.nombre || '').trim();
+      await cargarHorarioDocente(nombrePropio);
+    } else {
+      document.getElementById('avisoVacio').textContent = 'Esta vista es solo para docentes y administradores.';
+    }
+  });
+
+  async function cargarHorarioDocente(nombreDocente) {
+    if (!nombreDocente) {
+      document.getElementById('avisoVacio').style.display = 'block';
+      document.getElementById('horarioDoc').classList.remove('visible');
+      document.getElementById('btnImprimir').disabled = true;
+      return;
+    }
+
+    document.getElementById('hInstitucion').textContent = institucionNombre || '—';
+    document.getElementById('hDocente').textContent = nombreDocente;
+
+    const horSnap = await getDocs(query(collection(db, 'horarios'), where('institucionId', '==', institucionId)));
+    let periodosMax = 6;
+    const entradas = []; // { grado, periodo, dia, asignatura }
+
+    horSnap.forEach(d => {
+      const data = d.data();
+      const grid = data.grid || [];
+      if (data.periodosPorDia > periodosMax) periodosMax = data.periodosPorDia;
+      grid.forEach((fila, p) => {
+        fila.forEach((celda, dIdx) => {
+          if (celda && celda.docente === nombreDocente) {
+            entradas.push({ grado: data.grado, periodo: p, dia: dIdx, asignatura: celda.nombre });
+          }
+        });
+      });
+    });
+
+    // combinado[periodo][dia] = [ {grado, asignatura}, ... ] (más de una = cruce)
+    const combinado = Array.from({ length: periodosMax }, () => Array.from({ length: DIAS.length }, () => []));
+    entradas.forEach(e => {
+      if (e.periodo < periodosMax) combinado[e.periodo][e.dia].push({ grado: e.grado, asignatura: e.asignatura });
+    });
+
+    if (entradas.length === 0) {
+      document.getElementById('avisoVacio').textContent = `${nombreDocente} todavía no tiene clases asignadas en ningún horario guardado.`;
+      document.getElementById('avisoVacio').style.display = 'block';
+      document.getElementById('horarioDoc').classList.remove('visible');
+      document.getElementById('btnImprimir').disabled = true;
+      return;
+    }
+
+    document.getElementById('avisoVacio').style.display = 'none';
+    document.getElementById('horarioDoc').classList.add('visible');
+    document.getElementById('btnImprimir').disabled = false;
+
+    const encabezado = document.getElementById('filaEncabezado');
+    encabezado.innerHTML = '<th>Periodo</th>' + DIAS.map(d => `<th>${d}</th>`).join('');
+
+    let totalHoras = 0;
+    let hayCruces = false;
+
+    const cuerpo = document.getElementById('cuerpoHorarioDocente');
+    cuerpo.innerHTML = '';
+    for (let p = 0; p < periodosMax; p++) {
+      const tr = document.createElement('tr');
+      let fila = `<td class="celda-periodo">Periodo ${p + 1}</td>`;
+      for (let d = 0; d < DIAS.length; d++) {
+        const lista = combinado[p][d];
+        if (lista.length === 0) {
+          fila += `<td><span class="celda-libre">—</span></td>`;
+        } else if (lista.length === 1) {
+          totalHoras++;
+          fila += `<td><div class="celda-clase"><span class="asig">${lista[0].asignatura}</span><span class="grado">${lista[0].grado}</span></div></td>`;
+        } else {
+          totalHoras++;
+          hayCruces = true;
+          fila += `<td><div class="celda-cruce">${lista.map(l => `<span class="asig">⚠ ${l.asignatura} (${l.grado})</span>`).join('')}</div></td>`;
+        }
+      }
+      tr.innerHTML = fila;
+      cuerpo.appendChild(tr);
+    }
+
+    document.getElementById('hTotalHoras').textContent = `${totalHoras}h semanales`;
+
+    const gradosUnicos = [...new Set(entradas.map(e => e.grado))];
+    document.getElementById('resumenTexto').textContent = `Dicta clase en ${gradosUnicos.length} grado(s): ${gradosUnicos.join(', ')}.`;
+
+    const avisoCruces = document.getElementById('avisoCrucesDoc');
+    avisoCruces.innerHTML = hayCruces
+      ? `<div class="aviso-cruce">⚠ Este docente tiene cruces de horario (aparece en más de un grado a la misma hora, marcado en rojo arriba). Revísalo en el módulo de Horario antes de entregar este documento.</div>`
+      : '';
+  }
+
+  document.getElementById('btnImprimir').addEventListener('click', () => window.print());
+
+  document.getElementById('btnSalir').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'index.html';
+  });
+</script>
+</body>
+</html>
