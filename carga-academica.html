@@ -93,6 +93,13 @@ td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--borde); vertical-al
 .resultado-final { margin-top: 1rem; padding: 1rem 1.2rem; border-radius: 10px; font-size: 0.85rem; display: none; }
 .resultado-final.visible { display: block; }
 .resultado-final.ok { background: var(--verde-light); color: var(--verde); }
+
+.resumen-docentes-wrap { margin-top: 1.3rem; }
+.tabla-docentes th, .tabla-docentes td { padding: 0.5rem 0.6rem; }
+.chip-dentro { background: var(--verde-light); color: var(--verde); }
+.chip-excede { background: var(--rojo-light); color: var(--rojo); }
+.chip-mixto { background: var(--naranja-light); color: var(--naranja); }
+.chip-sindef { background: var(--gris); color: var(--texto-mid); }
 </style>
 </head>
 <body>
@@ -145,6 +152,21 @@ td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--borde); vertical-al
       </table>
     </div>
 
+    <div class="resumen-docentes-wrap" id="resumenDocentesWrap" style="display:none">
+      <p class="card-titulo" style="margin-top:1.2rem">Carga horaria por docente (Decreto 1850/2002)</p>
+      <div class="info-box" style="margin-bottom:0.8rem">
+        Topes de asignación académica semanal: Preescolar 20h · Primaria 25h · Secundaria/Media 22h · Media técnica 37h. Esta suma incluye lo que ya tenía asignado el docente más lo que traiga este archivo.
+      </div>
+      <div class="tabla-scroll">
+        <table class="tabla-docentes">
+          <thead>
+            <tr><th>Docente</th><th>Horas ya existentes</th><th>Horas nuevas (archivo)</th><th>Total</th><th>Tope aplicable</th><th>Estado</th></tr>
+          </thead>
+          <tbody id="cuerpoResumenDocentes"></tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="footer-acciones">
       <span class="contador-final" id="contadorFinal">0 asignaturas listas para crear</span>
       <button class="btn-primario" id="btnConfirmarCarga" disabled>Crear asignaturas válidas</button>
@@ -164,8 +186,24 @@ td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--borde); vertical-al
 
   let institucionId = null;
   let asignaturasExistentes = new Set(); // "nombre|grado"
+  let asignaturasExistentesFull = []; // {nombre, grado, docente, intensidad}
   let nombresDocentesRegistrados = new Map(); // normalizado -> nombre real
   let filasProcesadas = [];
+
+  // ── Topes legales de asignación académica semanal (Decreto 1850/2002, compilado 1075/2015, ajustado Decreto 0277/2025) ──
+  const TOPE_HORAS_NIVEL = { preescolar: 20, primaria: 25, secundaria_media: 22, media_tecnica: 37 };
+  const NOMBRE_NIVEL = { preescolar: 'Preescolar (20h)', primaria: 'Primaria (25h)', secundaria_media: 'Secundaria/Media (22h)', media_tecnica: 'Media técnica (37h)' };
+
+  function nivelDeGrado(gradoLibre) {
+    const norm = (gradoLibre || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (!norm) return null;
+    if (/tecnic/.test(norm)) return 'media_tecnica';
+    if (/transicion|jardin|prejardin|preescolar|parvulo/.test(norm)) return 'preescolar';
+    if (/\b(10|11|decimo|once)\b/.test(norm)) return 'secundaria_media';
+    if (/\b(6|7|8|9|sexto|septimo|octavo|noveno)\b/.test(norm)) return 'secundaria_media';
+    if (/\b(1|2|3|4|5|primero|segundo|tercero|cuarto|quinto)\b/.test(norm)) return 'primaria';
+    return null;
+  }
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) { window.location.href = 'index.html'; return; }
@@ -182,6 +220,7 @@ td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--borde); vertical-al
     asigSnap.forEach(d => {
       const a = d.data();
       asignaturasExistentes.add(`${(a.nombre || '').trim().toLowerCase()}|${(a.grado || '').trim().toLowerCase()}`);
+      asignaturasExistentesFull.push({ nombre: a.nombre || '', grado: a.grado || '', docente: a.docente || '', intensidad: a.intensidad });
     });
 
     const nombresDocentes = [];
@@ -318,6 +357,66 @@ td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--borde); vertical-al
     renderRevision();
   }
 
+  function renderResumenDocentes() {
+    const wrap = document.getElementById('resumenDocentesWrap');
+    const filasValidas = filasProcesadas.filter(f => f.estado === 'ok' || f.estado === 'advertencia');
+    const docentesTocados = new Set(filasValidas.filter(f => f.docente).map(f => f.docente));
+
+    if (docentesTocados.size === 0) {
+      wrap.style.display = 'none';
+      return;
+    }
+    wrap.style.display = 'block';
+
+    const filas = [...docentesTocados].sort().map(nombreDocente => {
+      // Horas ya existentes en Firestore para este docente
+      const existentesDelDocente = asignaturasExistentesFull.filter(a => a.docente === nombreDocente);
+      const horasExistentes = existentesDelDocente.reduce((sum, a) => sum + (typeof a.intensidad === 'number' ? a.intensidad : 0), 0);
+      const nivelesExistentes = existentesDelDocente.map(a => nivelDeGrado(a.grado)).filter(Boolean);
+
+      // Horas nuevas que trae este archivo para este docente
+      const nuevasDelDocente = filasValidas.filter(f => f.docente === nombreDocente);
+      const horasNuevas = nuevasDelDocente.reduce((sum, f) => sum + (typeof f.intensidad === 'number' ? f.intensidad : 0), 0);
+      const nivelesNuevos = nuevasDelDocente.map(f => nivelDeGrado(f.grado)).filter(Boolean);
+
+      const total = horasExistentes + horasNuevas;
+      const nivelesUnicos = [...new Set([...nivelesExistentes, ...nivelesNuevos])];
+
+      let tope = null, estado = 'sindef', textoTope = 'No se pudo determinar (grado no reconocido)';
+      if (nivelesUnicos.length === 1) {
+        tope = TOPE_HORAS_NIVEL[nivelesUnicos[0]];
+        textoTope = NOMBRE_NIVEL[nivelesUnicos[0]];
+        estado = total > tope ? 'excede' : 'dentro';
+      } else if (nivelesUnicos.length > 1) {
+        const topes = nivelesUnicos.map(n => TOPE_HORAS_NIVEL[n]);
+        textoTope = `Varios niveles (${nivelesUnicos.map(n => NOMBRE_NIVEL[n]).join(' + ')})`;
+        estado = 'mixto';
+      }
+
+      return { nombreDocente, horasExistentes, horasNuevas, total, textoTope, estado };
+    });
+
+    const cuerpo = document.getElementById('cuerpoResumenDocentes');
+    cuerpo.innerHTML = filas.map(f => {
+      const chip = f.estado === 'dentro'
+        ? '<span class="estado-chip chip-dentro">✓ Dentro del límite</span>'
+        : f.estado === 'excede'
+          ? '<span class="estado-chip chip-excede">Excede el límite</span>'
+          : f.estado === 'mixto'
+            ? '<span class="estado-chip chip-mixto">Niveles mixtos — revisar</span>'
+            : '<span class="estado-chip chip-sindef">Sin definir</span>';
+      return `
+        <tr>
+          <td>${f.nombreDocente}</td>
+          <td>${f.horasExistentes}h</td>
+          <td>${f.horasNuevas}h</td>
+          <td><b>${f.total}h</b></td>
+          <td>${f.textoTope}</td>
+          <td>${chip}</td>
+        </tr>`;
+    }).join('');
+  }
+
   function renderRevision() {
     document.getElementById('cardResumen').style.display = 'block';
     const total = filasProcesadas.length;
@@ -357,6 +456,8 @@ td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--borde); vertical-al
 
     document.getElementById('contadorFinal').textContent = `${validos} asignatura(s) listas para crear${duplicados > 0 ? ` — ${duplicados} ya existente(s) se omitirán` : ''}${errores > 0 ? ` — ${errores} con errores se omitirán` : ''}`;
     document.getElementById('btnConfirmarCarga').disabled = validos === 0;
+
+    renderResumenDocentes();
     document.getElementById('resultadoFinal').classList.remove('visible');
   }
 
