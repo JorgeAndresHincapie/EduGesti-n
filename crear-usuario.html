@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduGestión — Crear usuario</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --azul: #1A4F8A; --azul-dark: #123769; --azul-light: #EBF2FB;
+  --morado: #553C9A; --morado-light: #F0EBFF;
+  --verde: #1A7A5E; --verde-light: #E8F5F0;
+  --gris: #F4F6F9; --borde: #DDE3EC;
+  --texto: #1A2332; --texto-mid: #4A5568; --texto-light: #8896A7;
+  --blanco: #FFFFFF; --rojo: #C53030; --rojo-light: #FFF5F5;
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); color: var(--texto); min-height: 100vh; }
+
+.topbar { background: var(--azul); height: 58px; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.topbar-left { display: flex; align-items: center; gap: 0.9rem; }
+.topbar-back { color: white; text-decoration: none; font-size: 0.85rem; opacity: 0.85; }
+.topbar-back:hover { opacity: 1; }
+.topbar-brand { font-size: 1.0rem; font-weight: 700; color: white; }
+.btn-salir { background: rgba(255,255,255,0.12); color: white; border: none; padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+.main { max-width: 640px; margin: 0 auto; padding: 2.2rem 2rem 4rem; }
+.titulo { font-family: 'Instrument Serif', serif; font-size: 1.8rem; margin-bottom: 0.4rem; }
+.sub { font-size: 0.85rem; color: var(--texto-light); margin-bottom: 1.6rem; line-height: 1.5; }
+
+.tabs { display: flex; gap: 0.5rem; margin-bottom: 1.4rem; }
+.tab-btn { flex: 1; background: var(--blanco); border: 1.5px solid var(--borde); padding: 0.7rem; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; color: var(--texto-mid); }
+.tab-btn.activo { background: var(--azul); color: white; border-color: var(--azul); }
+
+.card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px; padding: 1.6rem; }
+.field { margin-bottom: 1.1rem; }
+.field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--texto-mid); margin-bottom: 0.4rem; }
+.field input, .field select { width: 100%; padding: 0.65rem 0.75rem; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: 0.88rem; }
+.field input:focus, .field select:focus { outline: none; border-color: var(--azul); }
+.field-row { display: flex; gap: 0.9rem; }
+.field-row .field { flex: 1; }
+.field-hint { display: block; font-size: 0.72rem; color: var(--texto-light); margin-top: 0.3rem; }
+
+.opcion-modo { display: flex; align-items: start; gap: 0.7rem; padding: 0.8rem 0.9rem; border: 1.5px solid var(--borde); border-radius: 9px; cursor: pointer; margin-bottom: 0.6rem; }
+.opcion-modo.activa { border-color: var(--azul); background: var(--azul-light); }
+.opcion-modo input { margin-top: 0.2rem; }
+.opcion-modo-texto b { display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+.opcion-modo-texto span { font-size: 0.74rem; color: var(--texto-light); line-height: 1.4; }
+
+.btn-guardar { width: 100%; background: var(--azul); color: white; border: none; border-radius: 9px; font-weight: 700; font-size: 0.9rem; padding: 0.8rem; cursor: pointer; margin-top: 0.4rem; font-family: inherit; }
+.btn-guardar:hover { background: var(--azul-dark); }
+.btn-guardar:disabled { opacity: 0.6; cursor: default; }
+
+.msg { display: none; font-size: 0.82rem; padding: 0.7rem 0.9rem; border-radius: 8px; margin-bottom: 1rem; }
+.msg.visible { display: block; }
+.msg-err { background: var(--rojo-light); color: var(--rojo); }
+.msg-ok { background: var(--verde-light); color: var(--verde); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="dashboard.html" class="topbar-back">← Panel</a>
+    <span class="topbar-brand">Crear usuario</span>
+  </div>
+  <button class="btn-salir" id="btnSalir">Salir</button>
+</header>
+
+<main class="main">
+  <p class="titulo">Crear usuario</p>
+  <p class="sub">Crea un docente o un estudiante directamente, sin pasar por registro público.</p>
+
+  <div class="tabs">
+    <button class="tab-btn activo" id="tabDocente">👩‍🏫 Docente</button>
+    <button class="tab-btn" id="tabEstudiante">🎓 Estudiante</button>
+  </div>
+
+  <!-- ── Formulario docente ── -->
+  <div id="vistaDocente">
+    <div class="card">
+      <div class="msg msg-err" id="msgErrDocente"></div>
+      <div class="msg msg-ok" id="msgOkDocente"></div>
+
+      <form id="formDocente">
+        <div class="field">
+          <label>Nombre completo</label>
+          <input type="text" id="dNombre" placeholder="Ej: Laura Martínez Gómez" required/>
+        </div>
+        <div class="field">
+          <label>Correo electrónico</label>
+          <input type="email" id="dCorreo" placeholder="docente@correo.com" required/>
+        </div>
+
+        <label class="opcion-modo activa" id="opcionAuto">
+          <input type="radio" name="modoPassword" value="auto" checked/>
+          <div class="opcion-modo-texto">
+            <b>El docente crea su propia contraseña (recomendado)</b>
+            <span>Se le envía un correo de restablecimiento para que la defina él mismo.</span>
+          </div>
+        </label>
+        <label class="opcion-modo" id="opcionManual">
+          <input type="radio" name="modoPassword" value="manual"/>
+          <div class="opcion-modo-texto">
+            <b>Yo defino la contraseña ahora</b>
+            <span>Tendrás que comunicarla tú mismo al docente.</span>
+          </div>
+        </label>
+
+        <div class="field" id="campoPasswordManual" style="display:none">
+          <label>Contraseña (mínimo 6 caracteres)</label>
+          <input type="text" id="dPassword" placeholder="Contraseña temporal"/>
+        </div>
+
+        <button type="submit" class="btn-guardar" id="btnGuardarDocente">Crear cuenta de docente</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Formulario estudiante ── -->
+  <div id="vistaEstudiante" style="display:none">
+    <div class="card">
+      <div class="msg msg-err" id="msgErrEstudiante"></div>
+      <div class="msg msg-ok" id="msgOkEstudiante"></div>
+
+      <form id="formEstudiante">
+        <div class="field-row">
+          <div class="field">
+            <label>Nombres</label>
+            <input type="text" id="eNombres" required/>
+          </div>
+          <div class="field">
+            <label>Apellidos</label>
+            <input type="text" id="eApellidos" required/>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Tipo de documento</label>
+            <select id="eTipoDoc">
+              <option value="RC">RC</option>
+              <option value="TI">TI</option>
+              <option value="CC">CC</option>
+              <option value="NUIP">NUIP</option>
+              <option value="NES">NES</option>
+              <option value="PPT">PPT</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Documento</label>
+            <input type="text" id="eDocumento" required/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Grado / Grupo (o carrera/curso)</label>
+          <input type="text" id="eGrado" placeholder="Ej: 5° A, o Técnico en Contabilidad" required/>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Acudiente</label>
+            <input type="text" id="eAcudiente"/>
+          </div>
+          <div class="field">
+            <label>Teléfono acudiente</label>
+            <input type="text" id="eTelefono"/>
+          </div>
+        </div>
+        <button type="submit" class="btn-guardar" id="btnGuardarEstudiante">Crear estudiante</button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+  import { auth, db, firebaseConfig, onAuthStateChanged, signOut, doc, getDoc, setDoc, addDoc, getDocs, collection, query, where, serverTimestamp, sendPasswordResetEmail } from './firebase.js';
+  import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth as getAuthSecundario, createUserWithEmailAndPassword, signOut as signOutSecundario } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  let institucionId = null;
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'index.html'; return; }
+    const usuarioSnap = await getDoc(doc(db, 'usuarios', user.uid));
+    if (!usuarioSnap.exists()) { window.location.href = 'index.html'; return; }
+    const usuarioActual = usuarioSnap.data();
+    if (usuarioActual.rol !== 'admin') { window.location.href = 'dashboard.html'; return; }
+    institucionId = usuarioActual.institucionId;
+  });
+
+  // ── Tabs ──
+  document.getElementById('tabDocente').addEventListener('click', () => cambiarTab('docente'));
+  document.getElementById('tabEstudiante').addEventListener('click', () => cambiarTab('estudiante'));
+
+  function cambiarTab(tab) {
+    document.getElementById('tabDocente').classList.toggle('activo', tab === 'docente');
+    document.getElementById('tabEstudiante').classList.toggle('activo', tab === 'estudiante');
+    document.getElementById('vistaDocente').style.display = tab === 'docente' ? 'block' : 'none';
+    document.getElementById('vistaEstudiante').style.display = tab === 'estudiante' ? 'block' : 'none';
+  }
+
+  // ── Modo de contraseña ──
+  document.querySelectorAll('input[name="modoPassword"]').forEach(r => {
+    r.addEventListener('change', () => {
+      const manual = document.querySelector('input[value="manual"]').checked;
+      document.getElementById('opcionAuto').classList.toggle('activa', !manual);
+      document.getElementById('opcionManual').classList.toggle('activa', manual);
+      document.getElementById('campoPasswordManual').style.display = manual ? 'block' : 'none';
+    });
+  });
+
+  function generarPasswordTemporal() {
+    return Math.random().toString(36).slice(-6) + Math.random().toString(36).slice(-6).toUpperCase() + '!7';
+  }
+
+  // ── Crear docente ──
+  document.getElementById('formDocente').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardarDocente');
+    const msgErr = document.getElementById('msgErrDocente');
+    const msgOk = document.getElementById('msgOkDocente');
+    msgErr.classList.remove('visible');
+    msgOk.classList.remove('visible');
+
+    const nombre = document.getElementById('dNombre').value.trim();
+    const correo = document.getElementById('dCorreo').value.trim().toLowerCase();
+    const modo = document.querySelector('input[name="modoPassword"]:checked').value;
+    let password = document.getElementById('dPassword').value.trim();
+
+    if (modo === 'manual' && password.length < 6) {
+      msgErr.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+      msgErr.classList.add('visible');
+      return;
+    }
+    if (modo === 'auto') password = generarPasswordTemporal();
+
+    btn.disabled = true;
+    btn.textContent = 'Creando...';
+
+    let appSecundaria = null;
+    try {
+      appSecundaria = initializeApp(firebaseConfig, `secundaria-crear-${Date.now()}`);
+      const authSecundario = getAuthSecundario(appSecundaria);
+
+      const cred = await createUserWithEmailAndPassword(authSecundario, correo, password);
+      const uid = cred.user.uid;
+
+      await setDoc(doc(db, 'usuarios', uid), {
+        nombre,
+        email: correo,
+        rol: 'docente',
+        institucionId,
+        fechaCreacion: serverTimestamp(),
+      });
+
+      if (modo === 'auto') {
+        await sendPasswordResetEmail(authSecundario, correo);
+      }
+      await signOutSecundario(authSecundario);
+
+      msgOk.textContent = modo === 'auto'
+        ? `✓ Cuenta creada para ${nombre}. Se le envió un correo a ${correo} para que defina su contraseña.`
+        : `✓ Cuenta creada para ${nombre}. Contraseña: ${password} — comunícasela directamente.`;
+      msgOk.classList.add('visible');
+      document.getElementById('formDocente').reset();
+      document.getElementById('opcionAuto').classList.add('activa');
+      document.getElementById('opcionManual').classList.remove('activa');
+      document.getElementById('campoPasswordManual').style.display = 'none';
+    } catch (err) {
+      console.error(err);
+      let m = err.message || 'Error desconocido';
+      if (err.code === 'auth/email-already-in-use') m = 'Ese correo ya está registrado.';
+      msgErr.textContent = `No se pudo crear: ${m}`;
+      msgErr.classList.add('visible');
+    } finally {
+      if (appSecundaria) { try { await deleteApp(appSecundaria); } catch (e) {} }
+      btn.disabled = false;
+      btn.textContent = 'Crear cuenta de docente';
+    }
+  });
+
+  // ── Crear estudiante ──
+  document.getElementById('formEstudiante').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardarEstudiante');
+    const msgErr = document.getElementById('msgErrEstudiante');
+    const msgOk = document.getElementById('msgOkEstudiante');
+    msgErr.classList.remove('visible');
+    msgOk.classList.remove('visible');
+
+    const nombres = document.getElementById('eNombres').value.trim();
+    const apellidos = document.getElementById('eApellidos').value.trim();
+    const tipoDoc = document.getElementById('eTipoDoc').value;
+    const documento = document.getElementById('eDocumento').value.trim();
+    const grado = document.getElementById('eGrado').value.trim();
+    const acudiente = document.getElementById('eAcudiente').value.trim();
+    const telefonoAcudiente = document.getElementById('eTelefono').value.replace(/\D/g, '');
+
+    btn.disabled = true;
+    btn.textContent = 'Creando...';
+
+    try {
+      const existeSnap = await getDocs(query(collection(db, 'estudiantes'), where('institucionId', '==', institucionId), where('documento', '==', documento)));
+      if (!existeSnap.empty) {
+        msgErr.textContent = 'Ya existe un estudiante con ese documento.';
+        msgErr.classList.add('visible');
+        return;
+      }
+
+      await addDoc(collection(db, 'estudiantes'), {
+        nombres, apellidos, tipoDoc, documento, grado, acudiente, telefonoAcudiente,
+        estado: 'Activo',
+        institucionId,
+      });
+
+      msgOk.textContent = `✓ Estudiante ${nombres} ${apellidos} creado correctamente.`;
+      msgOk.classList.add('visible');
+      document.getElementById('formEstudiante').reset();
+    } catch (err) {
+      console.error(err);
+      msgErr.textContent = `No se pudo crear: ${err.message || 'Error desconocido'}`;
+      msgErr.classList.add('visible');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Crear estudiante';
+    }
+  });
+
+  document.getElementById('btnSalir').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'index.html';
+  });
+</script>
+</body>
+</html>
