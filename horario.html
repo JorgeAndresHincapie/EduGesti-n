@@ -413,7 +413,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
       console.error(err);
       const msg = document.getElementById('mensajeGuardado');
       msg.className = 'mensaje-guardado warn visible';
-      msg.textContent = 'No se pudo guardar. Intenta de nuevo.';
+      msg.textContent = `No se pudo guardar: ${err.code || ''} ${err.message || 'Error desconocido'}`;
     } finally {
       btn.disabled = false;
       btn.textContent = 'Guardar horario';
