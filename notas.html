@@ -274,6 +274,15 @@ tr:last-child td { border-bottom: none; }
     return (nombres || '').toString().trim().split(/\s+/)[0] || '';
   }
 
+  function tituloCase(texto) {
+    return (texto || '').toString().toLowerCase().replace(/(^|\s)([a-záéíóúñ])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+  }
+
+  function nombreCompletoEstudiante(est) {
+    const completo = `${est.nombres || ''} ${est.apellidos || ''}`.trim();
+    return tituloCase(completo);
+  }
+
   onAuthStateChanged(auth, async (user) => {
     if (!user) { window.location.href = 'index.html'; return; }
     const usuarioSnap = await getDoc(doc(db, 'usuarios', user.uid));
@@ -562,19 +571,20 @@ tr:last-child td { border-bottom: none; }
     }).join('');
 
     actualizarContador();
-    estudiantesDelGrado.forEach(est => actualizarSugerencia(est.id, est.nombres, notaInfoInicial(est.id)));
+    estudiantesDelGrado.forEach(est => actualizarSugerencia(est.id, est, notaInfoInicial(est.id)));
   }
 
   function notaInfoInicial(estudianteId) {
     return notasActuales[estudianteId] ? notasActuales[estudianteId].valor : '';
   }
 
-  function actualizarSugerencia(estudianteId, nombresEstudiante, valorNota) {
+  function actualizarSugerencia(estudianteId, estudianteObj, valorNota) {
     const cont = document.getElementById(`sugerido-${estudianteId}`);
     if (!cont) return;
     const nivel = nivelDeNota(valorNota);
     if (!nivel || !bancoOficialPorNivel[nivel.nombre]) { cont.innerHTML = ''; return; }
-    const textoSugerido = bancoOficialPorNivel[nivel.nombre].replace('[Nombre_Estudiante]', primerNombre(nombresEstudiante));
+    const nombreParaTexto = estudianteObj ? nombreCompletoEstudiante(estudianteObj) : '';
+    const textoSugerido = bancoOficialPorNivel[nivel.nombre].replace('[Nombre_Estudiante]', nombreParaTexto);
     const textarea = document.getElementById(`logro-${estudianteId}`);
     if (textarea && !textarea.value.trim()) {
       textarea.value = textoSugerido;
@@ -605,7 +615,7 @@ tr:last-child td { border-bottom: none; }
     estadoEl.textContent = '';
     estadoEl.style.color = 'var(--texto-light)';
     const est = estudiantesCache.find(e => e.id === estudianteId);
-    actualizarSugerencia(estudianteId, est ? est.nombres : '', input.value);
+    actualizarSugerencia(estudianteId, est, input.value);
   };
 
   function actualizarContador() {
