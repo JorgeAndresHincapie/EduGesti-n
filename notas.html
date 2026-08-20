@@ -38,6 +38,10 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gris); co
 .escala-info.visible { display: block; }
 .escala-info b { font-weight: 700; }
 
+.oficial-info { background: var(--verde-light); color: var(--verde); border-radius: 10px; padding: 0.8rem 1.1rem; margin-bottom: 1.1rem; font-size: 0.78rem; }
+.btn-sugerido { background: none; border: 1.3px solid var(--verde); color: var(--verde); border-radius: 6px; padding: 0.2rem 0.55rem; font-size: 0.68rem; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 0.35rem; }
+.btn-sugerido:hover { background: var(--verde); color: white; }
+
 .banco-toggle { background: var(--verde-light); color: var(--verde); border: 1.5px solid var(--verde); padding: 0.5rem 0.9rem; border-radius: 8px; font-weight: 700; font-size: 0.78rem; cursor: pointer; font-family: inherit; margin-bottom: 1rem; display: none; }
 .banco-toggle:hover { background: var(--verde); color: white; }
 .banco-toggle.visible { display: inline-block; }
@@ -118,6 +122,8 @@ tr:last-child td { border-bottom: none; }
 
   <div class="escala-info" id="escalaInfo"></div>
 
+  <div class="oficial-info" id="oficialInfo" style="display:none"></div>
+
   <button class="banco-toggle" id="btnBancoLogros">📋 Banco de logros de esta asignatura</button>
 
   <div class="aviso" id="avisoVacio">Selecciona un grado/grupo y una asignatura para empezar a registrar notas.</div>
@@ -169,6 +175,104 @@ tr:last-child td { border-bottom: none; }
   let asignaturasCache = [];
   let notasActuales = {}; // key: estudianteId -> {valor, guardado}
   let bancoLogrosCache = []; // [{id, texto}] de la asignatura actual
+  let bancoOficialPorNivel = {}; // {Superior: texto, Alto: texto, Básico: texto, Bajo: texto} para el grado+asignatura actual
+
+  // ── Banco oficial de logros (MEN) — normalización para hacer match con nombres libres ──
+  const GRADOS_CANONICOS = {
+    'primero': 'Primero', '1': 'Primero', '1°': 'Primero', '1o': 'Primero',
+    'segundo': 'Segundo', '2': 'Segundo', '2°': 'Segundo', '2o': 'Segundo',
+    'tercero': 'Tercero', '3': 'Tercero', '3°': 'Tercero', '3o': 'Tercero',
+    'cuarto': 'Cuarto', '4': 'Cuarto', '4°': 'Cuarto', '4o': 'Cuarto',
+    'quinto': 'Quinto', '5': 'Quinto', '5°': 'Quinto', '5o': 'Quinto',
+    'sexto': 'Sexto', '6': 'Sexto', '6°': 'Sexto', '6o': 'Sexto',
+    'septimo': 'Séptimo', '7': 'Séptimo', '7°': 'Séptimo', '7o': 'Séptimo',
+    'octavo': 'Octavo', '8': 'Octavo', '8°': 'Octavo', '8o': 'Octavo',
+    'noveno': 'Noveno', '9': 'Noveno', '9°': 'Noveno', '9o': 'Noveno',
+    'decimo': 'Décimo', '10': 'Décimo', '10°': 'Décimo',
+    'once': 'Once', '11': 'Once', '11°': 'Once',
+  };
+  const ASIGNATURAS_CANONICAS = [
+    'Ciencias naturales y educación ambiental',
+    'Ciencias sociales, historia, geografía, constitución política y democracia',
+    'Educación artística y cultural',
+    'Educación económica y financiera',
+    'Educación física, recreación y deportes',
+    'Educación religiosa',
+    'Educación ética y en valores humanos',
+    'Humanidades, lengua castellana e idiomas extranjeros',
+    'Matemáticas',
+    'Tecnología e informática',
+  ];
+
+  function normalizarTexto(s) {
+    return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  function gradoCanonico(gradoLibre) {
+    const norm = normalizarTexto(gradoLibre).replace(/[^a-z0-9°]/g, ' ').trim();
+    // probar el string completo y luego cada palabra/token
+    if (GRADOS_CANONICOS[norm]) return GRADOS_CANONICOS[norm];
+    const tokens = norm.split(/\s+/);
+    for (const t of tokens) {
+      if (GRADOS_CANONICOS[t]) return GRADOS_CANONICOS[t];
+    }
+    return null;
+  }
+
+  function asignaturaCanonica(nombreLibre) {
+    const norm = normalizarTexto(nombreLibre);
+    let mejor = null;
+    for (const canon of ASIGNATURAS_CANONICAS) {
+      const canonNorm = normalizarTexto(canon);
+      if (norm === canonNorm || norm.includes(canonNorm) || canonNorm.includes(norm)) {
+        return canon;
+      }
+    }
+    // match parcial por palabra clave principal (primera palabra significativa)
+    const primeraPalabra = norm.split(/\s+/)[0];
+    if (primeraPalabra && primeraPalabra.length > 3) {
+      for (const canon of ASIGNATURAS_CANONICAS) {
+        if (normalizarTexto(canon).includes(primeraPalabra)) return canon;
+      }
+    }
+    return mejor;
+  }
+
+  async function cargarBancoOficial() {
+    bancoOficialPorNivel = {};
+    const oficialInfo = document.getElementById('oficialInfo');
+    const grado = document.getElementById('selGrado').value;
+    const asignaturaId = document.getElementById('selAsignatura').value;
+    if (!grado || !asignaturaId) { oficialInfo.style.display = 'none'; return; }
+
+    const asigObj = asignaturasCache.find(a => a.id === asignaturaId);
+    const gCanon = gradoCanonico(grado);
+    const aCanon = asigObj ? asignaturaCanonica(asigObj.nombre) : null;
+
+    if (!gCanon || !aCanon) { oficialInfo.style.display = 'none'; return; }
+
+    try {
+      const q = query(collection(db, 'banco_logros_oficial'), where('asignatura', '==', aCanon), where('grado', '==', gCanon));
+      const snap = await getDocs(q);
+      snap.forEach(d => {
+        const data = d.data();
+        bancoOficialPorNivel[data.nivel] = data.texto;
+      });
+      if (Object.keys(bancoOficialPorNivel).length > 0) {
+        oficialInfo.style.display = 'block';
+        oficialInfo.textContent = `✓ Banco oficial disponible para ${gCanon} — ${aCanon}. Al poner la nota, se sugiere automáticamente el logro según el nivel obtenido.`;
+      } else {
+        oficialInfo.style.display = 'none';
+      }
+    } catch (e) {
+      console.warn('No se pudo cargar el banco oficial (puede que aún no se haya cargado):', e);
+      oficialInfo.style.display = 'none';
+    }
+  }
+
+  function primerNombre(nombres) {
+    return (nombres || '').toString().trim().split(/\s+/)[0] || '';
+  }
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) { window.location.href = 'index.html'; return; }
@@ -227,6 +331,7 @@ tr:last-child td { border-bottom: none; }
 
   document.getElementById('selAsignatura').addEventListener('change', async () => {
     await cargarBancoLogros();
+    await cargarBancoOficial();
     await cargarNotasExistentes();
   });
 
@@ -449,6 +554,7 @@ tr:last-child td { border-bottom: none; }
               ${bancoLogrosCache.map(l => `<option value="${l.texto.replace(/"/g,'&quot;')}">${l.texto.substring(0,60)}${l.texto.length>60?'...':''}</option>`).join('')}
             </select>
             <textarea class="input-logro" id="logro-${est.id}" placeholder="Ej: Reconoce y aplica las operaciones básicas con seguridad.">${logro}</textarea>
+            <div id="sugerido-${est.id}"></div>
           </td>
           <td><span class="estado-guardado" id="estado-${est.id}">${guardado ? '✓ Guardado' : ''}</span></td>
         </tr>
@@ -456,7 +562,34 @@ tr:last-child td { border-bottom: none; }
     }).join('');
 
     actualizarContador();
+    estudiantesDelGrado.forEach(est => actualizarSugerencia(est.id, est.nombres, notaInfoInicial(est.id)));
   }
+
+  function notaInfoInicial(estudianteId) {
+    return notasActuales[estudianteId] ? notasActuales[estudianteId].valor : '';
+  }
+
+  function actualizarSugerencia(estudianteId, nombresEstudiante, valorNota) {
+    const cont = document.getElementById(`sugerido-${estudianteId}`);
+    if (!cont) return;
+    const nivel = nivelDeNota(valorNota);
+    if (!nivel || !bancoOficialPorNivel[nivel.nombre]) { cont.innerHTML = ''; return; }
+    const textoSugerido = bancoOficialPorNivel[nivel.nombre].replace('[Nombre_Estudiante]', primerNombre(nombresEstudiante));
+    const textarea = document.getElementById(`logro-${estudianteId}`);
+    if (textarea && !textarea.value.trim()) {
+      textarea.value = textoSugerido;
+    }
+    cont.innerHTML = `<button type="button" class="btn-sugerido" onclick="usarSugerido('${estudianteId}')">💡 Usar sugerencia oficial (${nivel.nombre})</button>`;
+    cont.dataset.textoSugerido = textoSugerido;
+  }
+
+  window.usarSugerido = function(estudianteId) {
+    const cont = document.getElementById(`sugerido-${estudianteId}`);
+    const textarea = document.getElementById(`logro-${estudianteId}`);
+    if (cont && textarea && cont.dataset.textoSugerido) {
+      textarea.value = cont.dataset.textoSugerido;
+    }
+  };
 
   window.actualizarNivel = function(estudianteId) {
     const input = document.getElementById(`nota-${estudianteId}`);
@@ -471,6 +604,8 @@ tr:last-child td { border-bottom: none; }
     }
     estadoEl.textContent = '';
     estadoEl.style.color = 'var(--texto-light)';
+    const est = estudiantesCache.find(e => e.id === estudianteId);
+    actualizarSugerencia(estudianteId, est ? est.nombres : '', input.value);
   };
 
   function actualizarContador() {
