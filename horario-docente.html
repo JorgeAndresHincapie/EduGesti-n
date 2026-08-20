@@ -142,16 +142,25 @@ td { padding: 0.5rem 0.4rem; border: 1px solid var(--borde); text-align: center;
 
     if (esAdmin) {
       document.getElementById('campoSelector').style.display = 'block';
-      const docSnap = await getDocs(query(collection(db, 'usuarios'), where('institucionId', '==', institucionId), where('rol', '==', 'docente')));
-      const nombres = [];
-      docSnap.forEach(d => { const n = (d.data().nombre || '').trim(); if (n) nombres.push(n); });
-      nombres.sort();
-      const sel = document.getElementById('selDocente');
-      nombres.forEach(n => {
-        const opt = document.createElement('option');
-        opt.value = n; opt.textContent = n;
-        sel.appendChild(opt);
+      // Lista el selector con los nombres de docente que REALMENTE aparecen en algún horario guardado
+      // (texto libre, tal como quedó escrito en las asignaturas — no depende de que exista una cuenta con ese nombre exacto)
+      const horSnapTodos = await getDocs(query(collection(db, 'horarios'), where('institucionId', '==', institucionId)));
+      const nombresConHorario = new Set();
+      horSnapTodos.forEach(d => {
+        const grid = d.data().grid || [];
+        grid.forEach(fila => fila.forEach(celda => { if (celda && celda.docente) nombresConHorario.add(celda.docente); }));
       });
+      const nombres = [...nombresConHorario].sort();
+      const sel = document.getElementById('selDocente');
+      if (nombres.length === 0) {
+        sel.innerHTML = '<option value="">Todavía no hay horarios guardados con docentes</option>';
+      } else {
+        nombres.forEach(n => {
+          const opt = document.createElement('option');
+          opt.value = n; opt.textContent = n;
+          sel.appendChild(opt);
+        });
+      }
       sel.addEventListener('change', () => cargarHorarioDocente(sel.value));
     } else if (usuarioActual.rol === 'docente') {
       nombrePropio = (usuarioActual.nombre || '').trim();
